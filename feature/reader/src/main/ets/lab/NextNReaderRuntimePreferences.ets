@@ -43,6 +43,17 @@ export class NextNReaderRuntimePreferences {
     }
   }
 
+  /** The bottom mode menu changes mode without discarding the independent double-page choice. */
+  static async applyReadingMode(context: common.UIAbilityContext, policy: ReaderDisplayPolicy): Promise<void> {
+    await ReaderPresentationService.restore(context)
+    const mode = policy.layout === 'continuous' ? NhReaderMode.VERTICAL :
+      policy.pagingAxis === 'vertical' ? NhReaderMode.PAGED_VERTICAL :
+      policy.direction === 'rtl' ? NhReaderMode.PAGED_RTL : NhReaderMode.PAGED
+    if (ReaderPresentationService.snapshot().mode !== mode) {
+      await ReaderPresentationService.setMode(context, mode)
+    }
+  }
+
   static async applySpreadLayout(context: common.UIAbilityContext, policy: ReaderDisplayPolicy): Promise<void> {
     const layout = policy.spreadLayout === 'split' ? NhReaderSpreadLayout.SPLIT : NhReaderSpreadLayout.JOINED
     await ReaderPresentationService.restore(context)

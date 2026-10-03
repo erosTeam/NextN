@@ -102,6 +102,25 @@ await Runtime.applySpreadLayout({}, policy({ spreadLayout: 'split' }))
 assert.equal(state.spreadLayoutMode, 'split')
 assert.deepEqual(events, ['restore', 'spread:split'])
 
+for (const doublePageEnabled of [true, false]) {
+  reset({ mode: 'paged', doublePageEnabled, spreadLayoutMode: 'split' })
+  const retained = { ...state }
+  for (const [choice, expectedMode] of [
+    [{ layout: 'single', direction: 'rtl' }, 'paged_rtl'],
+    [{ layout: 'single', pagingAxis: 'vertical' }, 'paged_vertical'],
+    [{ layout: 'continuous' }, 'vertical'],
+    [{ layout: 'single', direction: 'ltr' }, 'paged'],
+  ]) {
+    events = []
+    await Runtime.applyReadingMode({}, policy(choice))
+    assert.deepEqual(state, { ...retained, mode: expectedMode })
+    assert.deepEqual(events, ['restore', `mode:${expectedMode}`])
+    events = []
+    await Runtime.applyReadingMode({}, policy(choice))
+    assert.deepEqual(events, ['restore'])
+  }
+}
+
 reset()
 await Runtime.applyFirstPageAlone({}, 123, policy({ firstPageAlone: true }))
 assert.equal(column, 'even_left')

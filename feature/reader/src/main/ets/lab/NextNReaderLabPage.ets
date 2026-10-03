@@ -1,5 +1,5 @@
 import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTapPolicy, ReaderRuntimePolicyIntent,
-  ReaderCloseContext } from '@reader-kit/ui'
+  ReaderCloseContext, ReaderModeControlParams } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
@@ -11,6 +11,7 @@ import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibility
   ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
   ReaderHostSettings, ReaderExternalOpen, ReaderHostActions, ReaderVariantPolicy, ReaderCropPolicy,
   ReaderAutoReadPolicy, ReaderTemporaryVariantControl } from '@reader-kit/ui'
+import { ReaderModeControl } from '../components/ReaderModeControl'
 import { NextNReaderLabAdapter } from './NextNReaderLabAdapter'
 import { ReaderLabShareProbe } from '@reader-kit/ui'
 import { connectReaderPresentation, ReaderPresentationService, ReaderPresentationState, connectLayoutSafeArea,
@@ -27,7 +28,7 @@ import { NextNReaderOriginalProbeProvider } from './NextNReaderOriginalProbeProv
 import { NextNReaderOriginalProbeCatalog } from './NextNReaderOriginalProbeCatalog'
 import { ReaderSystemImageSaveHost } from '@reader-kit/ui'
 import { NextNReaderImageSaveDownload } from './NextNReaderImageSaveDownload'
-import { connectThemeDisplay, NhReaderBackgroundMode, NhReaderMode, ReaderSettingsRepository,
+import { connectThemeDisplay, NhReaderBackgroundMode, NhReaderMode, NhReaderSpreadLayout, ReaderSettingsRepository,
   NhReaderTapZoneResolver } from 'shared'
 import { NextNReaderInitialPolicy } from './NextNReaderInitialPolicy'
 import { connectNextNReaderLabContextProbe } from './NextNReaderLabContextProbe'
@@ -299,6 +300,30 @@ export struct NextNReaderLabPage {
       console.warn('[NextNReaderLab] initial_reader_policy_unavailable')
       if (!this.volumeDisposed && !this.closeRequested && !this.hostClosing) this.closeTrial(true)
     }
+  }
+
+  /** Settings publish the authoritative host choice into the retained reader session. */
+  @Monitor('readerPresentation.mode', 'readerPresentation.doublePageEnabled',
+    'readerPresentation.spreadLayoutMode')
+  private syncHostModePreferences(): void {
+    if (!this.request.productionSources || this.session === null || this.closeRequested || this.hostClosing ||
+      this.labRequest?.entryLayoutOverride || this.labRequest?.entryDirectionOverride) return
+    const current = this.session.snapshot().policy
+    const mode = this.readerPresentation.mode
+    const horizontal = mode === NhReaderMode.PAGED || mode === NhReaderMode.PAGED_RTL
+    const layout = mode === NhReaderMode.VERTICAL ? 'continuous' :
+      horizontal && this.readerPresentation.doublePageEnabled ? 'spread' : 'single'
+    const axis = mode === NhReaderMode.PAGED_VERTICAL ? 'vertical' : 'horizontal'
+    const direction = mode === NhReaderMode.PAGED_RTL ? 'rtl' : 'ltr'
+    const spreadLayout = this.readerPresentation.spreadLayoutMode === NhReaderSpreadLayout.SPLIT ? 'split' : 'joined'
+    if (current.layout === layout && current.pagingAxis === axis && current.direction === direction &&
+      current.spreadLayout === spreadLayout) return
+    const next = current.copy()
+    next.layout = layout
+    next.pagingAxis = axis
+    next.direction = direction
+    next.spreadLayout = spreadLayout
+    this.session.setPolicy(next)
   }
 
   /** Debug-only, bounded snapshot evidence for the restricted F2 rehearsal. */
@@ -1003,6 +1028,7 @@ export struct NextNReaderLabPage {
     if (!this.request.productionSources) return
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext
     if (intent === 'layout') void NextNReaderRuntimePreferences.applyLayout(context, policy)
+    else if (intent === 'reading_mode') void NextNReaderRuntimePreferences.applyReadingMode(context, policy)
     else if (intent === 'direction') void NextNReaderRuntimePreferences.applyDirection(context, policy)
     else if (intent === 'spread_layout') void NextNReaderRuntimePreferences.applySpreadLayout(context, policy)
     else if (intent === 'first_page_alone') {
@@ -1011,6 +1037,30 @@ export struct NextNReaderLabPage {
         void NextNReaderRuntimePreferences.applyFirstPageAlone(context, galleryId, policy)
       }
     }
+  }
+
+  private modeFromPolicy(policy: ReaderDisplayPolicy): NhReaderMode {
+    if (policy.layout === 'continuous') return NhReaderMode.VERTICAL
+    if (policy.pagingAxis === 'vertical') return NhReaderMode.PAGED_VERTICAL
+    return policy.direction === 'rtl' ? NhReaderMode.PAGED_RTL : NhReaderMode.PAGED
+  }
+
+  @Builder
+  private HostModeControl(params: ReaderModeControlParams) {
+    ReaderModeControl({
+      readerMode: this.modeFromPolicy(params.policy),
+      controlEnabled: params.enabled,
+      onModeChange: (mode: NhReaderMode): void => {
+        const policy = params.policy.copy()
+        policy.layout = mode === NhReaderMode.VERTICAL ? 'continuous' :
+          mode === NhReaderMode.PAGED_VERTICAL ? 'single' :
+            this.readerPresentation.doublePageEnabled ? 'spread' : 'single'
+        policy.pagingAxis = mode === NhReaderMode.PAGED_VERTICAL ? 'vertical' : 'horizontal'
+        policy.direction = mode === NhReaderMode.PAGED_RTL ? 'rtl' : 'ltr'
+        params.onChange(policy)
+      },
+      onMenuVisible: (visible: boolean): void => { params.onMenuVisible(visible) },
+    })
   }
 
   private persistCrop(enabled: boolean, policy: ReaderDisplayPolicy): void {
@@ -1044,6 +1094,7 @@ export struct NextNReaderLabPage {
         if (this.session !== null) {
           if (this.request.readingChrome) {
             ReaderSurface({ session: this.session, initialUnit: this.unitKey, initialIndex: this.request.pageIndex,
+              modeControl: (params: ReaderModeControlParams): void => { this.HostModeControl(params) },
               imageInterpolation: this.readerPresentation.imageScalingQuality === 'low' ? ImageInterpolation.Low :
                 this.readerPresentation.imageScalingQuality === 'high' ? ImageInterpolation.High : ImageInterpolation.Medium,
               canvasBackground: this.readerCanvasBackground(), canvasForeground: this.readerCanvasForeground(),

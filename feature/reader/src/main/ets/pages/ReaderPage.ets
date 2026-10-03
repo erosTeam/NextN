@@ -69,6 +69,7 @@ import {
   connectReaderThumbnailTransition,
   supportsMangaTranslation,
 } from 'shared'
+import { ReaderModeControl } from '../components/ReaderModeControl'
 import { appMenuOptions } from 'shared'
 import { appSheetOptions } from 'shared'
 import { connectNextNReaderLegacyCacheLeaseProbe } from '../lab/NextNReaderLegacyCacheLeaseProbe'
@@ -2891,7 +2892,6 @@ export struct ReaderPage {
   @Local isReaderReadyForCurrentGallery: boolean = false
   // NextE opens the canvas clean; a single tap restores the native Reader chrome.
   @Local readerChromeVisible: boolean = false
-  @Local readerModeMenuShown: boolean = false
   @Local readerOverflowMenuShown: boolean = false
   @Local readerSettingsSheetShown: boolean = false
   @Local readerSaveSpreadMenuShown: boolean = false
@@ -3830,35 +3830,8 @@ export struct ReaderPage {
     this.turnReaderBySourceOffset(sourceOffset)
   }
 
-  private readerModeLabel(mode: NhReaderMode = this.readerPresentation.mode): string {
-    if (mode === NhReaderMode.PAGED_RTL) {
-      return AppStrings.get('settings_reader_mode_paged_rtl')
-    }
-    if (mode === NhReaderMode.PAGED_VERTICAL) {
-      return AppStrings.get('settings_reader_mode_paged_vertical')
-    }
-    if (mode === NhReaderMode.PAGED) {
-      return AppStrings.get('settings_reader_mode_paged')
-    }
-    return AppStrings.get('settings_reader_mode_vertical')
-  }
-
-  private readerModeIcon(mode: NhReaderMode): Resource {
-    if (mode === NhReaderMode.PAGED_RTL) {
-      return $r('sys.symbol.arrow_left_and_square')
-    }
-    if (mode === NhReaderMode.PAGED_VERTICAL) {
-      return $r('sys.symbol.single_page_flipping')
-    }
-    if (mode === NhReaderMode.PAGED) {
-      return $r('sys.symbol.arrow_right_and_square')
-    }
-    return $r('sys.symbol.scroll_vertical')
-  }
-
   /** Publishes one local choice; the monitor below preserves the current route and page. */
   private setReaderMode(mode: NhReaderMode): void {
-    this.readerModeMenuShown = false
     if (mode === this.readerPresentation.mode) {
       return
     }
@@ -4217,48 +4190,6 @@ export struct ReaderPage {
       this.getUIContext().getPromptAction().showToast({ message: AppStrings.get(messageKey) })
     } catch (_error) {
       // A platform-share failure must not alter Reader state or page progress.
-    }
-  }
-
-  @Builder
-  private ReaderModeMenu() {
-    Menu() {
-      MenuItem({
-        content: this.readerModeLabel(NhReaderMode.PAGED),
-        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.PAGED)),
-        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.PAGED
-          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-          : undefined,
-      }).onClick((): void => {
-        this.setReaderMode(NhReaderMode.PAGED)
-      })
-      MenuItem({
-        content: this.readerModeLabel(NhReaderMode.PAGED_RTL),
-        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.PAGED_RTL)),
-        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.PAGED_RTL
-          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-          : undefined,
-      }).onClick((): void => {
-        this.setReaderMode(NhReaderMode.PAGED_RTL)
-      })
-      MenuItem({
-        content: this.readerModeLabel(NhReaderMode.PAGED_VERTICAL),
-        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.PAGED_VERTICAL)),
-        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.PAGED_VERTICAL
-          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-          : undefined,
-      }).onClick((): void => {
-        this.setReaderMode(NhReaderMode.PAGED_VERTICAL)
-      })
-      MenuItem({
-        content: this.readerModeLabel(NhReaderMode.VERTICAL),
-        symbolStartIcon: new SymbolGlyphModifier(this.readerModeIcon(NhReaderMode.VERTICAL)),
-        symbolEndIcon: this.readerPresentation.mode === NhReaderMode.VERTICAL
-          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-          : undefined,
-      }).onClick((): void => {
-        this.setReaderMode(NhReaderMode.VERTICAL)
-      })
     }
   }
 
@@ -6097,24 +6028,10 @@ export struct ReaderPage {
       .onClick((): void => {
         this.toggleDoublePage()
       })
-      Button({ type: ButtonType.Circle }) {
-        SymbolGlyph(this.readerModeIcon(this.readerPresentation.mode))
-          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
-          .fontColor([ThemeTokens.TEXT_ON_BRAND])
-      }
-      .width(READER_BOTTOM_TOOLBAR_HEIGHT)
-      .height(READER_BOTTOM_TOOLBAR_HEIGHT)
-      .backgroundColor(Color.Transparent)
-      .accessibilityText(AppStrings.format('settings_reader_layout_a11y', [this.readerModeLabel()]))
-      .onClick((): void => {
-        this.readerModeMenuShown = true
+      ReaderModeControl({
+        readerMode: this.readerPresentation.mode,
+        onModeChange: (mode: NhReaderMode): void => { this.setReaderMode(mode) },
       })
-      .bindMenu(this.readerModeMenuShown, this.ReaderModeMenu, appMenuOptions({
-        placement: Placement.TopRight,
-        onDisappear: (): void => {
-          this.readerModeMenuShown = false
-        },
-      }))
     }
     .width('100%')
     .height(READER_BOTTOM_TOOLBAR_HEIGHT)

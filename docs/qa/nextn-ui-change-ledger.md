@@ -12052,3 +12052,81 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   gate and terminal layouts are root55 and govern identity. This label is not
   used as foreground evidence. This boundary is frozen pending a source change
   or new same-state counterexample.
+
+## 2026-10-03 — retained host mode-button contract — menu accepted, handoff OPEN
+
+- Newly actionable counter-evidence: current ordinary NextN Reader38 on HAPb6cd,
+  kitbd392c0, root55 `[0,117][1320,2232]`. Checked `reading-mode-menu-before`
+  shows eight mixed runtime options with no selected-direction check. Same-HAP
+  process-local Legacy `reading-mode-legacy-menu`, same root/viewport/source38,
+  shows From left to right / From right to left / From top to bottom / Continuous
+  vertical, canonical icons and LTR check. Raw screens/layouts remain local in
+  the existing emulator artifact partition. No persisted backend/policy changed.
+- Source/history: `f34b0732` replaces kit1afe5e7 with a48e119. Their exact
+  ReaderChrome diff removes ReadingModeMenu and modeControl, restoring the
+  bottom RuntimeMenu binding. Kit854c8be had restored the four direction choices;
+  kit1afe5e7 added the nine-line host mode-control port. NextN40b40d06 already
+  extracted the native control for both backends but is not an ancestor of this
+  host branch. No author identity or approval is inferred from Git metadata.
+- Faulty assumption in earlier capability audit: locating equivalent actions
+  somewhere in RuntimeMenu was called menu parity. That ignores the trigger's
+  purpose, exact option set, selected state and independent persisted fields.
+  Those historical menu-parity conclusions are superseded by current evidence.
+- Whole parent: retained image/session -> shared overlay chrome -> existing
+  bottom progress Row/44vp controls -> mode button/native Menu -> host canonical
+  mode persistence -> retained session policy. N/E direction choices are four
+  absolute modes; Koma's same-position button has four page-layout choices.
+  Adjacent spread, crop/settings, thumbnail rail, images, loading, navigation
+  and transitions retain their current owners. No core/pager change.
+- Plan: restore the existing small modeControl builder port, reuse NextN's
+  extracted ReaderModeControl from40b40d06 in both backends, and extract each
+  other host's exact native button/menu for both backends through that same port.
+  Restore the existing four-choice default from854c8be for non-host consumers;
+  retain RuntimeMenu only at its actual runtime-settings entry. Reading-mode
+  persistence writes mode only, preserving independent N/E double-page choice.
+  No new capability hierarchy, second policy owner, forced refresh, route
+  rebuild, delays, resource geometry or unrelated overflow edits.
+- Acceptance: compile every consumer of changed kit; current same-state menu
+  comparison for each host and a finite retained-reader choice/return chain.
+  N/E inspect all four choices, icons/check and preserved double-page preference;
+  Koma inspect its own four modes and selection. Wrong options, menu/selected
+  mismatch, delayed application until re-entry, lost source or changed unrelated
+  fields reject the candidate. One coherent source pass then risk-based runtime;
+  no speculative tuning loop. Package5 remains OPEN.
+
+- Current checkpoint: kitbcac6b88810180e7821a66f1c8cbd45663b72d30 restores only
+  the nine-line host builder port and original four-choice fallback. All three
+  consumer kit copies are byte-identical at that commit. Each app reuses its
+  own native mode component between Legacy and Shared; no asset/pager/rail,
+  entry geometry, canvas or backend default was changed.
+- NextN signed HAP SHA-256
+  `7f92124b0da6498355b79222368c8c4bac3c6084f86574c4f910922ec9c819c6`.
+  Current ordinary shared source38 menu is four native directions with icons
+  and LTR check, matching the previously captured same-viewport Legacy
+  contract. The current finite chain enabled spread, selected RTL -> vertical
+  paged -> continuous -> LTR, reopened each selection, disabled spread and
+  returned to Detail38. The live reader reflects every choice; LTR restores
+  the independently retained spread setting. Pure runtime-preference calls
+  also preserve all non-mode fields for double-page ON and OFF and elide an
+  unchanged mode write. These state checks do not establish visual continuity.
+- Actual movie `host-recording/mode-control-nextn-live.mov`, SHA-256
+  `aa1b215d61ed6369ef6d62399b92ddec4e6a4aa689781d72d2f46b5080c8e787`;
+  checked protocol and recorder exit0. Original-PTS ordered frames0-647 were
+  reviewed, with enlarged frames220/300/410/490 for selected checks and
+  329/435 for black-body evidence. Frames648-1216 are later idle Detail and
+  were not reviewed. Frames0-1 contain recorder lead-in and are excluded from
+  product attribution. Root56 `[0,117][1320,2232]` is current foreground proof.
+- **Rejected handoff:** continuous entry frames329-331 and return to LTR
+  frames435-437 show a fully black body while chrome remains. Spread enable
+  also briefly paints source38 alone before the neighbor. Native choice/menu
+  acceptance does not close either transition or prove physical-device FPS.
+  Current HAP Legacy extraction runtime is not yet independently visited;
+  the source extraction and earlier same-HAP Legacy reference are narrower
+  proof than a current Legacy end-to-end chain.
+- Proactive version comparison: kit1afe5e7 -> a48e119 also removes the existing
+  `ReaderThumbnailContentParams` / `thumbnailContent` host-builder port and
+  substitutes the shared rail directly. This proves a lost reuse boundary;
+  it does not alone establish current thumbnail stutter or justify restoring
+  the entire older pager. Investigate the affected current owner before editing.
+  The single cross-host work order carries the next action; full replacement
+  remains OPEN and accepted ordinary-entry canvas remains frozen.
