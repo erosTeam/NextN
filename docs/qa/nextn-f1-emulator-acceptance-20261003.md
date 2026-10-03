@@ -301,9 +301,9 @@ transient layouts. This is not a complete layout-switch acceptance, proof of
 all compositor refreshes, physical performance, or Legacy parity. Source rail
 positions differ from the earlier baseline; no matched flight-latency claim.
 Changed-pager online/processed/midflight and other-host boundaries remain OPEN.
-Next action: map the retained viewport's fit/measurement update against Legacy
-before deciding any further edit; do not add delays, overlays, remounts or fades
-merely to mask the observed frame.
+This geometry investigation was performed in the parent-fit slice below. The
+15d movie remains historical evidence of the real old-size frames; it is not
+the current candidate's disposition.
 
 Local evidence under `.hvigor/outputs/emulator-reader-20261003/`:
 `retained-item-consumer-binding.json`, `retained-item-source38.json`, current gate,
@@ -314,6 +314,75 @@ Local evidence under `.hvigor/outputs/emulator-reader-20261003/`:
 frames/PTS, and independent209/505 PNGs. Protocol and recorder exit0. A separate
 wrapper invocation with unsupported `--dry-run` failed usage before input; it is
 not product evidence. Actual wrapper invocation performed its mandatory dry-run.
+
+## Ordinary parent-fit bd392c0 — cached layout chain accepted, replacement OPEN
+
+Shared `bd392c07348c1ab55e163d4a1cd595b20af17cc8` changes only the two ordinary
+Image size declarations in `ReaderPagedViewport.ets`: unrotated images use
+'100%' of the already-fitted parent rather than the previous onAreaChange
+width/height. Rotated, sprite/crop and fragment arithmetic is unchanged. Area
+observation remains for actual geometry/readiness. This removes redundant
+measurement→state→layout feedback without an API, timer, overlay or remount.
+Legacy's ordinary ReaderCroppedImage uses the same parent-constraint relation.
+Viewport source SHA-256:
+`29d4c510aeb06829b5eb296f0049ec367579e691522f8024849178ab0c8235fd`.
+Official [area-change API](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/ts-universal-component-area-change-event)
+does not guarantee ancestor/descendant callback ordering; that supports the
+source cause, while the movie supplies the bounded visual result.
+
+All three clean-kit consumers compiled. Signed HAP SHA-256 values:
+
+- NextN `8c27bf7138a0434087e703f2b7a631dfadbdb0770acb6c39a5ae3d65bdf3d6ac`,
+  installed-r through the checked protocol, no data/cache/default reset.
+- NextE `4352c4b59dac430764b880a98d08954663c2bb28d66d3e911d579ad266815e7f`,
+  build only; not installed.
+- Koma `54b845784550dd093f62dfb1c40aba11b6177dc909e1fb897dd30190d501fa81`,
+  build only; not installed. Unrelated host WIP retained.
+
+Current gate is NextN root52 `[0,117][1320,2232]`, same effective viewport as
+15d; source38 `reader-thumb-gallery-detail-1-page-37` now at
+`[311,808][607,1258]`. The differing source position precludes matched flight
+trajectory/latency claims. Emulator127.0.0.1:5555/PHEMU-FD00 only. One continuous
+thumbnail38 single→ON→Back→thumbnail38 spread→OFF→four fast alternating
+swipes→counter→Back chain was recorded. All1080 original frames/all30 sheets
+reviewed, toggle198–200/515–516 and final counter740 enlarged.
+
+- ON198 (PTS4.941667) full single→199 (4.963333) correctly fitted RIGHT38;
+  companion37 appears203 (5.046667). No old-size clipped or wholly empty body
+  is observed in this switch.
+- OFF515 (12.616667) pair→516 (12.638333) full single38 directly; no small
+  old-size centered intermediate or wholly empty body is observed.
+- Initial root-owned thumbnail flight72–85 and spread flight355–373 remain;
+  the latter lands directly in RIGHT38. LEFT companion gradually reveals
+  379–385. No full-screen-first internal zoom workaround is introduced.
+- Fast recorded gestures581–684 visibly traverse38→39→38→39→38 without an
+  empty/loader body. PID7860 commits sourceIndex38/topology2/navigation3 at
+  19:22:47.734, then37/topology2/navigation4 at19:22:49.548. Interrupted gestures
+  do not imply four committed page changes. Counter732–757 reads38/40.
+- Back245–258 and758–777 return selected38 to the same current source.
+  Terminal foreground is NextN Detail/root52, same viewport; setting ends single.
+  Native transition logs bind both close_target/source scopes to index37.
+
+Disposition: accept the recorded cached whole-image ON/OFF geometry, image
+presence, entry/companion, selection and source-return chain. Compared with
+15d at the same root viewport, its real old-size209/505 transients are absent
+from this movie. This is host-window sampled evidence, not proof of every
+compositor refresh, app FPS, physical performance, or Legacy performance parity.
+Movie0–1 are the pre-protocol old host buffer; exclude them from route evidence.
+Rotated/cropped/continuous, changed-pager online/processed/midflight and other
+hosts remain OPEN. Do not replay the accepted cached slice without a material
+reopening trigger. Current next action is the processed replacement owner/route
+assessment and applicable F2 handoff on the same candidate.
+
+Ignored local artifacts under `.hvigor/outputs/emulator-reader-20261003/`:
+`parent-fit-consumer-binding.json`, `parent-fit-source38.json` and gate,
+`parent-fit-spread38.json` plus partitioned run metadata/layout/screen/logs;
+`host-recording/parent-fit-spread38.mov`, SHA-256
+`620539f69aa1e49ce55ffeea4c2d749a0a70c9aad53176b0c6f547e8a8da1475`,
+26.986667s/1260x1750/no audio; window4419 metadata, capture ledger, original
+frames and PTS in `parent-fit-spread38-frames/`. Checked protocol and finite
+recorder both exit0. Pre/post power is AWAKE; actual normal timeout30000,
+active temporary override86400000. No physical197 operation.
 
 ## Retained local evidence
 

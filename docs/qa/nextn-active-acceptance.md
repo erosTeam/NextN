@@ -8453,8 +8453,16 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   fade and both source38 returns remain; final fast-swipe counter38/40. Real
   transient geometry209/505 survives independent decoding; full layout
   continuity remains OPEN. Detailed bindings and limits are in the F1 record.
-- Next permitted action: map retained viewport fit/measurement updates against
-  Legacy, then decide a bounded source-proven repair. Image-presence/selection/
-  entry/return evidence is limited to this recorded cached chain; geometry,
-  changed-pager online/processed/midflight and other-host Package5 paths remain
-  OPEN. No whole replacement or frame-rate conclusion follows from this slice.
+- Parent-fit follow-upbd392c0 removes only ordinary unrotated Image's dependence
+  on the previous area callback, following Legacy's fitted parent constraints.
+  All three same-kit consumers compile; NextN signed8c27bf71…3d6ac installed-r.
+  Current root52 `[0,117][1320,2232]` and source38 gate verified. All1080 current
+  frames/all30 sheets reviewed: ON198→199 correct right fit, OFF515→516 full
+  single directly, image presence, right38 flight/companion fade, final38/40 and
+  both source returns retained. Accept only this recorded cached whole-image
+  chain; no FPS/physical/whole replacement claim. Full binding is in F1 record.
+- Next permitted action: assess current processed replacement owner and ordinary
+  emulator route, then the applicable F2 handoff on the same candidate without
+  speculative edits/reset. Rotated/cropped/continuous, changed-pager online/
+  processed/midflight and other-host Package5 paths remain OPEN. Legacy default
+  is retained; emulator only, physical197 untouched.

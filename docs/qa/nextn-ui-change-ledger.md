@@ -11952,5 +11952,47 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   transient geometry209 (clipped old size, PTS5.046667) and505 (small old size,
   PTS12.680000). Keep the minimal node-retention source gain, but geometry and
   the full replacement remain OPEN. No matched Legacy/performance claim.
-  Detailed binding is in the current F1 record. Next action is source mapping
-  of fit/measurement updates against Legacy, not another unchanged replay.
+  Detailed binding is in the current F1 record. This fit/measurement investigation
+  was performed in the source-proven parent-fit follow-up below.
+
+- Geometry follow-up, before editing (same OPEN pager parent): raw15d frames209
+  and505 plus independent exact-PTS decoding prove an old-size native image
+  while its current fitted parent has changed. Source ReaderPagedCell already
+  declares the correct fitted width/height, but ordinary ReaderPagedImage reads
+  measured viewportWidth/Height from a previous onAreaChange. Updating those
+  @Local fields needs another UI update. The Legacy ReaderCroppedImage ordinary
+  branch instead lets Image directly use its parent's widthValue/heightValue
+  ('100%' from ReaderSpreadImageLayer). Parent Row/pane fit and zoom ownership
+  are the relevant reference; host menus/rails/flight remain outside this edit.
+- Exact change: only ordinary, unrotated Image.width/height become '100%' of
+  their already-fitted parent. Rotated ordinary images keep the existing numeric
+  swapped dimensions. Sprite/crop/fragment branches stay unchanged. Keep area
+  observation for actual entry geometry/readiness checks; no expected size
+  substitutes for measured bounds. No extra state, API, timer, overlay or remount.
+- Theory and limits: this removes a redundant leaf measurement→state→layout
+  feedback path, so the native Image can adopt the changed parent constraint in
+  the same layout pass. Official area-change API does not guarantee ancestor/
+  descendant callback order; an old measured size is not an atomic layout input.
+  Legacy source is the reference, not a generated size assertion. Rotated/cropped
+  paths still have their documented measured arithmetic; this slice does not
+  claim their topology continuity or broad FPS improvement.
+- Affected shared siblings: paged selected/cached/retained/replacement ordinary
+  leaves, continuous ordinary leaves and default thumbnail ordinary leaves use
+  ReaderPagedImage. Their existing explicit/percent parent fit, ImageFit,
+  callbacks and entry fences remain. Compile all three consumers; record one
+  current complete source38 single/ON/Back/right-entry/OFF/fast-swipe/return
+  chain and compare actual old-size/empty-body ranges with15d at the same root
+  viewport. Entry readiness, companion fade, indices and return are required
+  sibling checks. No full replacement claim from this targeted chain; applicable
+  continuous/replacement/other-host routes remain OPEN for the package protocol.
+- Parent-fitbd392c0 bounded disposition: all1080 current frames/all30 sheets
+  reviewed, decisive toggle/counter frames enlarged. ON198→199 correct RIGHT
+  fit and OFF515→516 full single directly; neither15d's old-size frame nor empty
+  body is observed. Entry/right38 companion fade, fast final38/40 and both
+  current-source returns retained. Cached whole-image chain is accepted at the
+  same1320x2232 root viewport; source rail position differs, so no matched flight
+  latency or app-FPS claim. NextN8c27 installed; NextE4352/Koma54b8 build-only.
+  Binding and artifacts in F1 record. Freeze this cached slice until a material
+  source change/counterexample; processed/continuous/rotated/other-host package
+  routes remain OPEN. One next action is source/ordinary-route assessment for
+  processed replacement and its applicable F2 handoff on the same candidate.
