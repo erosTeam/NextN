@@ -468,4 +468,23 @@ run metadata/layout/screens/logs, `host-recording/` movies, capture ledgers,
 original-PTS frames and contact sheets. Recorder and checked protocol both
 exit0. The observed NextE path does not reproduce NextN's dim handoff, so source
 similarity alone does not justify synchronizing the NextN host-opacity patch.
-These continuity paths are frozen; Koma's ordinary current-pin route is next.
+These continuity paths are frozen.
+
+## Same-kit Koma ordinary consumer boundary
+
+The ordinary shared consumer is the isolated host93771857 plus inherited
+integration in `/Users/honjow/git/Koma-current-kit-verify`, clean kitbd392c0,
+installed HAP6846ee8d. The earlier master HAP54b84578 remains build-only and
+uses Legacy on its ordinary route; it is not shared replacement evidence.
+
+Real file-picker CBZ import → ordinary Detail entry → one forward swipe2 →
+spread ON/OFF → Back/re-entry2 was observed on simulator127.0.0.1:5555.
+All393/400/566 frames of the three movies were reviewed. The separate five
+alternating rapid-swipe chain ended1 instead of declared2 and is rejected;
+input exit0 and image presence cannot turn it into a pass. Cause not established.
+
+The bounded acceptance, exact source/HAP binding, raw artifacts and counterexample
+are recorded once in Koma's `docs/reader-current-kit-boundary-20261003.md`.
+Local entry/layout/return are frozen. Two pages do not establish rolling preload,
+chapter/network/auto-read or performance. Full replacement stays OPEN; the live
+work-order row selects the remaining NextN default system-entry owner audit.
