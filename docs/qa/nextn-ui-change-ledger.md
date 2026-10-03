@@ -12308,3 +12308,219 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   current Detail to saved38, confirmed by terminal layout. No settings/cache
   reset or entry/menu/geometry edit. Current raw manifests, movies, timelines,
   bindings and logs remain in the existing ignored emulator-reader partition.
+
+
+### 2026-10-04 — bounded neighbor drawing (WITHDRAWN candidate; loading OPEN)
+
+- Newly actionable existing loading boundary: clean kit1ef28d3, installed Koma
+  HAPc5dbaeb12, PHEMU-FD00 portrait1320x2232, ordinary import of eleven distinct
+  Little Nemo pages, Detail page1 -> ten fast forward swipes -> page11. Shared
+  movie652a2886 has black/loading intervals before pages3-6 and8-10; raw73,
+  297 and321 also show an image beneath the loading stage. The matching Native
+  route/movieb5e6e798 also has black intervals (raw334), while raw335/177 show
+  images without that loading stage. Native ran second with warmer file caches:
+  this establishes counterexamples, not latency/FPS parity or a Shared-only
+  cause. Source/log evidence shows rolling requests continue beyond page5.
+- Whole parent boundary: ReaderSurface -> ReaderNativePager/Swiper -> stable
+  LazyForEach ReaderPagerItem -> ReaderPagedViewport -> ReaderPagedCell -> Image
+  and loading-stage siblings. Host file/archive services, settings, chrome,
+  entry presenter, native menus and rail remain outside this change.
+- Source/API basis: Core.windowIndexes/reconcile prepares current +/-1 slots;
+  ReaderNativePager currently uses cachedCount(1). Official Swiper API15 provides
+  cachedCount(count,isShown), where true draws the retained cached nodes. Keeping
+  a node does not prove drawing/decode. Image.onComplete status0 is data loaded,
+  status1 is decoded; the existing shared acknowledgement can run for neighbors
+  without selecting them. The source-visible missing draw request is fixed by
+  cachedCount(1,true), with the existing bounded count preserved. No cached-child
+  parameter-update defect has been established and none is patched.
+- Exact before/after: cachedCount(1) -> cachedCount(1,true) in the shared paged
+  Swiper, plus observational completion/presentation logs containing only local
+  source/slot/request/selection epochs (no URI or content). No extra state,
+  interface, timer, invalidation, key/dataset refresh, cache depth, resource
+  retention, indicator opacity or decode-completion scheduling change. Continuous
+  List, retained replacement composed-frame fence and Native Koma are unchanged.
+- Impact: all three consumers' single/spread paged surfaces may decode/draw an
+  already bounded neighbor earlier. Neighbor dimension refinement, initial entry
+  scheduling and decode contention are risks; neighboring completion must not
+  claim selected visibility/progress. Current route/entry/geometry identities
+  and Core current-request guards remain authoritative. This is a targeted
+  preload candidate, not a claim to resolve the separate loading-stage overlap.
+- Prediction/falsifier: align source/slot/request status1 and presentation with
+  pager selection. If an item's presentation already precedes selection yet its
+  first visible frame is black/loading, lack of neighbor drawing is insufficient
+  for that event; do not increase depth or alter opacity/timing. If there is no
+  earlier decode/presentation or the route visibly regresses, withdraw the exact
+  candidate rather than layering another workaround.
+- Bounded verification: existing state/request/entry/retained-replacement suites
+  and V2 inventories; compile each consumer from the identical exact kit diff.
+  One Koma ordinary eleven-page route with fast gestures, reverse navigation and
+  Back/re-entry, current original-PTS video/layout/logs, plus matching ordinary
+  N/E affected paged entry/selection evidence. No synthetic UI acceptance or
+  numeric emulator application-FPS claim. Loading handoff and unobserved online,
+  crop/rotation/midflight and chapter combinations stay OPEN.
+- Official sources: https://developer.huawei.com/consumer/cn/doc/harmonyos-references/ts-container-swiper
+  and https://developer.huawei.com/consumer/cn/doc/harmonyos-references/ts-basic-components-image.
+- Disposition: exact candidate965ecf56 compiled N/E/K and passed existing111
+  state checks, but Koma HAP2676e0b2 movie6feb5cd9 FAILED visual continuity.
+  Ordered frames0-816 reviewed through settled Detail1 after both Back actions;
+  full-resolution72 and266 show image plus loading stage, and multiple forward
+  and reverse turns still show black/loading regions. Withdraw cachedCount true
+  from every consumer; N/E candidate HAPs were never installed. This does not
+  establish a cached-child propagation defect or isolate decode contention.
+- Next bounded observation, before any further behavioral patch: keep clean
+  cachedCount1 and composed-frame completion scheduling, add nonsecret numeric
+  epoch/phase traces at Core reportPresentation before/after acknowledgement
+  and Cell appearance/snapshot monitoring. Distinguish a rejected/stale UI
+  completion, accepted Core displayed phase, and the phase actually received by
+  the stable Cell. Stream the full narrow log into the existing ignored artifact
+  partition during one ordinary eleven-page Koma forward/reverse route. No URI,
+  new state/interface, redraw/invalidation, keys, timing or loading-opacity change.
+- Observation result: HAP9fcefe5e current ordinary route03:25:44-03:26:00
+  streamed actual Core and Cell phases (the first pipe-filter stream failed and
+  was not used). Current original requests were acknowledged displayed and
+  delivered to Cell; no stale acknowledgement was seen. The snapshot-propagation
+  hypothesis is unsupported and is not patched. Source2 first decoded46.916
+  while the second swipe had already begun46.713; source3 decoded47.420 after
+  third swipe input ended47.363. New future slots first appeared only after the
+  preceding committed selection. This does not measure compositor/FPS or prove
+  that every black frame has that cause.
+- Source-proven preparation gap / bounded candidate: Swiper.onAnimationStart
+  already supplies its targetIndex and is documented as the resource-loading
+  opportunity; current handler drops that index. Core.windowIndexes follows
+  only committed displayIndex, which advances at animation-end onChange. Add
+  one shared preparation event and one epoch-guarded transient target in Core.
+  Reconcile the union of current +/-1 and animation target +/-1 (at most four
+  adjacent items, six for an arbitrary jump), without selecting, observing,
+  changing navigation epochs, or expanding host preload depth/cache files.
+  Native cache count stays1; no timers or per-frame event publication.
+- Impact boundary: ReaderNativePager -> ReaderPagerSurface -> ReaderSurface ->
+  ReaderPagedSession only; all N/E/K paged single/spread consumers. Existing
+  topology/navigation guards reject stale targets; a new selection invalidates
+  the transient target atomically and background clears it. Continuous, host
+  adapters, entry ownership, menus, rail, settings, loader/composed-frame fence
+  and Image call sites remain unchanged. Risks: additional bounded concurrent
+  decode, metadata/topology refinement during motion, cancellation holding a
+  bounded preheated target until navigation/background/close. No parity claim
+  for those unobserved cases.
+- Bounded verification: after implementing the source-backed transition, check
+  existing Core state/request/entry suites and target-before-selection/no-progress/
+  stale-navigation invariants; compile identical kit diff in every consumer.
+  One ordinary Koma11 fast forward/reverse/Back/reentry chain with current raw
+  video and exact epoch logs, then one corresponding N/E paged ordinary entry.
+  If the future Image is still first constructed after preceding onChange,
+  this preparation is insufficient: withdraw it, do not layer cache-depth or
+  opacity/timing experiments. Loading overlap stays independently OPEN.
+- API basis: https://developer.huawei.com/consumer/cn/doc/harmonyos-references/ts-container-swiper#onanimationstart9
+  and the same document's onChange contract (animation-end callback).
+- Preparation diagnostic result (historical): identical diff730f2c7c compiled
+  in all three consumers;113 state checks passed. Koma HAP254ba01d ordinary11-page
+  movie0ceac90a was reviewed in order108-1026 through both Back actions and
+  settled Detail1; earlier0-107 are install/cold-start lead-in and excluded.
+  Current logs03:43:13-03:43:34 show source2 decode20.117 before selection1
+  20.454, source3 decode20.559 before selection2 20.939, and the same early
+  preparation through source10. The stated late-construction falsifier was
+  not observed. Raw275/298/329/351/376/401/424/450/471/491/524 were enlarged;
+  actual final page11 is the Santa image524. Full black400/470 and loading
+  stage over initial229/reentry845 still occur: the preparation improvement
+  is observed, whole loading continuity is not accepted. Return/reentry and
+  terminal layout/screen retained Detail1. No numeric FPS or equal-cache
+  Native latency conclusion. These artifacts are superseded by the final
+  clean pin below; no further timing/cache/opacity experiment is justified.
+- Final capability frozen at clean kit370064c95a5f8f6245afad16117726f33b1d5be7,
+  treee5642327, exact built diffecdb3257 (without observation logs). All three
+  final signed Debug builds and73 relevant Core state/variant checks pass.
+  Installed N18b5ec5b/Eed607902/K3c57ba39 are bound in
+  `motion-target-final-binding.json` under ignored emulator-reader-20261003.
+  Each final ordinary route includes native fast swipes, Back, same-source
+  reentry and final Back. N38→39→38 movie3058c6b4: all0-335/10sheets reviewed,
+  raw66/219 image+stage, terminal Detail38/rootcom.erosteam.nextn. E1→3→1
+  movie86267104: all0-587/17sheets reviewed, raw90/339 image+bar and incoming
+  black205, terminal Detail1/rootcom.erosteam.nexte. K real local1→7→1
+  movie15be212e: all0-703/20sheets reviewed, raw206/280 full black and87/570
+  image+stage, terminal Detail1/rootcom.honjow.koma. Raw308 matches CBZ007.jpg;
+  no wrong-page counterexample. Current terminal layout and screen actually
+  reviewed for every host. Final native push/pop remains visible; these are
+  bounded logical-route acceptance only, not seamless loading or replacement.
+  Loading OPEN is the next source-owned boundary in the sole work order:
+  trace actual Image completion/presentation/loader and node lifetime before
+  an edit; do not repeat cache-depth, delay, opacity or per-app experiments.
+
+### 2026-10-04 — ordinary decode completion versus retained replacement fence (WITHDRAWN candidate / loading OPEN)
+
+- Newly actionable existing loading boundary: current NextE HAP437116df, kit1ef28d3,
+  emulator PHEMU-FD00 portrait1320x2232, ordinary Gallery4203217 Read -> direct
+  seek63 -> fast alternating pages -> restore1 -> Back. Movie79515540891d2eaa296c8a73dd087679b11ed42075559a631c3952ae6611149f
+  shows full image63 with100% loading overlay at231-232 and restore1 black+100%
+  at345-347. This reopens loading handoff only; black mount intervals are not
+  attributed to the same cause without additional evidence.
+- Reference whole parent: native NextE ReaderPage -> stable image Stack ->
+  ReaderInterpolatedImage -> onImageDecoded/markImageLoaded -> sibling
+  ReaderLoadingStage guarded by !imageLoaded. Shared parent is ReaderSurface ->
+  retained native pager -> ReaderPagedCell -> stable ReaderPagedImage and sibling
+  loading/failure/notice presentation. ContinuousCell uses the same image leaf.
+  Host original/save/network semantics, chrome, rail, entry presenter/geometry,
+  interpolation, policy, resource windows and native node identities are outside
+  the edit. No host adapters or menus change.
+- Source-proven transition: ReaderPagedImage.completed unconditionally posts
+  ReaderEntryAfterLayout.onIdle before onPresented; Core reportPresentation alone
+  changes decoding -> displayed, retires fallback and removes the stage. Commit
+  910bbe4418a9aa1e0855b9b8466e7cec1ae128fd introduced this wait to keep an exact
+  replacement's prior image for one composed frame. Ordinary decode has no
+  retainedUri/retired asset to protect but still pays the same idle-frame wait.
+  Official Image docs define loadingStatus1 as decode success; FrameCallback
+  onIdle runs after rendering and may roll to later frames with <=1ms spare.
+  Official state troubleshooting warns cached onComplete may run during build;
+  synchronous state mutation is therefore not used.
+- Minimal before/after: preserve existing current mount/request/decode guards,
+  completed metrics, entry-target publication and onPresented/reportVisible.
+  RetainedUri nonempty continues unchanged postFrameCallback/onIdle. Ordinary
+  no-retained completion uses one resolved-Promise microtask to leave the Image
+  callback/build stack without waiting for another idle/composed frame. No new
+  state, interface, timer, delay parameter, opacity gate, rebuild, key change,
+  per-app special case or resource release. Core remains the one state owner.
+- Impact and falsifier: paged single/spread and continuous consumers share this
+  leaf. Ordinary body-source-ready/decoded dimension refinement can publish
+  before the next paint; those facts are already established by loadingStatus1.
+  Retained replacement release remains after its composed-frame fence. If a
+  current ordinary image still displays beneath100% after this candidate, the
+  wait does not explain the complete counterexample and this remains FAILED;
+  do not add a surface-only indicator workaround. Cached synchronous completion,
+  stale callback after seek/Back, same-source repeated replacement and continuous
+  geometry are the affected counterexample states, not reasons for redesign.
+- Bounded verification: existing Core presentation/variant/original/input state
+  suites, V2 inventory and all three identical-kit signed builds. Current NextE
+  ordinary cached seek63/1 and repeated original ON/OFF route, plus a fresh
+  online target if available, reviewed continuously with whole image/chrome/rail
+  and Back. Compare ordinary cached behavior against the same installed Native
+  host at the same viewport; preserve loader until actual decode and fallback
+  until replacement readiness. Continuous and other-host current routes must
+  remain explicit rather than inherit acceptance from compilation.
+- Grounding: native completed-image/loading sibling ownership; main information
+  actual page; main action page navigation; secondary original source action;
+  this repair closes the existing completion-signal boundary only; ArkUI V2
+  stable components with asynchronous current-epoch state publication.
+
+- Candidate disposition: WITHDRAWN, not committed. Exact source patch2c79b93c
+  compiled in all three consumers and existing state suites passed109/109, but
+  that did not accept its visible outcome. NextE Debug HAPedbfda9d same-HAP
+  Native/Shared ordinary routes were recorded. Shared movie12904b14f8867946a9d2c68f1fc52fb23c1139e37f54b9f7cf58c1fec1f0192c
+  ordered frames1-755 reviewed through settled Detail (leading0 was stale and
+  excluded). Raw full-resolution117 still has image63+100%;205 has page64+bar;
+  314 has image1+bar. The resized contact sheets hid those thin white bars.
+  An intermediate claim of no overlap based on those sheets was withdrawn.
+  Microtask publication is therefore insufficient, and all three exact source
+  diffs were reversed to clean kit1ef28d3. Failed installed NextE edbf was replaced
+  with clean1ef Debug8e404 by install-r and process stop; restoration installation
+  is not restored-runtime acceptance. Its old captures remain bound to edbf.
+- Additional observations: Shared first original highlight367, OFF515, next ON573,
+  OFF623 retain visible page1 through Back696 and settled Detail712; actual
+  variant/file identity is not proven by highlight or resolver-cache logs.
+  Native same page1 original action was disabled, Shared enabled: cause not
+  established. Both routes contain black loading intervals; cache equivalence
+  was not established, so this is not latency/FPS evidence. Native reviewed
+  frames0-431 through settled Detail. Artifacts/PTS/manifests/bindings remain in
+  ignored emulator-reader-20261003; no menu, entry, geometry or opacity patch.
+- Work disposition: preserve this failed handoff boundary without another
+  timing experiment. The Koma >5 real-page preparation route is now recorded
+  in the frozen capability above; it does not close loading continuity. The
+  current single work-order row governs the next source-owned action.

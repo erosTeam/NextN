@@ -8390,6 +8390,22 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
 
 ## 2026-10-03 — current shared-reader package5 / emulator boundary — OPEN
 
+- Current checkpoint2026-10-04: common clean kit370064c95a5f8f6245afad16117726f33b1d5be7,
+  exact built diffecdb3257; all three final signed builds and73 relevant state
+  checks pass. Installed HAPs N18b5ec5b/Eed607902/K3c57ba39. Final ordinary
+  fast-gesture/Back/reentry routes N38→39→38, E1→3→1 and K real local1→7→1
+  accepted for logical navigation and saved return only. Movies3058c6b4,
+  86267104,15be212e reviewed in order0-335,0-587,0-703 respectively, including
+  raw enlargements and current terminal layout/screen; Detail38/1/1 retained.
+  Loading remains OPEN: N image+stage66/219, E image+bar90/339 and incoming
+  black205, K full black206/280 and image+stage87/570. K raw308 matches original
+  CBZ007.jpg at7/11; no wrong-page claim. Earlier diagnostic730f/254b/movie0cea
+  separately proves early source2-10 decode; temporary logs are now removed.
+  Core displayed state reaches stable Cells, so no stale propagation patch.
+  Failed microtask/cached-drawing behaviors remain withdrawn. Next action:
+  freeze this bounded shared preparation, then source-trace Image completion,
+  presentation/loading retirement and stable pager-node lifetime before edits.
+  Single work-order row governs OPEN; no FPS/parity/full replacement claim.
 - Active outcome: replace the ordinary reader routes across NextN, NextE and
   Koma without losing entry/asset/chrome/return continuity. Legacy fallback is retained;
   only the process-local shared Want is used. Physical197 is not retried.
