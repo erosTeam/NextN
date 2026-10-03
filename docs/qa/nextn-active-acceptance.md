@@ -8387,3 +8387,35 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   analysis is complete for the Home counterexample; the defect remains unrepaired,
   and no repair work is authorized by this read-only request. The pre-existing
   shared-reader replacement remains **OPEN** and was not worked in this lane.
+
+## 2026-10-03 — current shared-reader package5 / emulator boundary — OPEN
+
+- Active outcome: replace the ordinary reader routes across NextN, NextE and
+  Koma without losing entry/asset/chrome/return continuity. Legacy stays default;
+  only the process-local shared Want is used. Physical197 is not retried.
+- Source checkpoint: reader-kit unified at a48e119 (d1 + defect5). Earlier
+  463/0 suite and consumer signed builds are source/build evidence, not current
+  runtime acceptance. NextN base f34b0732 now has a narrow host image-handoff
+  change; kit remains unchanged. Current HAP c922f331…09b310 was signed and
+  installed-r on emulator127.0.0.1:5555 / PHEMU-FD00 / 1320x2232.
+- Newly observed: macOS Emulator-window recording works despite emulator system
+  AVRecorder failure. Baseline recording exposed a first-entry dim flash;
+  source mapped a late placeholder mount and duplicate host/shared image fades.
+  The scoped patch removes those two host transitions without changing root
+  flight ownership, geometry/timing, menus, rail, caches or preload.
+- Current continuous chain: thumbnail1 → swipe to4 → Back → ordinary Read
+  resumes4 → Back → thumbnail1 selects1 → Back. All1536 frames/all32 contact
+  sheets reviewed; page4/page1 counters enlarged. Thumbnail handoff no longer
+  shows the dim flash; retained return into visible source remains present.
+  This does not accept the ordinary system entrance's initial dark content area,
+  uncached/spread/midflight branches, other hosts or frame-rate superiority.
+- Detailed binding, source rationale, movie/frame paths, exclusions and limits:
+  [current F1 record](nextn-f1-emulator-acceptance-20261003.md). Earlier old-pin
+  screenshots do not prove compositor continuity or no regression; their
+  conclusions and the general “recording-capable device required” claim are
+  withdrawn. Before/after thumbnail coordinates differ, so no pixel-matched
+  trajectory or latency improvement is claimed.
+- Next unverified physical action: open a previously unread page thumbnail via
+  the current normal Detail route, retaining cache/data, and record the source
+  proxy → loading → decoded-image handoff. Establish a cache miss from runtime
+  evidence before describing that path as uncached. Package5 stays OPEN.

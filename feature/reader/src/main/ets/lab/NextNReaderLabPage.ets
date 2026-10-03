@@ -369,7 +369,8 @@ export struct NextNReaderLabPage {
 
   @Builder
   private ReaderOpeningPlaceholder() {
-    if (this.readerThumbnailTransition.readerOpeningProxyVisible() &&
+    if ((this.readerThumbnailTransition.readerOpeningProxyVisible() ||
+      (this.rootOwnedEntryTarget && this.readerThumbnailTransition.opening())) &&
       this.readerThumbnailTransition.sourceSnapshot !== undefined) {
       Image(this.readerThumbnailTransition.sourceSnapshot)
         .width(this.readerThumbnailTransition.proxyWidth)
@@ -383,6 +384,14 @@ export struct NextNReaderLabPage {
         .opacity(this.readerThumbnailTransition.openingProxyOpacity)
         .hitTestBehavior(HitTestMode.None)
     }
+  }
+
+  private openingContentOpacity(): number {
+    // After the root flight, shared entry opacity owns the selected-image reveal.
+    // Suppressing that fade here would require a second, independent handoff.
+    if (this.rootOwnedEntryTarget && (this.readerThumbnailTransition.waitingReaderContent() ||
+      this.readerThumbnailTransition.openingHandoff())) return 1
+    return this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1)
   }
 
   private resolveTapZone(x: number, y: number, layout: ReaderLayout): ReaderTapAction {
@@ -1097,7 +1106,7 @@ export struct NextNReaderLabPage {
               // The root proxy and the Reader-owned opening placeholder keep the selected image
               // visible until the state machine starts its image handoff.  Do not expose the
               // live pager (or its decode feedback) merely because the root route mounted.
-              contentOpacity: this.readerThumbnailTransition.readerImageOpacity(this.request.pageIndex + 1),
+              contentOpacity: this.openingContentOpacity(),
               openingPlaceholder: (): void => { this.ReaderOpeningPlaceholder() },
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               temporaryVariantActive: this.hostRouteActive() && this.labVisibility.foreground &&

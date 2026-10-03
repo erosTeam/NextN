@@ -29,7 +29,14 @@ candidate still lacks matching runtime evidence for those F1/F2 transitions;
 the historical terminal screenshots and prior Pass results are retained but do
 not fill that gap.
 
-The following are finite pending checks inside this one package, not new queues:
+### Current package5 evidence boundary — 2026-10-03
+
+| Package | Current capability/evidence | Remaining boundary | One next action |
+| --- | --- | --- | --- |
+| **5 ACTIVE / OPEN** | Kit a48e119 unified; macOS Emulator-window recording established. NextN current signed HAP c922f331…09b310: source-root flight → retained image handoff → hidden chrome → swipe1→4 → ordinary resume4 → explicit thumbnail1 → return captured continuously; first-entry dim flash removed by a narrow host-only change. Exact limits/artifacts in `docs/qa/nextn-f1-emulator-acceptance-20261003.md`. | This is one cached single-page chain, not Legacy replacement or a performance claim. Uncached/spread/midflight and applicable F2/other-host routes still lack current matching evidence. Legacy stays production default. Physical197 is not retried; emulator is the selected target. | Record the ordinary unread-page thumbnail → loading → decoded-image path, without clearing cache/data; establish runtime cache-miss evidence before calling it uncached. |
+
+The following are historical finite pending checks inside this one package,
+not independent queues; the current row above governs execution:
 
 #### 标准非H测试内容（2026-09-21 监督指令，后续所有设备链统一使用）
 
