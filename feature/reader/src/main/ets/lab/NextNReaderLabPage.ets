@@ -1132,6 +1132,10 @@ export struct NextNReaderLabPage {
         }
     }
     .width('100%').height('100%')
+    // Ordinary system entry must already paint its canvas while policy/progress
+    // initialize; the mounted surface and thumbnail flights retain their owners.
+    .backgroundColor(this.request.readingChrome && this.entryTransition === null && this.session === null
+      ? this.readerCanvasBackground() : Color.Transparent)
     .padding({ top: this.request.readingChrome ? 0 : this.safeArea.topAvoidHeight + ThemeTokens.TITLE_BAR_HEIGHT,
       bottom: this.request.readingChrome ? 0 : this.safeArea.bottomAvoidHeight })
     .bindSheet(

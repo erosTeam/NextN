@@ -11996,3 +11996,59 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   source change/counterexample; processed/continuous/rotated/other-host package
   routes remain OPEN. One next action is source/ordinary-route assessment for
   processed replacement and its applicable F2 handoff on the same candidate.
+
+## 2026-10-03 — ordinary-entry initialization canvas — FROZEN within ordinary route
+
+- Newly actionable boundary: HAP8c27bf / clean kitbd392c0, fresh NextN root52
+  `[0,117][1320,2232]`, gallery663205 ordinary ContinueP38. Current checked
+  `default-entry-return` and macOS window4419 movie
+  SHA2565b07400031cb5e1d78c76707ad8fbe02c9040e7512c7ad2c4c4826c5fb143755;
+  all404 frames/all12 sheets reviewed. Frames0–3 are stale Koma capture buffers,
+  excluded. System push starts68: the incoming empty host container is light at
+  68–70, then black71–77 with shared preparation73–77, actual image78 onward,
+  preparation retires81. Image is present before push settles; no post-arrival
+  empty body observed. Back175–191 returns the same ContinueP38 Detail.
+- Correction: older frames648–650 are during a system push, not landing frames.
+  They do not prove a post-arrival black flash. Current ordinary source mapping
+  finds no opacity gate: no entry transition; content/body/backdrop opacity1.
+- Whole owner/reference tree: retained Detail Read → existing system navigation
+  destination → NextNReaderLabPage readerContent Column → initialized
+  ReaderSurface existing canvas/pager/loading/image. Legacy ReaderPage paints
+  its canonical canvas unconditionally while settings/detail load. The shared
+  host instead leaves its Column empty and transparent until initializeSession
+  has restored progress/policy and publishes the session, exposing the default
+  light destination. Existing presentation restore is deduplicated; no redundant
+  restore/database bypass is justified.
+- Minimal source change: paint the existing readerContent Column with
+  readerCanvasBackground only while readingChrome=true, entryTransition=null
+  and session=null; otherwise retain Color.Transparent. No new node, state,
+  delay, transition, loading renderer, geometry or forced update. The actual
+  shared canvas still owns mounted Reader rendering; thumbnail-flight branches
+  retain their transparency and root ownership.
+- Prediction/disproof: first ordinary incoming pixels use the same canonical
+  canvas as preparation and original display; system push/pop and resumed38
+  remain. A light-to-dark initialization flash, post-arrival empty body, internal
+  zoom, lost feedback, or wrong resume/return rejects the candidate. Compile the
+  changed NextN host, install the exact HAP, execute the same fresh ordinary
+  ContinueP38 → hidden Reader38 → Back chain once and inspect all frames. No
+  shared-library change or other-host tuning. Full replacement remains OPEN.
+- Result: signed debug build exit0 (10.538s), current source SHA256
+  1a2f30be191d9692843cb534c5e4b14ceb5b831a968581cd72bcc9a5bd01a8c9,
+  unchanged kitbd392c0, installed HAP
+  b6cd548126744b2dbaaa3f9d32ad72774e70003c3ab40e3338a327a60e63226b.
+  Current root55 has the same bundle, viewport and ContinueP38 state as root52.
+  Checked `default-entry-canvas-return` and window4419 movie SHA256
+  6fe1d44860087cbc921e59c6eaed80f2a0a939b58db4d5a67580359861f0a060;
+  all402 frames/all12 sheets reviewed. Frame69 is still Detail; first incoming
+  frame70 already paints the dark canvas. Preparation76–80, selected image38
+  from81 before push settles, feedback retires84. No incoming light container
+  or post-arrival empty body observed. Back181–198 returns the same Detail38.
+  No internal zoom or loading lifecycle change. This accepts only the ordinary
+  initialization-canvas/entry/return path, not latency parity or other variants.
+- Raw binding, checked protocols, gate/terminal layouts, capture ledgers,
+  movies and original-PTS frames remain under
+  `.hvigor/outputs/emulator-reader-20261003/`. Recorder/protocol exit0.
+  The candidate manifest's inherited context label says root52; actual fresh
+  gate and terminal layouts are root55 and govern identity. This label is not
+  used as foreground evidence. This boundary is frozen pending a source change
+  or new same-state counterexample.

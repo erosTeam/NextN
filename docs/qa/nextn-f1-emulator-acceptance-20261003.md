@@ -486,5 +486,32 @@ input exit0 and image presence cannot turn it into a pass. Cause not established
 The bounded acceptance, exact source/HAP binding, raw artifacts and counterexample
 are recorded once in Koma's `docs/reader-current-kit-boundary-20261003.md`.
 Local entry/layout/return are frozen. Two pages do not establish rolling preload,
-chapter/network/auto-read or performance. Full replacement stays OPEN; the live
-work-order row selects the remaining NextN default system-entry owner audit.
+chapter/network/auto-read or performance. Full replacement stays OPEN.
+
+## Ordinary NextN initialization canvas — bounded conclusion
+
+Host baseb86ebf66 plus the four-line ordinary initialization-canvas patch,
+unchanged kitbd392c0, signed/installed HAP
+b6cd548126744b2dbaaa3f9d32ad72774e70003c3ab40e3338a327a60e63226b
+uses the existing canvas while the host session initializes. No new state,
+timer, navigation, image/loading owner or thumbnail transition was introduced.
+Current fresh root55 and baseline root52 both bind NextN Detail663205,
+ContinueP38 and `[0,117][1320,2232]`.
+
+All404 baseline and402 candidate movie frames were reviewed. Baseline incoming
+frames68–70 expose a light empty host before the dark canvas; candidate's
+first incoming frame70 already paints the dark canvas. Candidate image38
+appears81 before system push settles, preparation retires84, and Back181–198
+returns the same Detail38. No post-arrival empty body or internal zoom observed.
+Older frames648–650 are during push, not landing; they do not establish a
+post-arrival black flash. This accepts the bounded ordinary initialization,
+entry and return route and freezes it; latency parity remains unproven.
+
+Local `default-entry-canvas-binding.json` and checked
+`default-entry-return.json` / `default-entry-canvas-return.json` bind the
+source/HAP, current layouts and window4419 captures. Movies SHA256
+5b07400031cb5e1d78c76707ad8fbe02c9040e7512c7ad2c4c4826c5fb143755
+and6fe1d44860087cbc921e59c6eaed80f2a0a939b58db4d5a67580359861f0a060
+and all original-PTS frames remain under the existing ignored artifact root.
+Recorder and checked protocol exit0. Other package5 gaps remain OPEN; the
+single work-order row selects the next actionable boundary.
