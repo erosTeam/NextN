@@ -8438,7 +8438,23 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   the checked protocol; cold ordinary Detail663205 is foregroundcom.erosteam.nextn,
   root[0,117][1320,2232]. No data/cache/default reset. The failed candidate had
   changed saved progress38→1; installation does not erase that actual side effect.
-- Next permitted action: trace reused item observation and native index/map
-  update order using official contracts and current source before another
-  shared patch. Restoring source/device is not acceptance: the baseline layout
-  gap and remaining Package5 routes stay OPEN.
+- Native datasource6d84b61 is superseded, not accepted: all888 frames reviewed;
+  ON black68–73 and OFF black367 remain despite correct source38 return/final
+  38/40. Build-only NextE/Koma evidence is separate; detailed bindings in F1.
+- Current source15d9a07f separates per-pager native node identity from an
+  observable display-composition key and keeps the selected item only for the
+  same canonical unit/source anchor. Other exact-composition items retain
+  identity; no global index/state/cache/entry/host workaround. All three same
+  kit consumers compile. NextN signed HAPd40a8292…cae3c68 installed-r, cold
+  Detail663205/current source38 foreground root51[0,117][1320,2232] confirmed.
+  Whole thumbnail38/single/ON/Back/spread-entry/OFF/fast swipes/Back recorded
+  with no reset; protocol/recorder both exit0. All1080 original frames/all30
+  sheets reviewed: ON/OFF keep selected image present, right-part entry/companion
+  fade and both source38 returns remain; final fast-swipe counter38/40. Real
+  transient geometry209/505 survives independent decoding; full layout
+  continuity remains OPEN. Detailed bindings and limits are in the F1 record.
+- Next permitted action: map retained viewport fit/measurement updates against
+  Legacy, then decide a bounded source-proven repair. Image-presence/selection/
+  entry/return evidence is limited to this recorded cached chain; geometry,
+  changed-pager online/processed/midflight and other-host Package5 paths remain
+  OPEN. No whole replacement or frame-rate conclusion follows from this slice.

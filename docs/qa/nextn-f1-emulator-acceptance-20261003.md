@@ -202,6 +202,119 @@ reset was used to hide that side effect. Baseline layout counterexample and
 Package5 stay OPEN. One next action is source/official contract investigation
 of reused-item observation and native index remapping before another patch.
 
+## Native datasource6d84b61 — incomplete, not accepted
+
+All three consumers compiled the same6d84b613 kit/pager702638c1 SHA.
+NextN HAP18cce09ea57e5b53a38cdbd8b1090e080ee03f3fe5707f59727637fbc769c13c
+was installed-r. NextE HAP5a310546238efbba6934380a1ca7df44366ddcfade96d51d55a2facff7469d14
+and Koma HAPff4861235833965a9a45650243a0941325714837609c3788f6d0276082d50dfb
+were built, never installed. Native datasource listener registration and
+RELOAD are the same public channel used by Legacy; gesture epochs fence
+layout-generated callbacks. This eliminates the outer revision-keyed remount,
+but is not by itself a continuity fix.
+
+The checked continuous source38 chain is captured in
+`host-recording/native-datasource-spread38.mov`, SHA-256
+`242f8e3925022c8f4efc7e2720a14daeefb70e352015488f494c61f801ad88e4`.
+All888 frames/all25 sheets reviewed. Foregroundroot50, com.erosteam.nextn,
+[0,117][1320,2232]; live Emulator window4419, 1260x1750 host movie, no audio.
+Recorder10:39:03.364986–10:39:25.852123UTC and checked route
+10:39:04.376776–10:39:22.094076UTC both exit0; original source/key/ledger,
+movie and frame-timeline remain in the ignored emulator artifact root.
+
+- ON body is black68–73, PTS1.626667–1.731667; selected RIGHT image returns74
+  at1.773333, companion appears76. The first-blank to first-image sample
+  interval is146.7ms; no improvement/no-prolongation conclusion is supported.
+- OFF body is black367 atPTS9.321667; image returns368 at9.363333. Frame366
+  still has the spread. This is a42ms sampled gap, not an inferred app frame
+  rate or every-compositor-frame measurement. The overview contact sheet
+  cannot establish no-black; raw enlarged frame367 is direct counter-evidence.
+- Source38 entry lands RIGHT and LEFT companion gradually appears233–239.
+  Four fast alternating swipe inputs show content following38→39→38→39→38;
+  interrupted native animations produce two committed selections, source39
+  and38, with final38/40. No black/loading appears in that cached swipe slice.
+- Both closes resolve sourceIndex37 and return to the freshly gated source38
+  bounds[311,862][607,1312]; final single mode and saved38 restored through
+  actual navigation, not preference/history/cache reset. Detail rail differs
+  from the earlier baseline, so no pixel-matched trajectory/latency claim.
+- Crop(90,300,1070,1350) includes static frame residue: blank meanRGB≈2.40,
+  image≈64.94. Do not call it all-zero. Current raw pixels disprove the early
+  overview impression that OFF retained the image.
+
+Source explains a remaining destructive transition: item identity is the full
+canonical composition, so37:whole becomes36:whole+37:whole and the selected
+viewport/nativeImage is replaced despite retained source-slot37. Official
+LazyForEach key comparison preserves equal-key children and its V2 observed
+properties support updating their content. The follow-up is one private
+native-item identity separated from its observable display key, preserving the
+selected item only for the same canonical unit/source anchor. Other source,
+loading, entry, menu and host policies stay unchanged. Candidate6d is superseded
+by this bounded correction, not promoted as accepted. Package5 remains OPEN.
+
+## Retained native item15d9a07 — bounded image continuity, geometry OPEN
+
+Shared source `15d9a07f00c8dff866f7baee2ec108195782a42e` retains the selected
+native item only for the same canonical unit/source anchor, while its observable
+display key adopts the new map. Other equal-composition items keep their identity.
+The existing inner slot/fragment keys retain the selected image. This is private
+pager reconciliation; menus, host state, cache/preload, entry flight and public
+APIs are unchanged. Pager source SHA-256:
+`8004597956650deba4724e43bdf5765ad5b0f3fcc0593e23b9f736ce99babcd6`.
+
+All three consumers compile this exact clean kit. Signed HAP SHA-256 values:
+
+- NextN: `d40a82921992cdcbaf3b3d263699b5f4e10e9cbe9dff8ca9f73b1fa24cae3c68`,
+  installed-r through the checked protocol, no reset.
+- NextE: `a53ae6faa687d5c7ec45193f8a4ceaedbec75bf98c514516268f012a5aef88cd`,
+  build only; not installed. Its actual build entrypoint uses underscores.
+- Koma: `1221ef4085109929b215aa8d20184f23efaf530e66534a09a722743bb8f28743`,
+  build only; not installed. Unrelated host WIP is preserved.
+
+Current source38 gate: foreground NextN root51 `[0,117][1320,2232]`, semantic
+`reader-thumb-gallery-detail-1-page-37` at `[311,861][607,1311]`. Emulator remains
+127.0.0.1:5555 / PHEMU-FD00 / portrait1320x2232. One continuous checked chain:
+thumbnail38 single → ON → Back → thumbnail38 spread → OFF → four fast
+alternating horizontal swipes → reveal counter → Back. All1080 original frames
+and all30 contact sheets reviewed, with raw toggle/counter frames enlarged.
+
+- ON: full selected image208; clipped old-size selected image209 at
+  PTS5.046667; correct right-part selected image210 at5.068333; companion37
+  appears213. No wholly empty image body in this recorded switch.
+- OFF: pair504; selected38 remains centered at small spread size505 at
+  PTS12.680000; full single38 returns506 at12.700000. No wholly empty body.
+  Independent AVFoundation exact-PTS decoding confirms209 and505, so neither
+  transient geometry can be dismissed as FFmpeg preview corruption.
+- Explicit source38 spread flight365–383 goes directly to the RIGHT part;
+  LEFT companion37 gradually reveals384–389. Initial entry and both returns
+  retain root/source flight ownership, rather than opening full-screen first.
+- Fast gestures568–665 visibly traverse38→39→38→39→38 without an empty/loader
+  body in the recorded slice. Interrupted gestures produce two native commits,
+  not four: PID29315 selected38/topology2/navigation3 at19:04:54.622, then
+  selected37/topology2/navigation4 at19:04:56.474. Final counter721–748 is38/40.
+- Back254–267 and749–766 returns selected38 to the same current visible source;
+  terminal foreground is NextN Detail/root51, same viewport. Setting ends single.
+
+Disposition: retain the source-proven removal of unnecessary selected-node
+replacement. Accept only the observed cached image-presence/selection/entry/
+return chain; **geometry continuity remains OPEN** because209 and505 are real
+transient layouts. This is not a complete layout-switch acceptance, proof of
+all compositor refreshes, physical performance, or Legacy parity. Source rail
+positions differ from the earlier baseline; no matched flight-latency claim.
+Changed-pager online/processed/midflight and other-host boundaries remain OPEN.
+Next action: map the retained viewport's fit/measurement update against Legacy
+before deciding any further edit; do not add delays, overlays, remounts or fades
+merely to mask the observed frame.
+
+Local evidence under `.hvigor/outputs/emulator-reader-20261003/`:
+`retained-item-consumer-binding.json`, `retained-item-source38.json`, current gate,
+`retained-item-spread38.json` and partitioned command metadata; host movie
+`host-recording/retained-item-spread38.mov`, SHA-256
+`9a5f9b7faff40d036bb571d938d643bbb98efc97fbc58d9fb7d14bbe6226947d`,
+26.983333s/1260x1750/no audio; `retained-item-capture-ledger.json`, all original
+frames/PTS, and independent209/505 PNGs. Protocol and recorder exit0. A separate
+wrapper invocation with unsupported `--dry-run` failed usage before input; it is
+not product evidence. Actual wrapper invocation performed its mandatory dry-run.
+
 ## Retained local evidence
 
 All paths below are under `.hvigor/outputs/emulator-reader-20261003/`:

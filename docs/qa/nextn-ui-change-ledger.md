@@ -11890,3 +11890,67 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   Before another change, resolve native index remapping and reused child
   observation against officialAPI contracts. No arbitrary index delay,
   overlay, opacity or tree recreation may mask this failed state.
+
+- Reopened source boundary after withdrawal: the existing LazyForEach data
+  source deliberately drops both listener registration methods; it can only
+  expose a new map by reconstructingReaderNativePager. The referenceLegacy
+  ReaderPageDataSource/ReaderSpreadDataSource instead retains native listeners
+  and notifies onDatasetChange(RELOAD) after replacing canonical items.
+  Implement that documented channel within the existing shared data source,
+  retain the native pager and unchanged semantic item keys, and remove the
+  wrapper keyed by topology. Changed compositions may recreate their own
+  viewport; do not claim cross-parent image reuse or no black frames from this.
+- Callback effect assessment: createdRevision belonged to the old remounted
+  pager, so retention must capture topology/navigation at actual touch start
+  or native command instead. Cancel old queued work and gesture epochs on map
+  changes; do not publish layout-generated nativeonChange as reading progress.
+  Preserve resource/request fences, boundary-swipe semantics, zoom lock, entry
+  and all public callbacks. No controller correction delay or loader change.
+- Minimality/evidence: oneReaderPagerSurface file, existing publicIDataSource/
+  DataChangeListener/Swiper APIs already used byLegacy. KeepLoop/cachedCount,
+  index policy, keys, native gestures, menus, host state and image cells.
+  Build all matching consumers after exact diff review. Continuous emulator
+  single38→spread→source38entry→single→fast alternating swipes→Back must retain
+  correct indices and source return, and must not prolong the baseline body
+  gap. Any persistent empty body or jump to front pages rejects this candidate.
+  Remaining source/image/entry/other-host package boundaries stay OPEN.
+
+- Native datasource candidate6d84b61 remains UNACCEPTED: all888 frames/all25
+  sheets reviewed. ON body blank68–73 (PTS1.626667–1.731667), image returns74
+  at1.773333; OFF frame367 is also blank (PTS9.321667), image returns368 at
+  9.363333. It therefore does not meet the declared no-prolongation/no-empty
+  body boundary. Source38 return and final38/40 after fast alternating swipes
+  are observed, not an all-path acceptance. NextE/Koma builds are compile-only.
+- Further source cause, before editing: native datasource identity still is
+  the full display composition. Single37:whole becomes36:whole+37:whole,
+  necessarily deleting the selected viewport despite retained source-slot37.
+  Official LazyForEach key comparison retains equal-key nodes; ObservedV2/
+  Trace and Param update leaf properties without changing their node identity.
+- Exact next correction within the same pager: datasource items have a unique
+  per-pager native identity and an observable canonical display key. Retain the
+  selected item through a map replacement only while its canonical unit and
+  sourceIndexHint remain equal; mutate its display key, then use existing
+  RELOAD notification. Preserve other exact-composition items; allocate unique
+  identities for genuinely new items. Selection tracking is constant-time on
+  ordinary navigation; map reconciliation occurs only on topology changes.
+  Rendering/callbacks always derive their canonical key from the current item,
+  never store an alternative progress/map/asset state. Existing slot/fragment
+  keys inside the viewport retain the selected image while adding/removing its
+  companion. No public API, index correction, timer, opacity, proxy, host or
+  resource-window change.
+- Impact/disproof: the whole pager parent remains the boundary. Unit/source
+  changes must not preserve the wrong selected node, keys must stay unique,
+  stale gestures retain existing revision fences, and native index remapping
+  must still follow the canonical snapshot. Compile all consumers; repeat the
+  materially changed continuous single38/spread/source38-entry/single/fast
+  swipe/Back chain. Any black body, wrong selection or damaged entry/return
+  rejects this source slice. No app-frame-rate or physical-performance claim.
+
+- Retained-item15d disposition: all1080 original frames/all30 sheets reviewed;
+  recorded ON/OFF preserve selected image presence, source38 selection, right-part
+  entry/companion fade and both returns. Independent decoding confirms real
+  transient geometry209 (clipped old size, PTS5.046667) and505 (small old size,
+  PTS12.680000). Keep the minimal node-retention source gain, but geometry and
+  the full replacement remain OPEN. No matched Legacy/performance claim.
+  Detailed binding is in the current F1 record. Next action is source mapping
+  of fit/measurement updates against Legacy, not another unchanged replay.
