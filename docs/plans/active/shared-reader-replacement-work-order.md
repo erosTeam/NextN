@@ -14,9 +14,11 @@ settings, progress, actions, navigation, and Koma chapter orchestration.
 Package 5 is **ACTIVE**. The 2026-09-19 “candidate-accepted” records below are
 bounded historical evidence, **not** a current replacement conclusion: later
 user-observed F1/F2 counterexamples reopened the package, and source/build
-checks cannot close their runtime continuity requirements. Every **production
-default stays the legacy reader**; the shared route remains an explicit,
-process-scoped, reversible debug route. No package migrates or deletes user
+checks cannot close their runtime continuity requirements. The legacy fallback must remain available while replacement acceptance is
+OPEN; this is a release gate, not a verified statement that every current
+production default is Legacy. Current NextN `ReaderSettingsRepository.readerImplementation`
+resolves an absent key to Shared. This slice changes no default or persisted
+backend choice; its explicit shared Want is process-scoped and reversible. No package migrates or deletes user
 data.
 
 ### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
@@ -33,7 +35,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Host708f handoff and shared15d node retention remain. Sharedbd392c0 removes ordinary unrotated Image's previous-area size dependency; all three same-kit consumers compile. NextN HAP8c27 installed-r; all1080 current frames reviewed: ON198→199 and OFF515→516 adopt fitted size directly, selected image stays present, right-part source38 entry/companion fade, fast final38/40 and both returns retained. | Accepted only for the recorded cached whole-image chain at the same1320x2232 root viewport. Rotated/cropped/continuous, changed-pager online/processed/midflight and other-host ordinary routes remain OPEN. No app-FPS, physical performance or whole-replacement claim; Legacy stays default; emulator only. | Map current processed replacement ownership and available ordinary emulator route; execute the applicable F2 image handoff on this same built candidate without speculative source changes or resetting user data. |
+| **5 ACTIVE / OPEN** | Sharedbd392c0 fitted-parent sizing compiles in all three consumers. NextN HAP8c27 cached source38 chain accepted within recorded bounds; API26 system SR produced service-abnormal/processing_failed with no output, original OFF restored. NextE HAP4352 ordinary Non-H Detail4203217/source1: all737 entry/Back/re-entry frames and all630 original ON/OFF twice/Back frames reviewed; root flight, initially hidden chrome, selected image presence and same-source return observed; ordinary/original button blue-white-blue-white confirmed in enlarged raw frames. No NextE host source edit justified by this route. | Successful NextN processed replacement remains unproven; NextE preparation/loading feedback and exact original-file identity are not accepted from button colour/body continuity alone. Koma ordinary current-pin route, rotated/cropped/continuous, changed-pager online/midflight and app performance remain OPEN. Backend defaults unchanged, legacy fallback retained; emulator only. | Bind/install current Koma HAP54b84578 and inspect the ordinary library route, then execute its available local chapter entry → page swipe/layout toggle → Back/re-entry as one bounded chain. Freeze accepted cached NextN and NextE continuity; retain environmental/feedback gaps without model sweeps or per-app tuning. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:

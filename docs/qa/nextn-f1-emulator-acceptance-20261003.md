@@ -1,8 +1,10 @@
 # NextN F1 — current emulator evidence, 2026-10-03
 
 The shared-reader replacement remains **OPEN**. This record accepts only the
-recorded single-page entry/resume/return chain; Legacy remains the production
-default. Device 197 was not retried. An explicit process-local shared-backend
+recorded single-page entry/resume/return chain; Legacy remains available as a
+fallback. Current NextN absent-key backend default is Shared (repository source),
+so the earlier production-default sentence is withdrawn. No default choice is
+changed by this slice. Device 197 was not retried. An explicit process-local shared-backend
 Want selected the normal production Detail and reader routes.
 
 ## Current source, artifact and target
@@ -406,3 +408,64 @@ superseded. The failed manifest-preparation recording
 `f1-resume-handoff.mov` dispatched no UI inputs and is excluded. Historical
 build/suite results across three consumers do not establish their runtime
 replacement acceptance.
+
+## Processed replacement applicability — bounded emulator failure disposition
+
+On the same bd392c0 / HAP8c27 candidate, the actual host Reading sheet
+reported system image SR installed, enabled toggle initially OFF and max height
+2000px; platform API level readback was26. The real setting was enabled once
+without changing the model/height. PID7860 requested source37 at19:47:50.062;
+CoreVision returned `The service is abnormal` at50.134 and the provider returned
+`reader_variant_not_applied:processing_failed` at50.137. No processed URI/output
+was produced, so **successful F2 handoff remains unproven**. Capability/menu
+availability is not proof that the platform processing service works.
+
+The original switch OFF was restored through the host sheet, checked=false
+read back at `[1140,1645][1248,1705]`, then sheet and reader closed to the same
+Detail source38. No model download, parameter sweep, default change, reset or
+algorithm compatibility edit. This attempt is dispositioned; continue other
+applicable host paths rather than replaying the same emulator limitation.
+
+Retained local evidence: `system-enhancement-on.json`,
+`enhancement-restored-off.json`, `enhancement-restored-return.json` and their
+partitioned layouts/logs; `host-recording/system-enhancement-on.mov` SHA256
+9ba100687d283d36901914ea7c4606fa8521ed3f53702d432c664a7d80f655ac.
+Frames0–143 only were reviewed: actual ON/sheet-dismiss interval retains the
+image; terminal reader image is visible. This is a bounded interval observation,
+**not** a full-movie image-continuity acceptance or successful processed swap.
+
+## Same-kit NextE consumer boundary
+
+Current NextE hostcdd2a8295ade6a18cd0495809313580cb14cf010, clean kitbd392c07348c1ab55e163d4a1cd595b20af17cc8,
+signed HAP4352c4b59dac430764b880a98d08954663c2bb28d66d3e911d579ad266815e7f
+was installed-r. Generic incoming EH gallery URL admitted actual production
+Non-H Detail4203217. Fresh root53 `[0,117][1320,2232]` and fully visible source
+`reader-thumb-gallery-detail-1-page-0` `[73,1144][347,1530]` bind the route.
+No lab entry, data/cache reset, backend default or NextE product source edit.
+
+Two finite macOS window4419 recordings, with checked continuous manifests,
+were reviewed completely:
+
+- `ordinary-entry-reentry.mov`, SHA256243ee5c63236508c71d2152bbb4bfcd190208c0c031b8b26314182f200fa693b:
+  all737 frames/all21 sheets. First flight138–155, selected-image handoff155→156
+  retains image presence; hidden chrome/counter1/124, Back root flight, same
+  source return and re-entry372 onward observed. Raw336/340 are return-flight
+  frames, not landing endpoints; no exact landing geometry or Legacy latency
+  claim. Runtime initial_policy confirms single/horizontal/LTR.
+- `original-on-off-return.mov`, SHA25695927854d0d7528324cd7adbd2477fb79910dd41b3b56b2fa6c314f1cade2e9f:
+  all630 frames/all18 sheets. Existing enabled original control executes twice
+  ON→OFF, then Back. Enlarged raw312 is blue,335 white,376 blue and445 white;
+  selected image remains visible throughout the recorded replacements. Final
+  Detail is the same source1. This accepts the observed variant-button and
+  body-continuity chain; it does not prove every preparation/loading-feedback
+  interval, exact original-file identity, uncached source absence or app FPS.
+  Initial old capture buffers are excluded from product transitions.
+
+Artifacts reside under
+`/Users/honjow/git/NextE/.hvigor/outputs/emulator-reader-20261003/`:
+checked `ordinary-entry-reentry.json` / `original-on-off-return.json`, partitioned
+run metadata/layout/screens/logs, `host-recording/` movies, capture ledgers,
+original-PTS frames and contact sheets. Recorder and checked protocol both
+exit0. The observed NextE path does not reproduce NextN's dim handoff, so source
+similarity alone does not justify synchronizing the NextN host-opacity patch.
+These continuity paths are frozen; Koma's ordinary current-pin route is next.

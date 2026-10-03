@@ -8391,7 +8391,7 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
 ## 2026-10-03 — current shared-reader package5 / emulator boundary — OPEN
 
 - Active outcome: replace the ordinary reader routes across NextN, NextE and
-  Koma without losing entry/asset/chrome/return continuity. Legacy stays default;
+  Koma without losing entry/asset/chrome/return continuity. Legacy fallback is retained;
   only the process-local shared Want is used. Physical197 is not retried.
 - Source checkpoint: reader-kit unified at a48e119 (d1 + defect5). Earlier
   463/0 suite and consumer signed builds are source/build evidence, not current
@@ -8461,8 +8461,20 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   single directly, image presence, right38 flight/companion fade, final38/40 and
   both source returns retained. Accept only this recorded cached whole-image
   chain; no FPS/physical/whole replacement claim. Full binding is in F1 record.
-- Next permitted action: assess current processed replacement owner and ordinary
-  emulator route, then the applicable F2 handoff on the same candidate without
-  speculative edits/reset. Rotated/cropped/continuous, changed-pager online/
-  processed/midflight and other-host Package5 paths remain OPEN. Legacy default
-  is retained; emulator only, physical197 untouched.
+- Processed applicability disposition: actual API26 system SR through the host
+  Reading sheet returned CoreVision service abnormal / processing_failed with
+  no output. Original enhancement OFF restored and current toggle readback
+  checked=false, then returned to Detail38. Successful F2 remains unproven; no
+  model sweep or compatibility work. Full bounded evidence/limits in F1 record.
+  Current NextN absent-key backend default is Shared; prior Legacy-default
+  wording was a policy/fact conflation and is withdrawn. No default code or
+  persisted choice changed; fallback remains available.
+- Current NextE consumer boundary: hostcdd2a829 / kitbd392c0 / HAP4352 ordinary
+  Detail4203217/source1 accepted only for recorded entry/hidden chrome/image
+  continuity/Back/re-entry and two original-to-normal returns without black
+  body. All737 entry and all630 replacement movie frames reviewed; enlarged
+  button states are blue312 → white335 → blue376 → white445. Preparation/load
+  feedback, exact original-file identity and matched-Legacy latency are not
+  accepted by that evidence. No NextE product edit was made. Stable bindings
+  and local artifacts are in the F1 record. Next permitted action is Koma's
+  current54b84578 HAP ordinary local route on the emulator. Physical197 untouched.
