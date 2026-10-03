@@ -12131,7 +12131,7 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   The single cross-host work order carries the next action; full replacement
   remains OPEN and accepted ordinary-entry canvas remains frozen.
 
-## 2026-10-03 — thumbnail page-follow animation — bounded animation observed; rapid navigation OPEN
+## 2026-10-03 — thumbnail page-follow and page commitment — bounded NextN routes accepted; continuity OPEN
 
 - Newly actionable source counter-evidence: kit1afe5e7 -> a48e119 removed
   the rail's target equality guard and changed ordinary page-follow from
@@ -12204,3 +12204,107 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   an accepted matching token with wrong session selection would disprove the
   pager-eligibility explanation. Remove these logs before final candidate,
   then compile every shared consumer. Logging does not establish performance.
+
+- Observation HAP114192b4d7efc04663b8ffa4892e6d04761de877613f4f8d60baf8eed237fe04
+  changes only five console callback sites; checked finite chain exits0.
+  Native Down00:03:03.858 captures navigation3 after onChange30 but before
+  deferred select30 at03.860. Snapshot advances3->4 at03.874; backward native
+  onChange29 at04.340 is rejected with token1/3 against topology1/navigation4.
+  The same overlap recurs05.287-05.693 (token1/4 against navigation5).
+  At05.719 a same-current index29 echo consumes fresh token1/5; the next native
+  target28 callback06.456 has -1/-1 and is dropped. Thus stale self-commit and
+  echo consumption are observed; moving-Down omission is source-proven but
+  did not trigger in this chain. Temporary logs are removed before repair.
+- Minimal correction: keep one native interaction's existing topology/nav
+  stamps through same-index echoes and native changes. Before publishing an
+  accepted non-current native selection, advance that still-current stamp by
+  the exact one revision selectDisplay owns; a newer Down captured before the
+  deferred publish follows that same commit. A navigation update not matching
+  this native-owned stamp invalidates it (seek/asset kind/policy/unit), as do
+  topology change, inactive and Cancel. Capture a permitted Down before the
+  moving-only boundary guard because native swipe remains enabled during motion.
+  Same-topology Down retains an already advanced native stamp until the Param
+  snapshot catches up; it must not downgrade it in that propagation window.
+  A same-current echo cancels any queued obsolete index but not the live stamp.
+  Retain LazyForEach's required deferred publication and all stable identities.
+- Impact: ReaderNativePager only; no core revision semantics/interface changes,
+  native animation timing, resource windows, rail, host adapters, chrome, entry
+  or loading edits. Core selectDisplay increments exactly once only on a changed
+  valid index; the current deferred callback still checks active/topology/nav.
+  Compile all consumers, run a current same-HAP Native/Shared rapid-swipe+slider
+  comparison and a finite topology/zoom/exit supersession route. Any unaccepted
+  callback still remains rejected; no source-shape test is visual acceptance.
+
+- Current kit7db404f candidate compiles in all three consumers; only NextN
+  HAP15fdb23c is installed. Same-HAP Native/Shared source30/root59 pair now
+  returns30 after six6000-velocity alternating swipes, commits slider33 and
+  returns33 after six40000 alternating swipes. Actual fast inputs are about
+  six/s. Ordered affected frames0-467 of both current movies were reviewed,
+  excluding source lead-in Shared0-1/Native0; later idle is unreviewed.
+  Shared movie92c9e90f / Nativee1d05924 and exact timestamps/binding remain in
+  ignored host-recording storage. This accepts bounded rapid page commitment,
+  not application FPS, cross-host runtime or full lifecycle. Shared slider
+  black-body278-306 versus Native289-291 is a current counterexample.
+- Newly actionable boundary: arbitrary chrome seeks. Whole parent is the
+  retained ReaderSurface -> fixed thumbnail rail/ReaderChrome Slider ->
+  onSeek(unit, navigation, source index) -> existing session source command
+  -> retained pager index/asset window. Current Native NextN
+  commitReaderSliderPage/selectThumbnail call turnToReaderPage(target,false);
+  NextE Slider/jumpToThumb call jumpToPage(index) whose animated default is
+  false; Koma rail and onSeekPage call setPage(index,false). Their adjacent
+  body/volume/auto turns separately request animation. The old7a2e005 claim
+  that both legacy chrome paths animate arbitrary deltas is contradicted by
+  these current complete call chains; the existence of NextE's animated helper
+  does not prove its chrome callers invoke it.
+- Minimal correction before editing: remove ReaderSurface.seekWithAnimation
+  and route its two chrome callbacks directly to existing seekSource. This
+  removes the unnecessary display-map scan, pager-command branch and a second
+  navigation owner; no new parameter, app branch or interface. Preserve
+  requestMove/pageTurnAnimation for adjacent turns, Core unit/navigation
+  rejection and cancellation, stable native pager/rail identities, preview
+  behavior, resource windows, entry/close, geometry and menus. Remove only
+  the existing source-shape test that enshrines the disproved arbitrary-seek
+  assumption; do not replace it with another UI regex gate. Existing direct
+  core seek/state suites and current runtime are separate evidence.
+- Verification/risk: compile every consumer from identical changed bytes,
+  replay current NextN source30 -> slider33 -> rapid alternating gestures ->
+  Back against the preserved same-HAP Native route; review all affected frames
+  for image continuity and page/progress ownership. Also finish the pending
+  finite zoom/mode/exit supersession path. Direct seeks still resolve real
+  resources and are not assumed to eliminate every possible mount black frame;
+  NextE/Koma runtime and cross-layout/loading continuity remain OPEN.
+
+- Current common candidate kit1ef28d39863868b17b6f51ecb48f2c7aad1ccb3e includes
+  the removed arbitrary-seek animation and retained native epoch correction.
+  Exact three-consumer signed builds succeed: NextN bbb473d4d21c264f167be6b486bd0570ca6e616d781c823934320cdaf7b03e0c
+  (installed), NextE437116df112b6ab06f5185c4a47dd9a4fcafa289412d86eebe4bfd2d926ff1bf
+  and Komac5dbaeb12b9cf4a24280538e3798aebc39bbbd796ec0f1937bd667d9faa0f899
+  (build-only). Abbreviated local fetch failed; initial old-pin NextE/Koma
+  builds are excluded and retained as before-pin-correction logs. Full-SHA
+  fetch, clean pin and rebuilt HAPs are bound in direct-seek-binding.json.
+- Same current NextN HAP/gallery663205/source30/root62/portrait1320x2232 pair:
+  Shared movie166b0ac68ff78a6b30ee6b90a995270dc72beda82d46ed099bc54ddbaab078c3
+  has715 frames; Native4582661af9c9788f1f106533a2833a64cfd3f1467fa9696a76bf49d87e0a1c1a
+  has730. Ordered0-467 of each reviewed through Back/Detail33; source lead-in
+  Shared0-1/Native0 excluded, later idle unreviewed. Both return30 after six
+  alternating6000 swipes, directly commit slider33, then return33 after six
+  alternating40000 swipes (actual about6/s). Animated rail follow is retained.
+  This accepts bounded rapid commitment/direct chrome semantics, not rail
+  geometry parity, application FPS or cross-host runtime. Shared black-body
+  272-275 is shorter than previous278-306; Native also has black288-291.
+  The remaining short load/mount interval is unaccepted for either backend;
+  it does not justify a Shared-only resource-window or timing patch.
+- Finite lifecycle movie6938f590cd9b835d49c4913d9cd4de5408e6665b33e354befe3606b723d87c4b
+  has794 original-PTS frames, ordered0-575 reviewed; old buffer0-4 excluded,
+  later idle unreviewed. Zoomed horizontal pan keeps33; both double-clicks
+  step zoom, so the named restore-zoom action did not reset it. Consequently
+  the swipe before spread was a zoom pan, not a pending unzoomed pager commit:
+  that race is unproven. Spread ON200-236 and OFF237 onward visibly update
+  in the same session. The unzoomed swipe before Back begins showing34 at312
+  but has not committed it; Detail remains33, ordinary re-entry shows33 from
+  385, final Back settles Detail33 at505. No delayed page change is observed
+  within reviewed frames; arbitrary callback cancellation is not generalized.
+  Known unchanged Native slider restore then process-local Shared Want returns
+  current Detail to saved38, confirmed by terminal layout. No settings/cache
+  reset or entry/menu/geometry edit. Current raw manifests, movies, timelines,
+  bindings and logs remain in the existing ignored emulator-reader partition.
