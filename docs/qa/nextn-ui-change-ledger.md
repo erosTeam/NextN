@@ -12130,3 +12130,77 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   the entire older pager. Investigate the affected current owner before editing.
   The single cross-host work order carries the next action; full replacement
   remains OPEN and accepted ordinary-entry canvas remains frozen.
+
+## 2026-10-03 — thumbnail page-follow animation — bounded animation observed; rapid navigation OPEN
+
+- Newly actionable source counter-evidence: kit1afe5e7 -> a48e119 removed
+  the rail's target equality guard and changed ordinary page-follow from
+  `scrollToIndex(target, true, START)` to `false`. Current bcac6b8 retains
+  that direct jump. Native NextN `onReaderSourceIndexChanged` instead calls
+  `scrollThumbnailStripTo(visiblePageIndex, true)`; slider dragging and initial
+  positioning use false. This contradicts the user's existing requirement for
+  smooth page-follow animation; it is not inferred from movie frame rate.
+- Whole parent: retained unit -> fixed thumbnail-rail wrapper -> retained
+  ListScroller and LazyForEach index datasource -> stable keyed tile -> image
+  and selected border/page number. Source selection belongs to the existing
+  session; thumbnail-window range belongs to native List.onScrollIndex. The
+  adjacent slider supplies previewIndex during drag, then commits a seek.
+- Minimal source plan: in ReaderThumbnailRail only, retain its initialIndex,
+  monitor snapshot/previewIndex together, and scroll only when the effective
+  source target changes. Animate ordinary source changes; directly position
+  a slider preview. Retiring a preview or receiving assets for the same target
+  must not restart/cancel its native scroll. Retain unit/list/tile identities,
+  datasource, range/resource owner, tile geometry, text, rounding and chrome.
+  No host-specific logic, restored obsolete presentedSnapshot protocol,
+  forced refresh, renderer rebuild, delay or entry/loading change.
+- Verification: compile all three consumers of the shared one-file change;
+  same-content/source/portrait NextN Legacy and Shared thumbnail routes,
+  finite fast alternating swipe chain (not repeated taps), plus one slider
+  preview/commit and Back. Review the affected continuous recordings and
+  current terminal raw screen/layout. Check selected page and retained scroll
+  movement; do not claim 60/120fps or performance parity from host capture.
+- Unresolved scope: this restores a source-proven missing animation only.
+  Existing tile-resource updates, eager hidden mount and historical removed
+  host thumbnail port are not accepted as performance causes or changed here.
+  Cross-layout black-body continuity and complete replacement remain OPEN.
+
+- Shared rail checkpoint kit286ccdda52e846e024a6d849b009ee6e348b1a38 changes
+  ReaderThumbnailRail only. All three signed builds succeed with identical
+  rail bytes. NextN installed HAP464d5f518dae03b7bdeba6f230349adf17a43ea22010d53b7c5319824269c271;
+  NextE ab8c487bfa2af82b90f4418b70ca030eef7a41d5733c8bc6fb4d12fc763bc58b
+  and Koma71e27524fe81290ed70eb61969c5dbe2969675287480dbe52f8942a478315bed
+  are compilation evidence only, not installed/runtime acceptance.
+- Same current NextN HAP/gallery663205/source30/root59/portrait1320x2232:
+  Shared movie SHA256 b020eb4189cb39b9b4a20dda54b9213d305a8ef504b7ca895a161434ff74cda1
+  has578 frames; ordered0-431 reviewed, lead-in0-1 excluded, idle432-577
+  unreviewed. Native movie SHA256 ce8572488da1a6597a9ec036af6c704b18db98ec2ce0bfeb50a10d0d562c00ed
+  has572 frames; ordered0-395 reviewed, lead-in0-1 excluded, idle396-571
+  unreviewed. Both checked protocols and recorders exit0. Shared page-follow
+  visibly scrolls after selections31/32; slider preview moves the rail without
+  committing33 until release. Only animated movement for committed pages is
+  observed; complete interaction/performance parity is not accepted.
+- **Rapid navigation rejected:** six identical alternating fast body swipes
+  return Native30 (enlarged258), but Shared32 (enlarged230), before either
+  slider. Native selected30 also remains offscreen in its terminal rail;
+  perfect native rail alignment is not claimed. Native slider30->33 has
+  black-body294-297. Both routes return Detail33. Action timestamps show about
+  two gestures/s, not the requested3/s; video sample count is not app FPS.
+- Source-proven suspect: 6d84b613 moved selection eligibility to Touch.Down
+  behind an existing moving guard, while native Swiper.disableSwipe permits
+  interruption during motion. queueSelection consumes tokens before rejecting
+  a declarative same-index echo. Exact rapid callback ordering is not yet
+  established. Map native/core callbacks before a correction; no rail-specific
+  timing or app tuning. The velocity150 native idle movie is excluded:
+  mandatory dry-run rejected it before input. The valid pair uses6000 body
+  swipe and200 slider velocity. Originals/binding/builds stay in ignored storage.
+
+- Next newly actionable boundary: rapid native selection callback ordering.
+  Temporary observation-only logs in ReaderNativePager record Touch.Down,
+  native index change, navigation revision change and animation start/end.
+  No frame-by-frame logging, branch/state changes or shipping diagnostic code.
+  One six-swipe finite chain distinguishes moving-Down omission, same-index
+  token consumption and overlapping gesture/navigation epochs. Prediction:
+  a native index reaches onChange but is rejected with unset/stale tokens;
+  an accepted matching token with wrong session selection would disprove the
+  pager-eligibility explanation. Remove these logs before final candidate,
+  then compile every shared consumer. Logging does not establish performance.
