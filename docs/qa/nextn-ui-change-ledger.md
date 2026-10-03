@@ -11832,4 +11832,61 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
 - Exact narrow change: for rootOwnedEntryTarget only, mount the same ReaderOpeningPlaceholder from OPENING and retain it through existing waiting/handoff phases. It follows existing proxy geometry underneath the unchanged outer root flight. Once flight has arrived (WAITING_READER_CONTENT/OPEN_HANDOFF), keep host contentOpacity1 and let the existing selected-image entry opacity govern decode reveal. Legacy/non-root paths and reverse/close gates retain their existing opacity. Loading remains in the existing cell above the placeholder, with no new indicator or z-index overlay.
 - Theory / disproof: this removes a cold Image mount at the ownership boundary and the second independent suppression of the selected-image fade. A dim flash after this change, an exposed full-screen reader before the source flight, hidden uncached loading, missing companion fade or damaged Back would reject it. No claim that a postFrameCallback alone proves physical paint.
 - Verification: signed NextN build; re-install exact HAP; same uninterrupted first-thumb → fast swipe1→4 → Back → ordinary resume4 → Back → explicit thumb1 → Back route under host-window recording. Review every transition frame and full foreground/root evidence; uncached/spread/midflight input remain separate unaccepted branches unless observed. Shared library unchanged, so no other-host rebuild is represented as validation. Overall shared replacement remains OPEN.
-- Observed after the declared change: HAP c922f331…09b310 installed-r; current root47 1320x2232; uninterrupted candidate route captured by macOS Emulator-window recording. All1536 frames/all32 sheets reviewed; first and warm thumbnail handoff retain the full image without the baseline dim dip; ordinary resume shows4/40, explicit thumbnail shows1/40, final return shrinks to current source. Cached-chain handoff is frozen unless source changes or new counter-evidence arises. Ordinary no-thumbnail system entry has a briefly dark incoming area (frames648–650), so no all-flow no-black claim. Uncached, spread, midflight Back and other-host evidence stay OPEN. Before/after rail coordinates differ; no pixel-matched trajectory or latency claim. Full binding and retained artifacts are in nextn-f1-emulator-acceptance-20261003.md. Next newly actionable boundary is uncached loading under this changed opacity owner, without a data/cache reset.
+- Observed after the declared change: HAP c922f331…09b310 installed-r; current root47 1320x2232; uninterrupted candidate route captured by macOS Emulator-window recording. All1536 frames/all32 sheets reviewed; first and warm thumbnail handoff retain the full image without the baseline dim dip; ordinary resume shows4/40, explicit thumbnail shows1/40, final return shrinks to current source. Cached-chain handoff is frozen unless source changes or new counter-evidence arises. Ordinary no-thumbnail system entry has a briefly dark incoming area (frames648–650), so no all-flow no-black claim. Uncached, spread, midflight Back and other-host evidence stay OPEN. Before/after rail coordinates differ; no pixel-matched trajectory or latency claim. Full binding and retained artifacts are in nextn-f1-emulator-acceptance-20261003.md. Online page38 loading branch subsequently observed: retained thumbnail plus existing loading bar → native image with indicator gone → Back to same source; all704 frames/all15 sheets reviewed (F1 record). No cache reset/forced reload; exact selected-file absence remains unproven. This branch is frozen under the same reopening triggers. Spread opacity boundary observed on the same candidate: selected RIGHT part and gradual LEFT companion are preserved; final single setting restored. A distinct same-session layout-toggle boundary is OPEN: recorded body disappears at77–81/376–377 and independent system decode confirms it. Source owner is the shared topologyRevision-keyed entire native pager, despite retained source slots; established stable-pager commit1d6651b is absent from currenta48e119. Before any edit, reconcile that existing implementation and its callback guards with the current whole pager/cell tree and Legacy layout owner. No additional opacity, timing, proxy, menu or host-specific workaround is authorized by this finding. The F1 record binds all618 frames and the corrected preview-attribution limits.
+
+
+## 2026-10-03 — Shared native pager topology retention — REJECTED candidate; boundary OPEN
+
+- Actionable evidence: current kit a48e119 and HAPc922f331 produce all-zero
+  image body on same-session single/spread ON/OFF (frames77–81/376–377), while
+  chrome remains. Whole recorded entry lands on the correct RIGHT half and
+  preserves gradual companion reveal. Independent system decode confirms the
+  body gap; a fixed-glyph preview suspicion was disproved by equal PNG pixels.
+- Whole owner/reference tree: host persistence adapter → ReaderSurface policy
+  action → ReaderPagedSession canonical map/anchor and retained source slots →
+  ReaderPagerSurface native Swiper → virtual viewport → source-slot-keyed cells
+  and existing native images/loading/retry/notice leaves. Legacy ReaderPage
+  monitors double-page presentation and maps single/spread data sources to the
+  source anchor; its source keys and native viewport/index are the behavioral
+  reference, not a claim that all of its layout branches keep one instance.
+  The previously implemented shared Repeat strategy in1d6651b is not included
+  in currenta48e119 and is the nearest established shared container pattern.
+- Source-proven transition: setPolicy retains matching asset slots but changes
+  topologyRevision. A revision-keyed ForEach then deletes ReaderNativePager,
+  its Swiper and all image nodes. Its listener-free IDataSource cannot update
+  in place. Keeping a URI/session lease does not keep those mounted pixels.
+- Exact bounded change: one shared ReaderPagerSurface file; remove the topology
+  wrapper and immutable index source, use reactive Repeat virtualScroll with
+  position-owned native viewport keys and live item data. Keep slot/fragment
+  keys in the existing cell tree. On topology change, cancel pending selection,
+  reset old motion/lock state and ignore map-generated index callbacks until
+  the next real motion/command. Capture topology/navigation for queued selection
+  so late callbacks cannot write into the new index space. Existing public
+  APIs, policy mapping, resource windows and entry geometry/fades stay intact.
+- Rationale/disproof: this removes an unnecessary whole-native-tree destruction
+  using the established shared pattern. It is rejected if recorded layout
+  switching still exposes an empty body, remapping changes the source anchor,
+  stale callbacks commit old indices, or entry/companion/return continuity is
+  damaged. No acceptance follows from source or build alone.
+- Impact and evidence plan: all three shared hosts consume this native pager.
+  Review exact diff and compile all matching consumers. The coherent emulator
+  chain covers live ON/OFF, selected-part entry and return, and fast swipe
+  navigation; compare the affected Legacy/current viewport state. Existing
+  exact-source replacement cells, host menu/rail semantics and loading owners
+  are unchanged; their changed-parent paths retain their documented OPEN
+  boundaries until matching evidence is available. No default or data reset.
+
+- Candidate outcome: kitb03e090/all three builds succeeded but the continuous
+  emulator chainFAILED. All890 frames reviewed: ON blank64–71; OFF blank384–470
+  then wrong2/40→1/40 native selections. Preserving the parent did not preserve
+  valid item/index observation. Full bindings and original movie/frame ranges
+  are in nextn-f1-emulator-acceptance-20261003.md; no acceptance by build count.
+- Withdrawal completed:60276c40 restores the entirea48e119 tree; rollback
+  HAP303d9cfd installed-r with ordinary Detail foreground/root confirmed.
+  NextE/Koma rejected HAPs were never installed. Saved progress38→1 is the
+  failed route's actual side effect, retained without a reset.
+- Faulty assumption/prevention: historical stable-container source is not
+  proof of compatibility with today's computed snapshot and index contract.
+  Before another change, resolve native index remapping and reused child
+  observation against officialAPI contracts. No arbitrary index delay,
+  overlay, opacity or tree recreation may mask this failed state.

@@ -8415,7 +8415,30 @@ The final protocol restored timeout10000ms, force-stopped the app and released l
   conclusions and the general “recording-capable device required” claim are
   withdrawn. Before/after thumbnail coordinates differ, so no pixel-matched
   trajectory or latency improvement is claimed.
-- Next unverified physical action: open a previously unread page thumbnail via
-  the current normal Detail route, retaining cache/data, and record the source
-  proxy → loading → decoded-image handoff. Establish a cache miss from runtime
-  evidence before describing that path as uncached. Package5 stays OPEN.
+- Online loading newly observed on the same HAP/root: page38 thumbnail →
+  loading bar over retained thumbnail → decoded original → hidden chrome →
+  reveal38/40 → Back into same source. All704 frames/all15 contact sheets
+  reviewed. New cache writes occurred; selected-file absence was not separately
+  established because private cache namespace read was denied. No data/cache
+  reset or privilege bypass. Full limitations/artifacts are in the F1 record.
+- Spread chain performed on the same current HAP/root: thumbnail38 lands in
+  its RIGHT part and companion37 gradually reveals; final single-page setting
+  restored. The full same-session toggle chain is rejected: black body at
+  frames77–81 and376–377 survives independent AVFoundation decoding. Source
+  retains matching asset slots but destroys the entire native pager through a
+  topologyRevision-keyed ForEach; prior stable-pager commit1d6651b is not in the
+  current pin. Exact scope/artifacts and preview-attribution correction are in
+  the F1 record. Candidateb03e090 built successfully in NextN/NextE/Koma but
+  FAILED the continuous emulator chain: ON blank64–71; OFF blank384–470,
+  first swipe commits2/40 and final1/40 instead of retaining page38. All890
+  original frames reviewed. Full artifact/HAP bindings and limitations are in
+  the F1 record. No NextE/Koma candidate was installed.
+- Withdrawal: shared commit60276c40 restores the exacta48e119 source tree in all
+  three checkouts. NextN rollback signed HAP303d9cfd…507c6 installed-r through
+  the checked protocol; cold ordinary Detail663205 is foregroundcom.erosteam.nextn,
+  root[0,117][1320,2232]. No data/cache/default reset. The failed candidate had
+  changed saved progress38→1; installation does not erase that actual side effect.
+- Next permitted action: trace reused item observation and native index/map
+  update order using official contracts and current source before another
+  shared patch. Restoring source/device is not acceptance: the baseline layout
+  gap and remaining Package5 routes stay OPEN.
