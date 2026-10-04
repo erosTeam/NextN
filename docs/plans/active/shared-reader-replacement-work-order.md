@@ -38,8 +38,11 @@ not fill that gap.
   当前邻页尺寸修正已成为三应用同一 Kit 提交 `15eb75c`，不增加缓存深度或应用专用分支。
 - 当前收尾已完成：去诊断日志后的三个包构建、安装和普通入口核对已完成；
   NextN/NextE 返回保留 P38/P3，Koma 书架继续阅读进入本地书籍 1/11。此项仅接受邻页尺寸修正。
-- 已确认的下一处缺口：首次入场时，图片可见而准备提示短暂仍在；先厘清首次尺寸、
-  解码完成和呈现回执的先后，再决定最小改动。此前撤回的微任务方案不重用。
+- 当前加载路径改动：共同 Kit `65f8770` 仅移除普通图片回执的不必要空闲帧等待；
+  有保留画面的原图/处理图替换仍用原有呈现屏障。三应用构建、既有状态检查及受影响入口
+  录像已核对，但首次图片与加载提示重叠仍存在，不能记为加载切换已解决。
+- 连续模式切换黑屏在候选和干净 `15eb75c` 包均存在；当前 Core 资源保留，Surface 布局
+  分支会重新挂载原生图片。尚未分离原生解码与尺寸贡献，不以此扩写布局或添加遮罩。
 - 剩余操作路径只做有限核验：原图/处理图切换、旋转与裁切、在线无缓存、转场中断、
   Koma 章节、网络和自动阅读；既有历史结果不能代替当前版本，但未验证不等于已发现缺陷。
   只有确认了当前实现差异、用户影响和原因才新增源码修改。
@@ -47,11 +50,11 @@ not fill that gap.
   导航职责；受影响普通操作及转场没有已知退化，改动提交、产物和运行证据对应。
   不以追平录像帧数或单软件特调作为持续投入理由；没有新证据时不重复同一检查。
 
-### Current package5 evidence boundary — 2026-10-03
+### Current package5 evidence boundary — 2026-10-04
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common kit15eb75c commits the two-file viewport constraint product281faaa7 over preparation baseline370064c. Host pin commits N d93cd854/E0ba58db0/Kbc9cf0f4; clean builds and install-r Nfe0e3649/E053e1a59/K0552cbc7. Diagnostic candidate K9bdb9cb3/894dea37 and N4567415f+d5dba23c/Ebb9f3526+195a58f6 fully reviewed: fitted neighbors complete before selection, direct custom spread flights and companion fade retained, toggles immediate, native K routes retained. Final clean N b079e47b reviewed1-328 (stale leading0 excluded), E7eaa4a18 reviewed0-340; ordinary entry/Back retains DetailP38/P3. Final clean K Bookshelf Continue -> hidden Reader1/11 terminal observed; this unrecorded confirmation is logical evidence only. | Initial tiny source0 and image+stage remain OPEN: clean N102-106 and E116-118, diagnostic K92/674/239. No FPS/equal-cache/no-overlap/full replacement conclusion. Original eligibility/file identity, F2 API26 applicability and rotated/cropped/uncached/midflight/chapter/network/auto-read remain finite pending checks. Defaults unchanged, simulator only. | Trace first-image/decode/presentation/stage ordering and compare existing Native ownership before any next edit. Withdrawn microtask candidate stays withdrawn; no cache-depth, opacity, delay, host-menu/entry redesign or per-app tuning. |
+| **5 ACTIVE / OPEN** | Common kit `65f8770` over `15eb75c` removes only the ordinary no-retained image's post-render idle ACK; exact mount/request guards and retained replacement `onIdle` stay intact. Three signed builds and 110 existing state checks pass. Complete candidate movies reviewed: K16833795 (1–337; stale0 excluded), N00249ead (0–503), E4841e89b (7–503; stale0–6 excluded); ordinary/native entry and Back retain source1/11, P38/40, P3/124, and N/E custom root flights remain direct. E original b261e945 reviewed3–569 (stale0–2 excluded): ON/OFF picture retained, controls change; file identity and replacement-stage parity are not established. E continuous f90d7e14 reviewed4–661 (stale0–3 excluded) retains source3/124 but black85–90 and image+100%219–221. Saved clean15 E053e1a59 comparison84827338 reviewed3–664 (stale0–2 excluded) also black78–87 and image+100%214–219; body viewport/root and source match, previous-app status text and Detail scroll differ, so no timing/pixel-parity claim. Final checked restoration reinstalls E8909f8ee, source3/124 and native LTR visually checked. Raw manifests/bindings/reviews remain under ignored `.hvigor/outputs/emulator-reader-20261003`. | Initial tiny source0, image+stage and paged→continuous black remain OPEN. Candidate K85/N223/E265–266 still show image+stage; removing the idle wait is not total continuity acceptance. Core→Surface→native pager→Viewport→Cell currently propagates copied snapshots; no forced refresh or shadow readiness is introduced. Original eligibility/file identity, F2 API26 applicability and rotated/cropped/uncached/midflight/chapter/network/auto-read remain finite pending checks. No FPS/equal-cache/full-replacement claim, default change, 197 retry or host-specific tuning. | Establish NextE original/resampled actual file identity and eligibility through the existing adapter/cache owner before declaring the already observed ON/OFF control path accepted. Loading/continuous counterexamples remain OPEN; another edit requires a source-isolated cause, not repeated recordings or timing patches. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:

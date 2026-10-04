@@ -12493,6 +12493,60 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   E116 still show image+stage. Neighbor constraint slice FROZEN; loading remains
   OPEN with next source ordering investigation. No loading or FPS acceptance.
 
+### 2026-10-04 — ordinary frame-start acknowledgement (bounded wait removal committed; loading OPEN)
+
+- Newly actionable loading boundary: clean Nfe0e raw102 and E053e raw116 have
+  image+stage. Observation-only K2bd574db/Kit15eb75c plus Console diffc615ebee
+  movie0412faa8 reviewed1-324/all10 sheets (stale leading0 excluded); raw85/87
+  prove image+preparing, terminal Bookshelf1/11/rootcom.honjow.koma. Source0
+  decoded06:36:32.260, idle32.302, Core displayed32.304, Cell displayed32.353.
+  These instrumented times establish two separate waits, not universal latency
+  or FPS. Current-request/mounted/decode guards passed; no rejected ACK here.
+  The five diagnostic lines were reversed before product implementation.
+- Whole affected parent remains Surface -> native pager -> stable lazy item ->
+  Viewport -> Cell -> Image/loading siblings; ContinuousCell and thumbnail rail
+  also use this image leaf. Native N/E/K ends the local loading state on image
+  completion. Shared keeps Core decoding until its frame-after-render idle ACK,
+  then propagates displayed to the sibling stage. Commit910bbe4 introduced the
+  post-render fence to protect retained replacement, not ordinary acquisition.
+- Minimal before/after: keep completed metrics/entry publication and all current
+  request/mount/decode guards. A private FrameCallback.onFrame carries the
+  existing ACK for ordinary frame.retainedUri empty; retained replacement keeps
+  the exact ReaderEntryAfterLayout.onIdle fence. Official API12 onFrame executes
+  at next rendering start; onIdle executes after render and can defer beyond it
+  when <=1ms remains. This is an ArkUI scheduling boundary, not the withdrawn
+  Promise microtask. Core remains the phase/asset retirement owner; no UI shadow
+  readiness, stage-only hiding, source parameter or new host API is introduced.
+- Impact fence: no entry geometry/opacity/root-flight ownership, continuous
+  measurement helper, menus/settings, cache depth/windows, keys, lazy dataset or
+  native node changes. Ordinary timing changes in single/spread/continuous and
+  rail preview leaves. Stale seek/Back/failure remains guarded; retained original
+  and processed replacements retain their composed-frame release ordering.
+- Prediction: ordinary ACK no longer waits for post-render idle, and its stage
+  should cease before the next composed decoded body where propagation permits.
+  Existing Cell propagation latency is not assumed solved. One bounded ordinary
+  K entry/return, N/E counterparts with custom entry, and applicable E retained
+  replacement/continuous check cover this edit; relevant state suites and three
+  builds supplement pixels. If overlap/black remains, retain it as OPEN and do
+  not tune delay/opacity/cache or redesign the parent. A new regression withdraws
+  this candidate immediately. Only the source-proven unnecessary ordinary wait
+  may be accepted separately from total loading continuity.
+
+- Disposition: common Kit `65f8770` / product diff434dd66a is accepted only as
+  source-proven ordinary idle-wait removal, not image/stage continuity or FPS.
+  Three builds/110 existing checks pass; full K/N/E entry movies and E original/
+  continuous movies reviewed. K85, N223, E265–266 and Econtinuous219–221 still
+  contain image+stage. E original ON/OFF retains source3 and picture, but actual
+  file identity/eligibility and reload-stage parity remain unproven.
+- Continuous counterexample: candidatef90d7e14 black85–90, clean15 comparison
+  84827338 black78–87. Both rootcom.erosteam.nexte[0,117][1320,2232], source3/124;
+  previous-app status text and Detail scroll differ. This proves the phenomenon
+  predates the candidate, not equal durations or no-regression across all modes.
+  Surface swaps paged/continuous native body; Core retains the current slot.
+  Exact native decode/geometry timing is not established. No masking/opacity or
+  parent redesign is justified. Final checked restore shows candidateE8909f8ee,
+  native LTR and source3/124. Ignored per-movie review JSONs preserve exclusions.
+
 ### 2026-10-04 — ordinary decode completion versus retained replacement fence (WITHDRAWN candidate / loading OPEN)
 
 - Newly actionable existing loading boundary: current NextE HAP437116df, kit1ef28d3,
