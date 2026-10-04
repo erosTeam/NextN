@@ -10,7 +10,24 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
-- Current shared-reader loading counterexamples (2026-10-04; Package5 OPEN):
+- Current ordinary first-image boundary checkpoint (2026-10-05; Package5 OPEN):
+  common Kit `cb4f2f5` uses the existing cell snapshot for initial image visibility
+  and its loading sibling. Exact scope: two wrappers,7 added lines; no Core ACK,
+  retirement, entry transition, host menus/settings or resource ownership change.
+  Signed E `e9beb6a3`, N `8c22b635`, K `ce2ee3bb` are installed. Current cached
+  ordinary entry/reentry boundaries are E131→132/711→712, N102→103/500→501,
+  K96→97/423→424: first body and Stage removal occur together. Retained Reload
+  keeps body and progress in all three; E root flight/reverse and continuous
+  first509→510 are retained. Reviewed raw E3–859, E sibling0–736, N2–640,
+  K3–639 with independent PTS comparison; idle stdout omissions are excluded.
+  Terminal native EDetailP3, NDetailP38, KLibraryNemoP1/9% retain the original
+  positions. Evidence is under `.hvigor/outputs/emulator-reader-20261003/`,
+  `host-recording/ordinary-first-image-*` and current binding receipts.
+  Fresh uncached ordinary entry, FPS and complete replacement are not accepted.
+  Existing E layout black395–398/644–646 remains OPEN. The historical ordinary
+  image/Stage counterexamples below are superseded only for these named paths.
+
+- Historical shared-reader loading counterexamples (2026-10-04; boundaries above supersede named cached entries only):
   common Kit `65f8770` removes ordinary no-retained idle ACK only, preserves exact
   replacement fencing, and is built by N/E/K. Current complete emulator movie
   reviews still show decoded image+stage K85/N223/E265–266. Econtinuous candidate

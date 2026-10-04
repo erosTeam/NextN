@@ -3,56 +3,56 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T02:23:07+08:00",
+  "updatedAt": "2026-10-05T03:21:44+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "一份共同裁切图片节点改动；三个消费者",
+  "scope": "普通入口加载提示重叠：现有共同状态链",
   "activity": {
-    "title": "共同裁切改动：三个消费者提交",
-    "detail": "同一Kit的必要受影响路径审阅完成；现审阅准确差异并提交消费者版本与有限证据。普通入口提示重叠、布局切换黑屏、增强成功和章节选择结果仍未解决。",
-    "startedAt": "2026-10-05T02:23:07+08:00"
+    "title": "普通入口：共同切片范围提交",
+    "detail": "E/N/K当前命名普通首入、重入和保图重载已审阅；E连续首入与根缩略图进出已审阅。同一7行共同改动已提交Kitcb4f2f5，准备三个消费者范围提交。无缓存入口、布局黑屏、增强和章节仍OPEN。",
+    "startedAt": "2026-10-05T03:21:44+08:00"
   },
-  "nextAction": "完成同一Kit的三个消费者范围提交，然后按已记录围栏分析普通入口加载提示与首帧回执的共同状态顺序。",
+  "nextAction": "完成三消费者范围提交与源码/HAP等价绑定；随后回到既有布局切换黑屏的共同树所有权调查，不重放已冻结入口。",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
-      "kit": "7032a31eaeb58373020d9835aea7ca2459490621",
-      "hap": "6e69711961fca12188652475328008628979e76c8b363c9530b6e5ce2c83c7fb",
-      "build": "签名构建成功 · exit 0",
-      "install": "已安装至当前模拟器",
-      "verdict": "局部已观察",
-      "verdictKind": "accepted",
-      "runtime": "当前源38/40裁切 ON/OFF、关设置与普通返回已审阅（原始帧3–315）；受影响区间保留图片，终态继续 P38。",
-      "remaining": "本次分页裁切有限路径已观察；裁切ON原生区域ID/边界未单独采集，不据此宣称完整几何、FPS或全部阅读能力接受。"
+      "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
+      "hap": "8c22b6352d2b10aaec4188092d50c733d1e24bfc68808d3cc4ab7643900b3059",
+      "build": "共同候选签名构建 exit 0",
+      "install": "共同候选已安装至当前模拟器",
+      "verdict": "当前命名入口链已观察",
+      "verdictKind": "review",
+      "runtime": "普通首入102→103、重入500→501：提示与图片同帧交接；Reload300保图/提示、420提示撤下；当前原生Detail继续P38。原始2–640已审阅且PTS一致。",
+      "remaining": "当前共同Kitcb4f2f5命名已缓存路径有限观察；无缓存普通入口、全部替换与FPS未证实。既有布局切换黑屏、增强成功条件和章节缺口仍OPEN。"
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
-      "kit": "7032a31eaeb58373020d9835aea7ca2459490621",
-      "hap": "c2f33c5db99d6c2fc392ed07940f6487fe4408f685be626ade95be91ce523e5d",
-      "build": "签名构建成功 · exit 0",
-      "install": "已安装至当前模拟器",
-      "verdict": "局部已观察",
-      "verdictKind": "accepted",
-      "runtime": "分页及连续裁切ON/OFF命名区间保留当前P3图片；根转场/重载/返回已观察，原false/standard/LTR/P3恢复。",
-      "remaining": "无缩略图重入仍见图片+100%提示；连续→LTR原始132–135为空白、136恢复。完整替换与FPS未证实。"
+      "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
+      "hap": "e9beb6a373159aefcac6453b3262eac50460cdcc55264a0a811e6e45ffab19cc",
+      "build": "共同候选签名构建 exit 0",
+      "install": "共同候选已安装至当前模拟器",
+      "verdict": "当前命名入口链已观察",
+      "verdictKind": "review",
+      "runtime": "候选6ce27298：分页首入131→132、重入711→712，连续首入509→510同帧交接；保图重载和根飞行/返回仍在，原LTR/cropfalse/P3恢复。",
+      "remaining": "当前共同Kitcb4f2f5命名已缓存路径有限观察；无缓存普通入口、全部替换与FPS未证实。既有布局切换黑屏、增强成功条件和章节缺口仍OPEN。"
     },
     {
       "name": "Koma",
       "checkout": "/Users/honjow/git/Koma-current-kit-verify",
-      "kit": "7032a31eaeb58373020d9835aea7ca2459490621",
-      "hap": "7bc5bc38782dad97299933d16880052f560fb05052cbafa0da6dcef261bd2bc0",
-      "build": "签名构建成功 · exit 0",
-      "install": "已安装至当前模拟器",
-      "verdict": "局部已观察",
-      "verdictKind": "accepted",
-      "runtime": "原菜单拆分左右片段、旋转和连续图均为源1/1；相应区间已审阅。原单页/保持单页及Nemo P1/9%恢复。",
-      "remaining": "连续切回单页原始112–114仍黑屏，115恢复；保留在既有布局切换缺口。章节与完整替换仍未证实。"
+      "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
+      "hap": "ce2ee3bbddfbb5ac26feb33cb8f6ecb9d0cb70ac0dbc6715725bfb72142bfa35",
+      "build": "共同候选签名构建 exit 0",
+      "install": "共同候选已安装至当前模拟器",
+      "verdict": "当前命名入口链已观察",
+      "verdictKind": "review",
+      "runtime": "普通首入96→97、重入423→424同帧交接；Reload245/246保图与准备提示、247提示撤下；原始3–639已审阅且PTS一致，原生Library恢复NemoP1/9%。",
+      "remaining": "当前共同Kitcb4f2f5命名已缓存路径有限观察；无缓存普通入口、全部替换与FPS未证实。既有布局切换黑屏、增强成功条件和章节缺口仍OPEN。"
     }
   ],
   "gaps": [
@@ -77,19 +77,19 @@
     },
     {
       "title": "普通入口：图片与加载提示短暂重叠",
-      "status": "未解决",
+      "status": "命名路径已接受；无缓存待补",
       "kind": "open",
-      "detail": "当前 NextE 普通重入录像仍有图片与 100% 提示重叠（原始帧 301–303）。之前 NextN/Koma 普通入口也保留相应反例。",
-      "action": "保持 Core 回执及资源退休围栏；只有最小共同修复不破坏生命周期才修改。",
+      "detail": "Kitcb4f2f5的普通首入/重入：E131→132与711→712，N102→103与500→501，K96→97与423→424均同帧交接；E连续509→510同帧交接。保图重载/根转场边界已审阅。新鲜无缓存普通入口尚未接受。",
+      "action": "冻结已命名受影响入口；保留资源回执围栏和宿主原行为。无缓存只在真实当前条件下补一条有界链，不能以已缓存结果代替。",
       "id": "ordinary-entry-loading",
       "reportedAt": "2026-09-24T20:28:12.008Z",
       "reportedAtSource": "同类问题的原始用户反馈：加载指示器叠在图片上。经过时间含历史处置及重新发现区间，不表示连续未修复。",
       "firstEvidenceAt": "2026-10-04T08:50:39.928011+00:00",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 0,
-        "activeSince": null,
-        "activeUntil": null,
+        "recordedSeconds": 3050,
+        "activeSince": "2026-10-05T03:21:44+08:00",
+        "activeUntil": "2026-10-05T03:36:44+08:00",
         "trackingSince": "2026-10-05T01:06:48+08:00",
         "historicalCoverage": "incomplete"
       }
@@ -154,6 +154,14 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-05T03:21:44+08:00",
+      "text": "同一7行共同候选cb4f2f5的三宿主普通首入/重入与保图Reload已审阅；E连续首入/根飞行也保留。范围提交进行中，其他缺口未关闭。"
+    },
+    {
+      "at": "2026-10-05T02:30:54+08:00",
+      "text": "三消费者范围提交完成：NextN96c497d4、NextE82eec916、Koma13f8dd86，共同Kit7032；普通入口加载提示重叠开始独立计时。"
+    },
+    {
       "at": "2026-10-05T02:23:07+08:00",
       "text": "同一Kit7032的有限裁切路径收尾：E连续ON/OFF、K原菜单分割/旋转/连续已审阅并恢复原状态。现有布局黑屏反例仍保留；开始范围提交。"
     },
@@ -181,18 +189,33 @@
   "evidence": [
     {
       "id": "nextn-binding",
-      "label": "NextN 源码 / HAP 绑定",
-      "path": "package5-stable-crop-nextn-binding.json"
+      "label": "NextN 源码 / HAP 绑定 · 当前入口候选",
+      "path": "ordinary-first-image-nextn-binding.json"
     },
     {
       "id": "nexte-binding",
-      "label": "NextE 源码 / HAP 绑定",
-      "path": "package5-stable-crop-nexte-binding.json"
+      "label": "NextE 源码 / HAP 绑定 · 当前入口候选",
+      "path": "ordinary-first-image-nexte-binding.json"
     },
     {
       "id": "koma-binding",
-      "label": "Koma 源码 / HAP 绑定",
-      "path": "package5-stable-crop-koma-binding.json"
+      "label": "Koma 源码 / HAP 绑定 · 当前入口候选",
+      "path": "ordinary-first-image-koma-binding.json"
+    },
+    {
+      "id": "k-ordinary-entry",
+      "label": "K 普通入口 / 重载 / 返回录像",
+      "path": "host-recording/ordinary-first-image-K-entry-reload-return.mov"
+    },
+    {
+      "id": "n-ordinary-entry",
+      "label": "N 普通入口 / 重载 / 返回录像",
+      "path": "host-recording/ordinary-first-image-N-entry-reload-return.mov"
+    },
+    {
+      "id": "e-ordinary-entry",
+      "label": "E 普通入口 / 重载 / 返回录像",
+      "path": "host-recording/ordinary-first-image-E-entry-reload-return.mov"
     },
     {
       "id": "e-crop-on",
@@ -246,7 +269,7 @@
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "这一轮只完成共同裁切改动的受影响普通操作证据与范围提交；整体替换须逐项处置现有有限缺口。没有新反例或源码原因时，不重复同一检查，也不追求录像帧数完全相同。",
+  "stopRule": "本轮只核对一份普通初次图片与加载提示共同发布候选；保留原回执/资源退休。失败则撤回，不扩展为状态机、时序或应用专用修补。其余有限缺口保持OPEN。",
   "excluded": "保留宿主原菜单、设置、数据、导航、根转场和旧版回退；不切换默认阅读器，不推送，不回到实机，不新增宿主专用状态。",
   "costNote": "不显示虚构完成百分比或费用。当前工具不能提供这段任务的准确费用；只记录可查证产出和实质更新时间。"
 }
@@ -324,7 +347,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kit7032a31e retains one non-sprite Image site across crop changes; N6e697119/Ec2f33c5d/K7bc5bc38 signed and installed. E/N paged crop, E root flight/Reload/return and E continuous ON/OFF retain current pixels in named reviewed intervals; K original wide577×311 native split left/right, rotation and continuous geometry observed. Original Efalse/standard/LTR/P3, Nfalse/standard/DetailP38 and KSingle/keep_single/NemoP1/9% restored. Bounded crop-node change accepted; no FPS/full replacement claim. | Ordinary-entry body+100% Stage persists in current E301–303 and earlier N/K. Current Econtinuous→LTR132–135 and Kcontinuous→Single112–114 still have empty body. Successful F2, chapter folder result and remaining applicable network routes stay OPEN. No synchronous ACK, extra body/state owner, host-specific patch or default promotion. | Checkpoint same Kit pins and exact bounded evidence across all three consumers, then isolate ordinary-entry feedback/frame-ACK ordering in the existing common owner. Do not reopen frozen crop geometry or replay unavailable F2/folder conditions. Monitor reads this work order; each finite issue keeps its timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5: ordinary first-image wrappers share the existing cell snapshot with Stage; no new lifecycle state or ACK change. Same 7-line source built/installed in E/N/K; current cached ordinary entry/reentry, retained Reload, and E continuous first/root flight return reviewed. Original E P3/LTR/cropfalse, NDetailP38, KLibrary NemoP1/9% retained. Frozen crop-node evidence7032 remains applicable. | Fresh uncached ordinary entry, current E/K layout-switch black, successful F2, chapter folder result and remaining applicable network paths stay OPEN. No synchronous ACK, extra body/state owner, host-specific patch or default promotion. | Scope-commit the same Kitcb4f2f5 consumer pins and exact evidence. Then investigate the existing layout ownership boundary before editing; no repeated frozen entry/crop runs or identical unavailable F2/folder requests. Each finite issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
