@@ -23,8 +23,23 @@
   Terminal native EDetailP3, NDetailP38, KLibraryNemoP1/9% retain the original
   positions. Evidence is under `.hvigor/outputs/emulator-reader-20261003/`,
   `host-recording/ordinary-first-image-*` and current binding receipts.
-  Fresh uncached ordinary entry, FPS and complete replacement are not accepted.
-  Existing E layout black395–398/644–646 remains OPEN. The historical ordinary
+  Current N real uncached non-H682531 ordinary ReadP1 is bounded-accepted:
+  moviee5b6dba8 raw2–639 has Stage189→body/noStage190 and system return542–558.
+  Current module cache inventory adds95338B first image,63548B/19575B neighbors;
+  HTTP200 stream and named preload completions precede observed source0. All
+  reviewed PTS match ffprobe; stale0–1 and idle640+ are excluded. This completes
+  the named ordinary7-line candidate verification, not other providers, FPS or
+  full replacement. No new reader source change or cache deletion occurred.
+  Existing E layout black395–398/644–646 remains OPEN. Current same-HAP Legacy
+  reference88bf5641, native source3/124/root[0,117][1320,2232], is reviewed2–383
+  with matching PTS: its layout switches also blank83–89/220–222 and recover90/223.
+  Initial stale0–1 and idle384–1000 are excluded. Both source trees replace their
+  layout branch; Shared keeps the existing slot. This is a counterexample to
+  attributing black solely to Shared resource release, not FPS/latency parity.
+  LTR/DetailP3 and original KLibraryNemoP1/9% are restored; process-only E Shared
+  is restored. No new product edit follows; assess the retained Koma native-folder
+  completion contract next, without identical retries or an importer rewrite.
+  The historical ordinary
   image/Stage counterexamples below are superseded only for these named paths.
 
 - Historical shared-reader loading counterexamples (2026-10-04; boundaries above supersede named cached entries only):

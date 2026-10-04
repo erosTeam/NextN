@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T03:21:44+08:00",
+  "updatedAt": "2026-10-05T03:58:55+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "普通入口加载提示重叠：现有共同状态链",
+  "scope": "现有Koma章节路径：原生文件夹选择条件",
   "activity": {
-    "title": "普通入口：共同切片范围提交",
-    "detail": "E/N/K当前命名普通首入、重入和保图重载已审阅；E连续首入与根缩略图进出已审阅。同一7行共同改动已提交Kitcb4f2f5，准备三个消费者范围提交。无缓存入口、布局黑屏、增强和章节仍OPEN。",
-    "startedAt": "2026-10-05T03:21:44+08:00"
+    "title": "Koma章节：确认未通过的原生选择边界",
+    "detail": "三宿主已缓存命名路径与N真实未缓存ReadP1链完成同一Kitcb4f2f5的有限核验。现在只复核原生目录选择的实际契约及既有失败输入；没有新条件不重复点击、不改导入器。",
+    "startedAt": "2026-10-05T03:58:55+08:00"
   },
-  "nextAction": "完成三消费者范围提交与源码/HAP等价绑定；随后回到既有布局切换黑屏的共同树所有权调查，不重放已冻结入口。",
+  "nextAction": "读取已保留的Koma原生FOLDER选择结果与宿主接收契约，判断是否存在未执行的原生完成动作或新的可选条件；相同失败动作不重跑，不扩展为导入器重写。",
   "hosts": [
     {
       "name": "NextN",
@@ -27,8 +27,8 @@
       "install": "共同候选已安装至当前模拟器",
       "verdict": "当前命名入口链已观察",
       "verdictKind": "review",
-      "runtime": "普通首入102→103、重入500→501：提示与图片同帧交接；Reload300保图/提示、420提示撤下；当前原生Detail继续P38。原始2–640已审阅且PTS一致。",
-      "remaining": "当前共同Kitcb4f2f5命名已缓存路径有限观察；无缓存普通入口、全部替换与FPS未证实。既有布局切换黑屏、增强成功条件和章节缺口仍OPEN。"
+      "runtime": "普通首入102→103、重入500→501：提示与图片同帧交接；Reload300保图/提示、420提示撤下；当前原生Detail继续P38。原始2–640已审阅且PTS一致。 新非H682531真实无缓存ReadP1：189→190同帧交接，HTTP200/新缓存95338B，原始2–639及PTS一致。",
+      "remaining": "共同Kitcb4f2f5命名受影响路径有限接受；N真实无缓存普通入口已补。全部替换、FPS、其他提供者不能推断。既有布局切换黑屏、增强成功条件和章节目录缺口仍OPEN。"
     },
     {
       "name": "NextE",
@@ -40,7 +40,7 @@
       "verdict": "当前命名入口链已观察",
       "verdictKind": "review",
       "runtime": "候选6ce27298：分页首入131→132、重入711→712，连续首入509→510同帧交接；保图重载和根飞行/返回仍在，原LTR/cropfalse/P3恢复。",
-      "remaining": "当前共同Kitcb4f2f5命名已缓存路径有限观察；无缓存普通入口、全部替换与FPS未证实。既有布局切换黑屏、增强成功条件和章节缺口仍OPEN。"
+      "remaining": "共同Kitcb4f2f5命名受影响路径有限接受；N真实无缓存普通入口已补。全部替换、FPS、其他提供者不能推断。既有布局切换黑屏、增强成功条件和章节目录缺口仍OPEN。"
     },
     {
       "name": "Koma",
@@ -52,7 +52,7 @@
       "verdict": "当前命名入口链已观察",
       "verdictKind": "review",
       "runtime": "普通首入96→97、重入423→424同帧交接；Reload245/246保图与准备提示、247提示撤下；原始3–639已审阅且PTS一致，原生Library恢复NemoP1/9%。",
-      "remaining": "当前共同Kitcb4f2f5命名已缓存路径有限观察；无缓存普通入口、全部替换与FPS未证实。既有布局切换黑屏、增强成功条件和章节缺口仍OPEN。"
+      "remaining": "共同Kitcb4f2f5命名受影响路径有限接受；N真实无缓存普通入口已补。全部替换、FPS、其他提供者不能推断。既有布局切换黑屏、增强成功条件和章节目录缺口仍OPEN。"
     }
   ],
   "gaps": [
@@ -77,19 +77,19 @@
     },
     {
       "title": "普通入口：图片与加载提示短暂重叠",
-      "status": "命名路径已接受；无缓存待补",
-      "kind": "open",
-      "detail": "Kitcb4f2f5的普通首入/重入：E131→132与711→712，N102→103与500→501，K96→97与423→424均同帧交接；E连续509→510同帧交接。保图重载/根转场边界已审阅。新鲜无缓存普通入口尚未接受。",
-      "action": "冻结已命名受影响入口；保留资源回执围栏和宿主原行为。无缓存只在真实当前条件下补一条有界链，不能以已缓存结果代替。",
+      "status": "命名验证范围已接受",
+      "kind": "accepted",
+      "detail": "共同Kitcb4f2f5的E/N/K已缓存首入、重入、保图Reload及E根飞行/连续首入已审阅。N新增真实非H画廊682531 ReadP1：原始189加载→190图片且无提示，返回同Detail；HTTP200/三份新缓存及邻页日志区分真实首次获取。这里只关闭这份7行候选的有限受影响验证，不宣称全部平台/网络/性能。",
+      "action": "冻结这份普通首图与提示共同发布切片；没有源变更或同状态反例，不重复此链。总体替换和其他网络提供者不由这一记录接受。",
       "id": "ordinary-entry-loading",
       "reportedAt": "2026-09-24T20:28:12.008Z",
       "reportedAtSource": "同类问题的原始用户反馈：加载指示器叠在图片上。经过时间含历史处置及重新发现区间，不表示连续未修复。",
       "firstEvidenceAt": "2026-10-04T08:50:39.928011+00:00",
-      "closedAt": null,
+      "closedAt": "2026-10-05T03:58:55+08:00",
       "handling": {
-        "recordedSeconds": 3050,
-        "activeSince": "2026-10-05T03:21:44+08:00",
-        "activeUntil": "2026-10-05T03:36:44+08:00",
+        "recordedSeconds": 4110,
+        "activeSince": null,
+        "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
         "historicalCoverage": "incomplete"
       }
@@ -98,15 +98,15 @@
       "title": "分页 / 连续布局切换的黑屏",
       "status": "未解决",
       "kind": "open",
-      "detail": "现候选和干净基底均有布局切换黑屏；Koma连续→单页原始112–114空白、115恢复；NextE连续→LTR原始132–135空白、136恢复。原生Image重挂和缓存解码已观察，安全共同方案尚未建立。",
-      "action": "不得增加第二套保图状态、叠图或软件特调来掩盖。",
+      "detail": "同包同源3/124、同原生窗口的Legacy参考88bf5641已审阅2–383：LTR→连续83–89空白/90恢复，连续→LTR220–222空白/223恢复。Shared f462349b已有395–398/644–646空白；两者均替换内容分支，Shared当前资源槽保留。不能据此断言时延/FPS相等或排他原因。",
+      "action": "保留OPEN；目前无源码证明的安全最小方案，不增加叠图/第二套保图状态或同步解码。没有新证据时不重复这一参考链；继续其余有限缺口。",
       "id": "layout-switch-black",
       "reportedAt": null,
       "reportedAtSource": "原始用户提出时间未核实。可核实的公开调查记录为10月3日18:11:07；9月25日的缩略图转场黑帧不是同一问题。",
       "firstEvidenceAt": "2026-10-03T10:11:07.373Z",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 0,
+        "recordedSeconds": 900,
         "activeSince": null,
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
@@ -145,14 +145,26 @@
       "closedAt": null,
       "handling": {
         "recordedSeconds": 0,
-        "activeSince": null,
-        "activeUntil": null,
+        "activeSince": "2026-10-05T03:58:55+08:00",
+        "activeUntil": "2026-10-05T04:13:55+08:00",
         "trackingSince": "2026-10-05T01:06:48+08:00",
         "historicalCoverage": "incomplete"
       }
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-05T03:58:55+08:00",
+      "text": "普通入口切片有限验证收尾：N非H682531真实首次GET/新缓存与录屏189→190一致，系统返回保留；共同Kit不再修改。原图/提示问题本轮已记录处理下界累计68分30秒，历史覆盖不完整。"
+    },
+    {
+      "at": "2026-10-05T03:42:00+08:00",
+      "text": "同E当前e9 HAP的Legacy布局参考已审阅2–383，两个方向也有黑屏；原LTR/P3与KLibraryNemoP1/9%恢复。限定归因后收束调查，转向真实无缓存普通入口；布局计时累计下界15分钟。"
+    },
+    {
+      "at": "2026-10-05T03:24:24+08:00",
+      "text": "共同Kitcb4f2f5与N752a86ca/E391e6de6/Kd9b2f833均已范围提交；提交后源码/HAP绑定等价。已缓存命名入口冻结，布局黑屏继续独立处理计时。"
+    },
     {
       "at": "2026-10-05T03:21:44+08:00",
       "text": "同一7行共同候选cb4f2f5的三宿主普通首入/重入与保图Reload已审阅；E连续首入/根飞行也保留。范围提交进行中，其他缺口未关闭。"
@@ -201,6 +213,26 @@
       "id": "koma-binding",
       "label": "Koma 源码 / HAP 绑定 · 当前入口候选",
       "path": "ordinary-first-image-koma-binding.json"
+    },
+    {
+      "id": "ordinary-postcommit-binding",
+      "label": "三宿主提交后源码 / HAP 等价绑定",
+      "path": "ordinary-first-image-postcommit-source-binding.json"
+    },
+    {
+      "id": "n-ordinary-uncached",
+      "label": "N 真实无缓存普通阅读 / 返回录像",
+      "path": "host-recording/ordinary-uncached-N-new-Read-first-return.mov"
+    },
+    {
+      "id": "n-ordinary-uncached-cache",
+      "label": "N 首次获取：实际缓存 / HTTP 记录",
+      "path": "ordinary-uncached-N-current-cache-receipt.json"
+    },
+    {
+      "id": "e-legacy-layout-reference",
+      "label": "E 当前 Legacy 连续 / 分页参考录像",
+      "path": "host-recording/layout-owner-E-Legacy-continuous-LTR-reference.mov"
     },
     {
       "id": "k-ordinary-entry",
@@ -269,7 +301,7 @@
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "本轮只核对一份普通初次图片与加载提示共同发布候选；保留原回执/资源退休。失败则撤回，不扩展为状态机、时序或应用专用修补。其余有限缺口保持OPEN。",
+  "stopRule": "现有Koma章节目录只作一次接收契约/已保留原生证据审查；只有新的可执行完成条件才进入实操。不要重复目录点击/长按，不重写导入器。布局、增强条件与整体替换保持原证据边界。",
   "excluded": "保留宿主原菜单、设置、数据、导航、根转场和旧版回退；不切换默认阅读器，不推送，不回到实机，不新增宿主专用状态。",
   "costNote": "不显示虚构完成百分比或费用。当前工具不能提供这段任务的准确费用；只记录可查证产出和实质更新时间。"
 }
@@ -347,7 +379,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5: ordinary first-image wrappers share the existing cell snapshot with Stage; no new lifecycle state or ACK change. Same 7-line source built/installed in E/N/K; current cached ordinary entry/reentry, retained Reload, and E continuous first/root flight return reviewed. Original E P3/LTR/cropfalse, NDetailP38, KLibrary NemoP1/9% retained. Frozen crop-node evidence7032 remains applicable. | Fresh uncached ordinary entry, current E/K layout-switch black, successful F2, chapter folder result and remaining applicable network paths stay OPEN. No synchronous ACK, extra body/state owner, host-specific patch or default promotion. | Scope-commit the same Kitcb4f2f5 consumer pins and exact evidence. Then investigate the existing layout ownership boundary before editing; no repeated frozen entry/crop runs or identical unavailable F2/folder requests. Each finite issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5: ordinary first-image wrappers share the existing cell snapshot with Stage; no new lifecycle state or ACK change. Same 7-line source built/installed in E/N/K; current cached ordinary entry/reentry, retained Reload, and E continuous first/root flight return reviewed. Original E P3/LTR/cropfalse, NDetailP38, KLibrary NemoP1/9% retained. Frozen crop-node evidence7032 remains applicable. | The affected ordinary first-image candidate is bounded-accepted, now including N fresh non-H682531 ordinary Read/return. Current E/K layout-switch black, successful F2, chapter folder result and other applicable network paths stay OPEN. No synchronous ACK, extra body/state owner, host-specific patch or default promotion. | N752a86ca/E391e6de6/Kd9b2f833 scoped checkpoints consume the same Kitcb4f2f5; source/HAP binding remains equal. Current same-HAP Legacy layout reference also blanks both branches; no equal timing/FPS claim or unsupported remount patch. Fresh N first acquisition now has HTTP/cache/MOV proof; examine the retained K native-folder completion boundary before any repeat. No repeated frozen entry/crop/layout runs or identical unavailable F2/folder requests; each issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
