@@ -95,8 +95,14 @@
   No unconditional pool/decorator conversion, dual-tree, overlay or synchronous
   decoding patch. Koma LocalImportCoordinator waits for native folderUris before
   scan/reader entry; current URI absence remains a picker completion boundary,
-  not proof of an importer or shared-reader defect. Receipt is
-  `remaining-layout-folder-feasibility-reviewed.json`. Cleanup protocol completed
+  not proof of an importer or shared-reader defect. Exact existing trace queries
+  for native3744/3898/4171 show normal first-draw sizes and PixelMap target[0,0];
+  node3898 secondStartDecoding occurs after firstDraw. This does not support
+  a1px/autoResize seed patch; decoder wall spans are separated from callback/
+  paint delay, with other contributions unknown. K original ImportPage/Index
+  folder calls useFOLDER/max1 with no suffix/merge/multiAuth override; no
+  conflicting option was isolated. No source/device change or identical replay
+  follows. Receipt is `remaining-layout-folder-feasibility-reviewed.json`. Cleanup protocol completed
   06:08:49 with AWAKE/OverrideTimeout30000ms; original30000ms restored and lease
   released. These limitations stayOPEN without identical reruns or a new queue.
   The historical ordinary

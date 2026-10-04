@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T06:11:14+08:00",
+  "updatedAt": "2026-10-05T06:25:03+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "Package5既有有限收尾；系统超分按用户指示暂跳过",
+  "scope": "有限收尾的剩余条件已分类；系统超分按用户要求跳过",
   "activity": {
-    "title": "媒体路径已收尾；剩余边界保留条件限制",
-    "detail": "系统超分按用户要求跳过。源码核对：布局跨Swiper/List更换父树，共用图片仍有挂载/解码/测量状态；官方跨父池限API26，E/N发布目标24且三应用最低23，未作平台专用或生命周期改造。FOLDER停在系统返回URI前。已恢复模拟器原30秒超时并释放租约。",
-    "startedAt": "2026-10-05T06:11:14+08:00"
+    "title": "剩余条件：布局、系统增强、目录选择",
+    "detail": "布局追踪不支持1px/降采样补丁；目录完整参数没有冲突。已接受入口/重载/网络章节/自动阅读/面板路径冻结，剩余3项继续OPEN，不新增测试或源码队列。",
+    "startedAt": null
   },
-  "nextAction": "待既有未决边界出现新的安全执行条件：FOLDER原生可返回URI，或布局有兼容API23/24且不增加第二套状态的源码方案；届时恢复相应命名路径。条件未变不重测冻结路径或重建包；系统超分保持用户指定跳过。",
+  "nextAction": "系统超分遵循用户跳过；目录等待真实picker返回URI；布局只有出现兼容API23/24且能保留实际绘制内容的最小方案或新反例时才继续实现，不重复尺寸假设或相同UI。",
   "hosts": [
     {
       "name": "NextN",
@@ -98,7 +98,7 @@
       "title": "分页 / 连续布局切换的黑屏",
       "status": "未解决",
       "kind": "open",
-      "detail": "同包同源3/124、同原生窗口的Legacy参考88bf5641已审阅2–383：LTR→连续83–89空白/90恢复，连续→LTR220–222空白/223恢复。Shared f462349b已有395–398/644–646空白；两者均替换内容分支，Shared当前资源槽保留。不能据此断言时延/FPS相等或排他原因。",
+      "detail": "同包同源3/124、同原生窗口的Legacy参考88bf5641已审阅2–383：LTR→连续83–89空白/90恢复，连续→LTR220–222空白/223恢复。Shared f462349b已有395–398/644–646空白；两者均替换内容分支，Shared当前资源槽保留。不能据此断言时延/FPS相等或排他原因。 已有原生追踪按节点3744/3898/4171精确查询：首次绘制均1320宽/1280x1808源；连续3898第二次StartDecoding在首次绘制后。不支持用1px初始化或自动降采样解释当前空白，也不等于排除全部尺寸贡献。",
       "action": "保留OPEN；当前相斥Swiper/List分支会更换图片父树，已有资源槽保留。官方跨父组件复用池从API26开始，三应用最低23且E/N发布目标24，不能无条件套用或抬高最低版本；图片组件的挂载/解码/测量状态也不能靠加装饰器安全转换。不增加叠图/第二套保图状态或同步解码；没有兼容的源码最小方案前不重复参考链。",
       "id": "layout-switch-black",
       "reportedAt": null,
@@ -106,7 +106,7 @@
       "firstEvidenceAt": "2026-10-03T10:11:07.373Z",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 900,
+        "recordedSeconds": 1469,
         "activeSince": null,
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
@@ -141,15 +141,15 @@
       "title": "Koma 章节：文件夹选择尚未完成",
       "status": "原生选择条件未具备",
       "kind": "open",
-      "detail": "原FOLDER选择原图没有确认/选择此目录控件；K宿主只在DocumentViewPicker返回URI后扫描/入库。官方API26声明Phone支持FOLDER，实际guest26/260000，但本模拟器未返回目录，排他原因未建立。真实TerraHistoricus网络章节菜单往返现在有独立当前证据，不能替代目录导入结果。",
-      "action": "保留OPEN与原导入器；LocalImportCoordinator在系统DocumentViewPicker返回folderUris后才扫描，本项尚未到共享阅读器。没有新的原生完成条件不重复点击/长按，不用其他已接受的CBZ/网络章节结果替代目录结果。",
+      "detail": "原FOLDER选择原图没有确认/选择此目录控件；K宿主只在DocumentViewPicker返回URI后扫描/入库。官方API26声明Phone支持FOLDER，实际guest26/260000，但本模拟器未返回目录，排他原因未建立。真实TerraHistoricus网络章节菜单往返现在有独立当前证据，不能替代目录导入结果。 完整选项核对：ImportPage228/Index1199均传FOLDER+数量1，无suffix/merge/multiAuth覆盖；官方单目录不要求多选开关。未隔离应用参数冲突，不改原导入器。",
+      "action": "保留OPEN与原导入器；两个原入口只有FOLDER+max1，没有改变selectMode的聚合/批量授权选项。系统返回folderUris后才能继续扫描/入库/普通阅读；没有新的原生完成条件不重复点击/长按，不以其他已接受CBZ/网络章节替代目录结果。",
       "id": "remaining-host-acceptance",
       "reportedAt": null,
       "reportedAtSource": "本项是可核实的章节调查缺口：10月4日23:14:01已有公开记录。未核实原始用户提出时间；不把章节与网络等不同边界混用一个时间。",
       "firstEvidenceAt": "2026-10-04T15:14:01.361Z",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 543,
+        "recordedSeconds": 654,
         "activeSince": null,
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
@@ -532,7 +532,9 @@ and prior Pass results do not fill those gaps.
   Koma 本地分页/连续重新加载的受影响区间已核对。首次图片与加载提示重叠由共同 Kit `cb4f2f5` 在当前命名路径有限接受；布局切换黑屏仍未解决。
 - 连续模式切换黑屏在候选和干净 `15eb75c` 包均存在；当前 Core 资源保留，Surface 布局
   分支会重新挂载原生图片。一次当前追踪确认同一缓存文件重新解码，且解码期间原生节点
-  记录约束未变、跳过布局；尚不能排除所有尺寸贡献，不以此扩写布局或添加遮罩。
+  记录约束未变、跳过布局。现有追踪精确查询三个原生节点：首次绘制均正常尺寸，
+  `CreateImagePixelMap` 的目标为 `[0,0]`，不支持 1px 或自动降采样假设；连续节点
+  第二次 `StartDecoding` 在首次绘制后。保留其他尺寸贡献未知，不扩写布局或添加遮罩。
 - 剩余操作路径只做有限核验：原图/处理图切换、旋转与裁切、在线无缓存、转场中断、
   Koma 章节、网络和自动阅读；既有历史结果不能代替当前版本，但未验证不等于已发现缺陷。
   只有确认了当前实现差异、用户影响和原因才新增源码修改。
@@ -544,7 +546,7 @@ and prior Pass results do not fill those gaps.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. E/N/K current-page save/share panel-open/cancel boundaries now have current native evidence and original positions restored. E initial403 remains recorded; existing native change-source obtained fresh157118B, then system save confirmation showed the sameP3 and cancelled back to DetailP3. No completed save/send, all-provider result or exclusive403 cause follows. Current ImageSRAnalyzer service still failed after one official guest restart; user explicitly skips simulator system enhancement, keeping successful replacementOPEN and no further calls. Remaining source review confirms mutually exclusive Swiper/List parents and a shared image leaf with mounted/decoded/measurement state. Official cross-parent reuse pool is API26-only while minimumAPI23/E-N releaseAPI24 stay retained; no unconditional decorator/pool conversion or SDK increase. Native FOLDER still lacks returned URI before any reader entry. Wait for an executable compatible condition; no identical UI retry or new queue. Original guest30000ms timeout read back and lease released. Each issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. E/N/K current-page save/share panel-open/cancel boundaries now have current native evidence and original positions restored. E initial403 remains recorded; existing native change-source obtained fresh157118B, then system save confirmation showed the sameP3 and cancelled back to DetailP3. No completed save/send, all-provider result or exclusive403 cause follows. Current ImageSRAnalyzer service still failed after one official guest restart; user explicitly skips simulator system enhancement, keeping successful replacementOPEN and no further calls. Remaining source review confirms mutually exclusive Swiper/List parents and a shared image leaf with mounted/decoded/measurement state. Official cross-parent reuse pool is API26-only while minimumAPI23/E-N releaseAPI24 stay retained; no unconditional decorator/pool conversion or SDK increase. Native FOLDER still lacks returned URI before any reader entry. Existing native node3744/3898/4171 traces show full first-draw geometry and CreateImagePixelMap target[0,0]; node3898 secondStartDecoding occurs after firstDraw. No1px/autoResize patch is justified. K original folder entry options are exactlyFOLDER/max1 with no suffix/merge/multiAuth override; no options conflict or importer defect is isolated. Wait for an executable compatible condition; no identical UI retry or new queue. Original guest30000ms timeout read back and lease released. Each issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
