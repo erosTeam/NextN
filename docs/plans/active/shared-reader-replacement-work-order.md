@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T01:06:48+08:00",
+  "updatedAt": "2026-10-05T02:23:07+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
@@ -12,11 +12,11 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "一份共同裁切图片节点改动；三个消费者",
   "activity": {
-    "title": "给每项问题补充提出时间与耗时记录",
-    "detail": "已从原始用户消息核实加载提示叠加的提出时间。其它条目明确显示原始时间未核实，并列出现存候选证据时间；实际处理只累加明确开始和结束的记录区间，历史未完整记录。",
-    "startedAt": "2026-10-05T01:06:48+08:00"
+    "title": "共同裁切改动：三个消费者提交",
+    "detail": "同一Kit的必要受影响路径审阅完成；现审阅准确差异并提交消费者版本与有限证据。普通入口提示重叠、布局切换黑屏、增强成功和章节选择结果仍未解决。",
+    "startedAt": "2026-10-05T02:23:07+08:00"
   },
-  "nextAction": "先审阅 NextN 已录制的裁切 ON/OFF 录像并核对恢复状态；再通过 Koma 原导入入口打开真实横图，核对分割、旋转及恢复。",
+  "nextAction": "完成同一Kit的三个消费者范围提交，然后按已记录围栏分析普通入口加载提示与首帧回执的共同状态顺序。",
   "hosts": [
     {
       "name": "NextN",
@@ -25,10 +25,10 @@
       "hap": "6e69711961fca12188652475328008628979e76c8b363c9530b6e5ce2c83c7fb",
       "build": "签名构建成功 · exit 0",
       "install": "已安装至当前模拟器",
-      "verdict": "录像待审阅",
-      "verdictKind": "review",
-      "runtime": "当前裁切 ON/OFF 与普通返回已录制，尚未审阅全部受影响帧，不能宣布接受。",
-      "remaining": "当前候选裁切连续性、恢复状态和相关连续路径尚待核对。"
+      "verdict": "局部已观察",
+      "verdictKind": "accepted",
+      "runtime": "当前源38/40裁切 ON/OFF、关设置与普通返回已审阅（原始帧3–315）；受影响区间保留图片，终态继续 P38。",
+      "remaining": "本次分页裁切有限路径已观察；裁切ON原生区域ID/边界未单独采集，不据此宣称完整几何、FPS或全部阅读能力接受。"
     },
     {
       "name": "NextE",
@@ -39,8 +39,8 @@
       "install": "已安装至当前模拟器",
       "verdict": "局部已观察",
       "verdictKind": "accepted",
-      "runtime": "当前 P3 裁切与根转场/重新加载/返回的命名区间已观察；图片保留，原设置和 P3 恢复。",
-      "remaining": "普通无缩略图重入仍有图片与 100% 提示重叠；不代表完整替换或性能验收。"
+      "runtime": "分页及连续裁切ON/OFF命名区间保留当前P3图片；根转场/重载/返回已观察，原false/standard/LTR/P3恢复。",
+      "remaining": "无缩略图重入仍见图片+100%提示；连续→LTR原始132–135为空白、136恢复。完整替换与FPS未证实。"
     },
     {
       "name": "Koma",
@@ -49,26 +49,26 @@
       "hap": "7bc5bc38782dad97299933d16880052f560fb05052cbafa0da6dcef261bd2bc0",
       "build": "签名构建成功 · exit 0",
       "install": "已安装至当前模拟器",
-      "verdict": "受影响路径待核对",
-      "verdictKind": "review",
-      "runtime": "当前签名包已打开原书架；真实 577 × 311 横图已传入，尚未通过原入口导入。",
-      "remaining": "当前分割、旋转与连续图片路径待核对；先前本地自动阅读仅有限接受，章节缺口仍在。"
+      "verdict": "局部已观察",
+      "verdictKind": "accepted",
+      "runtime": "原菜单拆分左右片段、旋转和连续图均为源1/1；相应区间已审阅。原单页/保持单页及Nemo P1/9%恢复。",
+      "remaining": "连续切回单页原始112–114仍黑屏，115恢复；保留在既有布局切换缺口。章节与完整替换仍未证实。"
     }
   ],
   "gaps": [
     {
       "title": "共同裁切改动的受影响路径",
-      "status": "当前工作",
-      "kind": "review",
-      "detail": "NextE 同源 P3 裁切 ON/OFF 的受影响区间不再出现此前黑帧；缩略图从详情页开始飞入，重新加载期间保留图片，返回恢复 P3。NextN 录像尚未审阅，Koma 分割/旋转及连续图片路径尚未接受。",
-      "action": "只补齐这份共同改动的必要证据；出现反例才重新分析源码。",
+      "status": "对应路径已接受",
+      "kind": "accepted",
+      "detail": "当前共同Kit7032：E/N分页裁切ON/OFF、E连续裁切、K原生宽图分割/旋转/连续的命名区间已审阅；原设置和P3/P38/Nemo P1已恢复。这里只关闭这一份图片节点改动的有限证据边界。",
+      "action": "冻结这份裁切节点改动；没有新反馈、源改动或同状态反例，不重复核对。其他入口加载、布局切换、增强和章节缺口保持OPEN。",
       "id": "crop-continuity",
       "reportedAt": null,
       "reportedAtSource": "调查发现；原始用户提出时间未核实。现存裁切反例录像是当前候选可核实起点。",
       "firstEvidenceAt": "2026-10-04T15:42:45.359788+00:00",
-      "closedAt": null,
+      "closedAt": "2026-10-05T02:23:07+08:00",
       "handling": {
-        "recordedSeconds": 0,
+        "recordedSeconds": 3823,
         "activeSince": null,
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
@@ -98,12 +98,12 @@
       "title": "分页 / 连续布局切换的黑屏",
       "status": "未解决",
       "kind": "open",
-      "detail": "当前候选与此前干净基底都有布局切换黑屏。已观察到原生 Image 重挂和缓存图片解码；尚未建立唯一原因或安全共同方案。",
+      "detail": "现候选和干净基底均有布局切换黑屏；Koma连续→单页原始112–114空白、115恢复；NextE连续→LTR原始132–135空白、136恢复。原生Image重挂和缓存解码已观察，安全共同方案尚未建立。",
       "action": "不得增加第二套保图状态、叠图或软件特调来掩盖。",
       "id": "layout-switch-black",
       "reportedAt": null,
-      "reportedAtSource": "原始用户提出时间未核实。9月25日05:48:31的反馈针对缩略图转场后的黑帧，不冒充本项首次提出时间。",
-      "firstEvidenceAt": "2026-10-04T08:50:39.928011+00:00",
+      "reportedAtSource": "原始用户提出时间未核实。可核实的公开调查记录为10月3日18:11:07；9月25日的缩略图转场黑帧不是同一问题。",
+      "firstEvidenceAt": "2026-10-03T10:11:07.373Z",
       "closedAt": null,
       "handling": {
         "recordedSeconds": 0,
@@ -121,8 +121,8 @@
       "action": "没有新的能力条件时不重复相同请求，不重写增强后端。",
       "id": "enhancement-success",
       "reportedAt": null,
-      "reportedAtSource": "当前模拟器适用性调查缺口；未找到针对该服务异常的原始用户提出时间。",
-      "firstEvidenceAt": "2026-10-04T10:37:09.154160+00:00",
+      "reportedAtSource": "调查发现的模拟器服务异常；10月3日19:54:41已有公开记录，不冒充原始用户提出时间。",
+      "firstEvidenceAt": "2026-10-03T11:54:41.360Z",
       "closedAt": null,
       "handling": {
         "recordedSeconds": 0,
@@ -133,15 +133,15 @@
       }
     },
     {
-      "title": "剩余适用验收边界",
+      "title": "Koma 章节：文件夹选择尚未完成",
       "status": "待补齐",
       "kind": "open",
-      "detail": "Koma 章节导入缺少原生文件夹选择结果；普通本地自动阅读开始/翻页/停止已有限接受。网络、章节及其余适用状态尚不能从既有结果推断。",
-      "action": "按原入口和现有职责处理明确缺口；不扩展为导入器或网络功能重写。",
+      "detail": "原生文件夹选择器看到章节样本，但没有取得已选目录和完成结果；CBZ文件导入成功不代表这条章节路径通过。其余网络等适用状态仍列在完整工作单，不能据本地结果推断。",
+      "action": "保留原入口、已有书籍和进度；没有新的原生选择条件时不重复同一失败动作，不重写导入器。",
       "id": "remaining-host-acceptance",
       "reportedAt": null,
-      "reportedAtSource": "这是章节 / 网络等适用验收边界的集合，不能把一条规划消息当成各问题首次提出时间。",
-      "firstEvidenceAt": null,
+      "reportedAtSource": "本项是可核实的章节调查缺口：10月4日23:14:01已有公开记录。未核实原始用户提出时间；不把章节与网络等不同边界混用一个时间。",
+      "firstEvidenceAt": "2026-10-04T15:14:01.361Z",
       "closedAt": null,
       "handling": {
         "recordedSeconds": 0,
@@ -153,6 +153,14 @@
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-05T02:23:07+08:00",
+      "text": "同一Kit7032的有限裁切路径收尾：E连续ON/OFF、K原菜单分割/旋转/连续已审阅并恢复原状态。现有布局黑屏反例仍保留；开始范围提交。"
+    },
+    {
+      "at": "2026-10-05T01:13:47+08:00",
+      "text": "NextN 既有裁切 ON/OFF 录像审阅完成：受影响区间3–315保留源38图片，原设置恢复、详情继续P38。没有重建或重复录制。"
+    },
     {
       "at": "2026-10-05T01:06:48+08:00",
       "text": "进度页为每项边界增加提出时间、可核实记录、动态经过时间和独立实际处理计时；历史未记录工时明确保留未知。"
@@ -203,8 +211,38 @@
     },
     {
       "id": "n-crop",
-      "label": "NextN 裁切录像 · 待审阅",
+      "label": "NextN 裁切 / 恢复录像",
       "path": "host-recording/package5-stable-crop-N-toggle-restore-return.mov"
+    },
+    {
+      "id": "k-fragments",
+      "label": "Koma 快速左右片段录像",
+      "path": "host-recording/package5-stable-crop-K-wide-fragment-swipes-gate.mov"
+    },
+    {
+      "id": "k-rotate",
+      "label": "Koma 原宽图旋转录像",
+      "path": "host-recording/package5-stable-crop-K-wide-rotate-gate.mov"
+    },
+    {
+      "id": "k-restore",
+      "label": "Koma 恢复 / 布局黑屏录像",
+      "path": "host-recording/package5-stable-crop-K-wide-restore-gate.mov"
+    },
+    {
+      "id": "e-continuous-on",
+      "label": "NextE 连续裁切 ON 录像",
+      "path": "host-recording/package5-stable-crop-E-continuous-crop-on-gate.mov"
+    },
+    {
+      "id": "e-continuous-off",
+      "label": "NextE 连续裁切 OFF 录像",
+      "path": "host-recording/package5-stable-crop-E-continuous-crop-off-gate.mov"
+    },
+    {
+      "id": "e-continuous-restore",
+      "label": "NextE 连续恢复 / 布局黑屏录像",
+      "path": "host-recording/package5-stable-crop-E-continuous-restore-return.mov"
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
@@ -286,7 +324,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Current common Kit7032a31e keeps one non-sprite Image build site across crop changes, without new lifecycle state or geometry algorithm. Signed N6e697119/Ec2f33c5d/K7bc5bc38 are built and installed on the authorized API26 simulator. E current crop ON/OFF moviesf6f3df1c/375cbb00 reviewed1–212/1–550 retain affected crop pixels and restore false/standard/P3. E ordinary thumbnail/Reload/return860b8a45 reviewed2–650 retains root-owned flight, current body through Reload and return to original DetailP3; raw300 has loading feedback and600 has none. Current N crop ON/OFF16ebcf7b is recorded but unreviewed; K real wide original577×311 CBZ transferred but not imported. | Full replacement OPEN. Current E no-thumbnail reentry still has decoded body+100% Stage301–303, absent304; earlier N/K ordinary-entry counterexamples remain. Layout remount black, successful F2 and chapter/network boundaries stay OPEN. Current crop candidate fragment/rotation/continuous affected evidence is pending. No synchronous ACK, extra UI-state owner, host-specific patch, FPS/parity or default promotion. | Review already-recorded N crop/restore/return, then import the unchanged real wide comic through Koma native CBZ route and verify split/rotation plus affected continuous image geometry, restoring original settings/progress. If a source-proven regression appears, isolate one common cause before editing; otherwise checkpoint current pins/evidence without expanding scope. The local progress monitor reads this work order, not a second queue. |
+| **5 ACTIVE / OPEN** | Common Kit7032a31e retains one non-sprite Image site across crop changes; N6e697119/Ec2f33c5d/K7bc5bc38 signed and installed. E/N paged crop, E root flight/Reload/return and E continuous ON/OFF retain current pixels in named reviewed intervals; K original wide577×311 native split left/right, rotation and continuous geometry observed. Original Efalse/standard/LTR/P3, Nfalse/standard/DetailP38 and KSingle/keep_single/NemoP1/9% restored. Bounded crop-node change accepted; no FPS/full replacement claim. | Ordinary-entry body+100% Stage persists in current E301–303 and earlier N/K. Current Econtinuous→LTR132–135 and Kcontinuous→Single112–114 still have empty body. Successful F2, chapter folder result and remaining applicable network routes stay OPEN. No synchronous ACK, extra body/state owner, host-specific patch or default promotion. | Checkpoint same Kit pins and exact bounded evidence across all three consumers, then isolate ordinary-entry feedback/frame-ACK ordering in the existing common owner. Do not reopen frozen crop geometry or replay unavailable F2/folder conditions. Monitor reads this work order; each finite issue keeps its timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
