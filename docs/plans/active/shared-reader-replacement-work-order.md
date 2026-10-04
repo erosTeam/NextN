@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T04:45:01+08:00",
+  "updatedAt": "2026-10-05T05:21:37+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "Package5剩余有限缺口评估",
+  "scope": "既有Package5有限收尾；媒体403与增强成功保持OPEN",
   "activity": {
-    "title": "Koma真实网络有限路径已收尾",
-    "detail": "原普通入口、实际下载页7–12、原章节菜单往返与原书架恢复均已审阅；当前源码不变，整理剩余适用章节末端边界。",
-    "startedAt": "2026-10-05T04:45:01+08:00"
+    "title": "媒体边界已收束；提交有限结论",
+    "detail": "K本地NemoP1和N在线P38的系统保存/分享面板已核对并取消；E在线P3分享面板已核对并取消。E保存导出收到HTTP403三次，未出现系统确认框。最终KLibraryNemoP1/9%、NDetail继续P38、EDetail继续P3均恢复，无相册写入或发送。",
+    "startedAt": "2026-10-05T05:21:37+08:00"
   },
-  "nextAction": "提交当前Koma网络证据边界；确认既有章节末端/取消是否有当前候选缺口，只推进有真实源前提的有限动作。布局/F2/目录未变条件不重复。",
+  "nextAction": "提交本地自动阅读和媒体面板的有限结论；然后按官方CoreVision服务恢复建议执行一次模拟器重启，再核对同一增强路径。",
   "hosts": [
     {
       "name": "NextN",
@@ -169,9 +169,51 @@
         "trackingSince": "2026-10-05T04:07:58+08:00",
         "historicalCoverage": "incomplete"
       }
+    },
+    {
+      "id": "koma-auto-read-current",
+      "title": "Koma自动阅读：当前候选运行证据",
+      "status": "本地自动前进/停止保持已接受",
+      "kind": "accepted",
+      "detail": "原书架Nemo1/11→自动2/11→3/11→4/11；3次原生ChangeIndex保持Swiper3092。停止后已开始的一次转动在43.163完成，之后至49.582恢复命令前无新ChangeIndex；原始样本660–1020均4/11/完整同图/时钟未启用。最终原Library第1页9%恢复。15个功能样本审阅、全部1290 PTS匹配；非逐帧动画/FPS或慢网取消验收。",
+      "action": "冻结此本地自动前进/停止恢复边界；没有新反例或相关变更不重复。",
+      "reportedAt": null,
+      "reportedAtSource": "既有迁移验收项；原始提出时间未核实，不冒充新的用户缺陷。",
+      "firstEvidenceAt": "2026-10-05T04:51:31+08:00",
+      "closedAt": "2026-10-05T04:55:46+08:00",
+      "handling": {
+        "recordedSeconds": 388,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T04:49:18+08:00",
+        "historicalCoverage": "incomplete"
+      }
+    },
+    {
+      "id": "media-panel-current",
+      "title": "既有媒体动作：当前面板/取消返回",
+      "status": "K/N保存与三宿主分享有限接受；E保存403未解决",
+      "kind": "open",
+      "detail": "K本地NemoP1和N在线P38的系统保存/分享面板已核对并取消；E在线P3分享面板已核对并取消。E保存导出收到HTTP403三次，未出现系统确认框。最终KLibraryNemoP1/9%、NDetail继续P38、EDetail继续P3均恢复，无相册写入或发送。",
+      "action": "E保存保留OPEN；新可下载的原资源条件出现后再完成保存面板，不重复当前403URL。共享/旧版同用EhHttpClient只能定位下载边界，不能证明403排他原因。",
+      "reportedAt": null,
+      "reportedAtSource": "既有验收边界，不是新用户缺陷；原始提出时间未核实。",
+      "firstEvidenceAt": "2026-10-05T04:55:46+08:00",
+      "closedAt": null,
+      "handling": {
+        "recordedSeconds": 1551,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T04:55:46+08:00",
+        "historicalCoverage": "incomplete"
+      }
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-05T05:21:37+08:00",
+      "text": "K本地自动前进/停止与原Library恢复已有功能证据；K/N保存、三宿主分享面板已取消并恢复原位。E保存HTTP403未通过，无产品源码修改，未写相册/发送。"
+    },
     {
       "at": "2026-10-05T04:45:01+08:00",
       "text": "Koma真实safe源原入口链完成审阅：上篇60页→下篇71页→快速P1/P7/P1→上篇→原Detail；12次手势均发布页码且Swiper1929不替换，网络新缓存页7–12。无产品源码修改，目录选择未被此链替代。 原生Library已恢复Nemo第1页9%，原源包和实际阅读缓存保留。"
@@ -222,6 +264,31 @@
     }
   ],
   "evidence": [
+    {
+      "id": "e-media-review",
+      "label": "NextE分享取消与保存403边界",
+      "path": "nexte-media-panels-reviewed.json"
+    },
+    {
+      "id": "n-media-review",
+      "label": "NextN当前页媒体面板取消边界",
+      "path": "nextn-media-panels-reviewed.json"
+    },
+    {
+      "id": "k-media-review",
+      "label": "Koma保存分享面板有限审阅",
+      "path": "koma-media-panels-reviewed.json"
+    },
+    {
+      "id": "k-auto-functional",
+      "label": "Koma本地自动阅读功能审阅",
+      "path": "koma-auto-read-functional-reviewed.json"
+    },
+    {
+      "id": "k-auto-movie",
+      "label": "Koma自动前进/停止/恢复录像",
+      "path": "host-recording/koma-auto-read-local-run-stop-restore.mov"
+    },
     {
       "id": "k-terra-fast-review",
       "label": "Koma快速滑动审阅与PTS",
@@ -442,7 +509,7 @@ and prior Pass results do not fill those gaps.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored. Commit the network boundary checkpoint and assess only existing current-candidate chapter-end gaps with the now available real source. Keep unavailable layout/F2/FOLDER paths OPEN without identical retries; preserve original importer. Each issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. K/N save and E/N/K share system-panel/cancel boundaries now have current native evidence and original positions restored; E save remains OPEN after three HTTP403 export responses, without a repeated request or causal product edit. Checkpoint local auto-read/media dispositions, then perform one official-recommended simulator restart as a new CoreVision service condition for F2. Unchanged layout/FOLDER gaps remain OPEN without identical retries. Each issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:

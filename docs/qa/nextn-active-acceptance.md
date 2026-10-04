@@ -51,8 +51,24 @@
   or persistence. Receipts are `koma-terra-*-reviewed.json` beside the local MOVs.
   Native FOLDER selection still lacks a completion control/returned URI, despite
   official API26 Phone support and guest26/260000; no exclusive cause or importer
-  edit follows. Existing safe-source chapter-end gaps are assessed next without
-  replaying frozen entry/menu paths or unchanged unavailable conditions.
+  edit follows. Existing P9 chapter-end/cancellation evidence stays frozen
+  without new counter-evidence. Current local Koma automatic reading advances
+  P1→P2→P3→P4, stops further advances and retainsP4 through the declared hold;
+  original LibraryNemoP1/9% restored. Native Swiper3092 event ordering and
+  reviewed functional samples/all1290 PTS support this bounded result, not FPS
+  or full motion acceptance. Current media panel/cancel boundary: Koma localP1
+  and NextN onlineP38 open native save confirmation and share panels; NextE
+  onlineP3 opens native HYPERLINK share. All panels cancelled, no album write/send;
+  native host originalP1/P38/P3 positions restored. E save remains OPEN: first500ms
+  busy later returns idle without confirmation; complete1077-line PID19438
+  hilog records HTTP403 export retries at05:08:44.498/46.864/49.989. Shared and
+  Legacy both callEhHttpClient.downloadBinaryToFile; exact403 cause or Legacy
+  runtime parity is not established. No retry, URL refresh or product edit.
+  Receipts are `koma-auto-read-functional-reviewed.json` and
+  `{koma,nextn,nexte}-media-panels-reviewed.json` in the same local evidence root.
+  Official CoreVision abnormal-service documentation recommends restarting the
+  device; one simulator restart is the newly actionable F2 recovery condition.
+  Do not replay unchanged unavailable layout/FOLDER or failed HTTP403 requests.
   The historical ordinary
   image/Stage counterexamples below are superseded only for these named paths.
 
