@@ -88,6 +88,17 @@
   successful F2 staysOPEN under that execution hold. No further reboot/call or
   alternate-model provisioning; resume only on user reopening with a different
   real capability condition. No importer/backend/source edit follows.
+  Remaining feasibility review: Shared mutually exclusive Swiper/List parents
+  and common ReaderPagedImage mounted/decoded/measurement state prevent treating
+  a reusable marker as an established fix. Official cross-parent global reuse
+  pool beginsAPI26; E/N release targets24 and E/N/K minimum23 remain unchanged.
+  No unconditional pool/decorator conversion, dual-tree, overlay or synchronous
+  decoding patch. Koma LocalImportCoordinator waits for native folderUris before
+  scan/reader entry; current URI absence remains a picker completion boundary,
+  not proof of an importer or shared-reader defect. Receipt is
+  `remaining-layout-folder-feasibility-reviewed.json`. Cleanup protocol completed
+  06:08:49 with AWAKE/OverrideTimeout30000ms; original30000ms restored and lease
+  released. These limitations stayOPEN without identical reruns or a new queue.
   The historical ordinary
   image/Stage counterexamples below are superseded only for these named paths.
 

@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T05:58:18+08:00",
+  "updatedAt": "2026-10-05T06:11:14+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
@@ -12,11 +12,11 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "Package5既有有限收尾；系统超分按用户指示暂跳过",
   "activity": {
-    "title": "三宿主媒体面板收尾；系统超分暂跳过",
-    "detail": "E新资源原生保存面板已取消并返回原DetailP3；原403保留。系统ImageSRAnalyzer当前服务异常，按用户要求不再在模拟器重试。无产品源码修改或默认切换。",
-    "startedAt": "2026-10-05T05:58:18+08:00"
+    "title": "媒体路径已收尾；剩余边界保留条件限制",
+    "detail": "系统超分按用户要求跳过。源码核对：布局跨Swiper/List更换父树，共用图片仍有挂载/解码/测量状态；官方跨父池限API26，E/N发布目标24且三应用最低23，未作平台专用或生命周期改造。FOLDER停在系统返回URI前。已恢复模拟器原30秒超时并释放租约。",
+    "startedAt": "2026-10-05T06:11:14+08:00"
   },
-  "nextAction": "只处置剩余两项既有边界的可执行条件：布局黑屏尚无安全最小源码方案，FOLDER尚无原生返回URI条件。先核对既有结论与禁止方案；没有新条件不重复UI或扩大实现。",
+  "nextAction": "待既有未决边界出现新的安全执行条件：FOLDER原生可返回URI，或布局有兼容API23/24且不增加第二套状态的源码方案；届时恢复相应命名路径。条件未变不重测冻结路径或重建包；系统超分保持用户指定跳过。",
   "hosts": [
     {
       "name": "NextN",
@@ -99,7 +99,7 @@
       "status": "未解决",
       "kind": "open",
       "detail": "同包同源3/124、同原生窗口的Legacy参考88bf5641已审阅2–383：LTR→连续83–89空白/90恢复，连续→LTR220–222空白/223恢复。Shared f462349b已有395–398/644–646空白；两者均替换内容分支，Shared当前资源槽保留。不能据此断言时延/FPS相等或排他原因。",
-      "action": "保留OPEN；目前无源码证明的安全最小方案，不增加叠图/第二套保图状态或同步解码。没有新证据时不重复这一参考链；继续其余有限缺口。",
+      "action": "保留OPEN；当前相斥Swiper/List分支会更换图片父树，已有资源槽保留。官方跨父组件复用池从API26开始，三应用最低23且E/N发布目标24，不能无条件套用或抬高最低版本；图片组件的挂载/解码/测量状态也不能靠加装饰器安全转换。不增加叠图/第二套保图状态或同步解码；没有兼容的源码最小方案前不重复参考链。",
       "id": "layout-switch-black",
       "reportedAt": null,
       "reportedAtSource": "原始用户提出时间未核实。可核实的公开调查记录为10月3日18:11:07；9月25日的缩略图转场黑帧不是同一问题。",
@@ -142,7 +142,7 @@
       "status": "原生选择条件未具备",
       "kind": "open",
       "detail": "原FOLDER选择原图没有确认/选择此目录控件；K宿主只在DocumentViewPicker返回URI后扫描/入库。官方API26声明Phone支持FOLDER，实际guest26/260000，但本模拟器未返回目录，排他原因未建立。真实TerraHistoricus网络章节菜单往返现在有独立当前证据，不能替代目录导入结果。",
-      "action": "保留OPEN与原导入器；没有新的原生完成条件，不重复点击/长按或改导入代码。",
+      "action": "保留OPEN与原导入器；LocalImportCoordinator在系统DocumentViewPicker返回folderUris后才扫描，本项尚未到共享阅读器。没有新的原生完成条件不重复点击/长按，不用其他已接受的CBZ/网络章节结果替代目录结果。",
       "id": "remaining-host-acceptance",
       "reportedAt": null,
       "reportedAtSource": "本项是可核实的章节调查缺口：10月4日23:14:01已有公开记录。未核实原始用户提出时间；不把章节与网络等不同边界混用一个时间。",
@@ -277,6 +277,11 @@
     }
   ],
   "evidence": [
+    {
+      "id": "remaining-feasibility-review",
+      "label": "布局/目录的源码与官方API条件",
+      "path": "remaining-layout-folder-feasibility-reviewed.json"
+    },
     {
       "id": "f2-restart-reviewed",
       "label": "重启后增强仍失败的有限审阅",
@@ -456,7 +461,14 @@
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
   "stopRule": "只完成既有Package5尚未接受且当前可执行的命名边界；真实源已具备，不扩大提供者矩阵，不改源协议/菜单/数据模型，不回放冻结路径。",
   "excluded": "保留宿主原菜单、设置、数据、导航、根转场和旧版回退；不切换默认阅读器，不推送，不回到实机，不新增宿主专用状态。",
-  "costNote": "不显示虚构完成百分比或费用。当前工具不能提供这段任务的准确费用；只记录可查证产出和实质更新时间。"
+  "costNote": "不显示虚构完成百分比或费用。每项工时为已记录下界、历史覆盖不完整。本次剩余两项联合源码可行性核对另记录7分钟，未精确拆分，未伪分摊到单项工时。",
+  "jointAssessmentHandling": {
+    "recordedSeconds": 420,
+    "start": "2026-10-05T06:00:45+08:00",
+    "end": "2026-10-05T06:07:45+08:00",
+    "coverage": "lowerbound",
+    "allocation": "布局/FOLDER联合源码可行性核对未能精确拆分，不伪分摊单项工时。"
+  }
 }
 -->
 
@@ -532,7 +544,7 @@ and prior Pass results do not fill those gaps.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. E/N/K current-page save/share panel-open/cancel boundaries now have current native evidence and original positions restored. E initial403 remains recorded; existing native change-source obtained fresh157118B, then system save confirmation showed the sameP3 and cancelled back to DetailP3. No completed save/send, all-provider result or exclusive403 cause follows. Current ImageSRAnalyzer service still failed after one official guest restart; user explicitly skips simulator system enhancement, keeping successful replacementOPEN and no further calls. Only assess executable conditions for the existing layout/FOLDER boundaries; do not repeat identical UI or grow implementation without a source-proven minimal cause. Each issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. E/N/K current-page save/share panel-open/cancel boundaries now have current native evidence and original positions restored. E initial403 remains recorded; existing native change-source obtained fresh157118B, then system save confirmation showed the sameP3 and cancelled back to DetailP3. No completed save/send, all-provider result or exclusive403 cause follows. Current ImageSRAnalyzer service still failed after one official guest restart; user explicitly skips simulator system enhancement, keeping successful replacementOPEN and no further calls. Remaining source review confirms mutually exclusive Swiper/List parents and a shared image leaf with mounted/decoded/measurement state. Official cross-parent reuse pool is API26-only while minimumAPI23/E-N releaseAPI24 stay retained; no unconditional decorator/pool conversion or SDK increase. Native FOLDER still lacks returned URI before any reader entry. Wait for an executable compatible condition; no identical UI retry or new queue. Original guest30000ms timeout read back and lease released. Each issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
