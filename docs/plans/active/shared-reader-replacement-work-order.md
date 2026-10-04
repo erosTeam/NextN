@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T06:25:03+08:00",
+  "updatedAt": "2026-10-05T06:42:26+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "有限收尾的剩余条件已分类；系统超分按用户要求跳过",
+  "scope": "Package5有限收尾：跨父复用调查已收束，待范围选择；超分执行保持跳过",
   "activity": {
-    "title": "剩余条件：布局、系统增强、目录选择",
-    "detail": "布局追踪不支持1px/降采样补丁；目录完整参数没有冲突。已接受入口/重载/网络章节/自动阅读/面板路径冻结，剩余3项继续OPEN，不新增测试或源码队列。",
+    "title": "有界调查已结束，等待布局项范围选择",
+    "detail": "当前没有产品源码变更、构建、安装或设备重试。计时已停止；候选机制的兼容与生命周期条件已记录。",
     "startedAt": null
   },
-  "nextAction": "系统超分遵循用户跳过；目录等待真实picker返回URI；布局只有出现兼容API23/24且能保留实际绘制内容的最小方案或新反例时才继续实现，不重复尺寸假设或相同UI。",
+  "nextAction": "等待本轮范围选择：保留新旧共同短黑为OPEN，或纳入较大的共享复用改造。回复前不实现新组件作用域，不抬高最低版本，不重复UI链；没有把候选机制当作已可行方案。",
   "hosts": [
     {
       "name": "NextN",
@@ -96,21 +96,27 @@
     },
     {
       "title": "分页 / 连续布局切换的黑屏",
-      "status": "未解决",
+      "status": "兼容性调查收束；范围决定待回复",
       "kind": "open",
-      "detail": "同包同源3/124、同原生窗口的Legacy参考88bf5641已审阅2–383：LTR→连续83–89空白/90恢复，连续→LTR220–222空白/223恢复。Shared f462349b已有395–398/644–646空白；两者均替换内容分支，Shared当前资源槽保留。不能据此断言时延/FPS相等或排他原因。 已有原生追踪按节点3744/3898/4171精确查询：首次绘制均1320宽/1280x1808源；连续3898第二次StartDecoding在首次绘制后。不支持用1px初始化或自动降采样解释当前空白，也不等于排除全部尺寸贡献。",
-      "action": "保留OPEN；当前相斥Swiper/List分支会更换图片父树，已有资源槽保留。官方跨父组件复用池从API26开始，三应用最低23且E/N发布目标24，不能无条件套用或抬高最低版本；图片组件的挂载/解码/测量状态也不能靠加装饰器安全转换。不增加叠图/第二套保图状态或同步解码；没有兼容的源码最小方案前不重复参考链。",
+      "detail": "同HAP、同P3/124、同根视口的旧版也出现布局切换短黑。当前原生追踪不支持1px或自动降采样原因。API26全局复用是候选机制；当前SDK26.0.0.105有接口，但编译器要求reusePool字符串字面量并无条件初始化池，不能直接用运行时判断兼容API23/24。当前图片叶的回执、挂载和转场测量字段不能盲目复用；按资源ID分池默认每池100项，没有已证实的总资源上限。尚无安全完整候选，也无运行验证。",
+      "action": "等待本轮范围选择：保留新旧共同短黑为OPEN，或纳入较大的共享复用改造。回复前不实现新组件作用域，不抬高最低版本，不重复UI链；没有把候选机制当作已可行方案。",
       "id": "layout-switch-black",
       "reportedAt": null,
       "reportedAtSource": "原始用户提出时间未核实。可核实的公开调查记录为10月3日18:11:07；9月25日的缩略图转场黑帧不是同一问题。",
       "firstEvidenceAt": "2026-10-03T10:11:07.373Z",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 1469,
+        "recordedSeconds": 2230,
         "activeSince": null,
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
         "historicalCoverage": "incomplete"
+      },
+      "scopeDecision": {
+        "state": "awaiting-user-reply",
+        "question": "本轮保留共同短黑为OPEN，或将完整共享复用改造纳入本轮",
+        "basis": "已有共同短黑反例且候选要求兼容作用域、资源匹配回执、转场测量及有界回收；需要控制用户已强调的范围与投入",
+        "feasibility": "mechanism-documented-candidate-unproven"
       }
     },
     {
@@ -541,12 +547,16 @@ and prior Pass results do not fill those gaps.
 - 收尾标准：一个明确原因对应一份最小共同改动；三应用保持各自原菜单、数据、设置和
   导航职责；受影响普通操作及转场没有已知退化，改动提交、产物和运行证据对应。
   不以追平录像帧数或单软件特调作为持续投入理由；没有新证据时不重复同一检查。
+- 跨父复用的有界调查已收束：安装SDK `26.0.0.105` 具备全局复用接口；编译器要求
+  `reusePool` 字符串字面量并在池拥有者实例中无条件初始化，不能直接用运行时版本表达式
+  兼容现有最低API23/E/N发布API24。按资源标识匹配还需解决当前图片回执、转场测量与
+  有界回收；只确认候选机制，未证明完整方案。是否投入较大共享改造待当前范围问题回复。
 
 ### Current package5 evidence boundary — 2026-10-04
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. E/N/K current-page save/share panel-open/cancel boundaries now have current native evidence and original positions restored. E initial403 remains recorded; existing native change-source obtained fresh157118B, then system save confirmation showed the sameP3 and cancelled back to DetailP3. No completed save/send, all-provider result or exclusive403 cause follows. Current ImageSRAnalyzer service still failed after one official guest restart; user explicitly skips simulator system enhancement, keeping successful replacementOPEN and no further calls. Remaining source review confirms mutually exclusive Swiper/List parents and a shared image leaf with mounted/decoded/measurement state. Official cross-parent reuse pool is API26-only while minimumAPI23/E-N releaseAPI24 stay retained; no unconditional decorator/pool conversion or SDK increase. Native FOLDER still lacks returned URI before any reader entry. Existing native node3744/3898/4171 traces show full first-draw geometry and CreateImagePixelMap target[0,0]; node3898 secondStartDecoding occurs after firstDraw. No1px/autoResize patch is justified. K original folder entry options are exactlyFOLDER/max1 with no suffix/merge/multiAuth override; no options conflict or importer defect is isolated. Wait for an executable compatible condition; no identical UI retry or new queue. Original guest30000ms timeout read back and lease released. Each issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kit `cb4f2f5` affected ordinary entry/reentry, retained reload, crop, real uncached N entry, K original network/chapter-menu/auto-read, and E/N/K media-panel cancel paths have bounded current evidence. Original host menus, data, navigation and Legacy fallback are retained. | Layout-switch black remains OPEN and also occurs in the matching Legacy path. Successful system enhancement is on explicit user execution hold. Native FOLDER has not returned a URI. No full replacement, FPS superiority, all-provider, chapter-end or persistence conclusion. | Cross-parent reuse feasibility review is bounded and finished: SDK26 has the API, but literal decorator configuration and unconditional pool initialization require a separate compatibility scope for minimum23/E-N release24. Image receipt/entry measurement/resource disposal remain unsettled, so no safe candidate or small-marker fix is proven. Await the pending scope choice before implementing broader shared reuse; do not repeat frozen UI paths, system enhancement calls or unchanged folder-picker actions. Original guest30000ms timeout was restored and lease released; issue clocks/provenance remain explicit. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
