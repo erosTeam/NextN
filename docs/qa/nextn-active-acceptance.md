@@ -37,8 +37,22 @@
   layout branch; Shared keeps the existing slot. This is a counterexample to
   attributing black solely to Shared resource release, not FPS/latency parity.
   LTR/DetailP3 and original KLibraryNemoP1/9% are restored; process-only E Shared
-  is restored. No new product edit follows; assess the retained Koma native-folder
-  completion contract next, without identical retries or an importer rewrite.
+  is restored. Current Koma ordinary TerraHistoricus9381 production route now
+  has matching real network/chapter-menu evidence: upper60→lower71, actual
+  swipesP1→P7→P1, then original menu→upper60 and system pop to the same Detail.
+  Entry183→184, menu185→186 and return567→568 end the Kit preparation with first
+  body; the short host source-detail toast is recorded separately. All reviewed
+  entry1–660/menu1–520/swipe1–700 PTS match independent decoding. Twelve swipe
+  selections retain native Swiper1929; actual cache pages7–12 are added beyond
+  the first five neighbors. Final native Library root[0,117][1320,2232] retains
+  NemoP1/9%. Current HAP/source bindings are unchanged; no cache/history/source
+  deletion or preference change. This accepts only the named production entry,
+  real network and chapter-menu roundtrip, not FPS, other providers, chapter-end
+  or persistence. Receipts are `koma-terra-*-reviewed.json` beside the local MOVs.
+  Native FOLDER selection still lacks a completion control/returned URI, despite
+  official API26 Phone support and guest26/260000; no exclusive cause or importer
+  edit follows. Existing safe-source chapter-end gaps are assessed next without
+  replaying frozen entry/menu paths or unchanged unavailable conditions.
   The historical ordinary
   image/Stage counterexamples below are superseded only for these named paths.
 

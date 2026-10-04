@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T03:58:55+08:00",
+  "updatedAt": "2026-10-05T04:45:01+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "现有Koma章节路径：原生文件夹选择条件",
+  "scope": "Package5剩余有限缺口评估",
   "activity": {
-    "title": "Koma章节：确认未通过的原生选择边界",
-    "detail": "三宿主已缓存命名路径与N真实未缓存ReadP1链完成同一Kitcb4f2f5的有限核验。现在只复核原生目录选择的实际契约及既有失败输入；没有新条件不重复点击、不改导入器。",
-    "startedAt": "2026-10-05T03:58:55+08:00"
+    "title": "Koma真实网络有限路径已收尾",
+    "detail": "原普通入口、实际下载页7–12、原章节菜单往返与原书架恢复均已审阅；当前源码不变，整理剩余适用章节末端边界。",
+    "startedAt": "2026-10-05T04:45:01+08:00"
   },
-  "nextAction": "读取已保留的Koma原生FOLDER选择结果与宿主接收契约，判断是否存在未执行的原生完成动作或新的可选条件；相同失败动作不重跑，不扩展为导入器重写。",
+  "nextAction": "提交当前Koma网络证据边界；确认既有章节末端/取消是否有当前候选缺口，只推进有真实源前提的有限动作。布局/F2/目录未变条件不重复。",
   "hosts": [
     {
       "name": "NextN",
@@ -51,8 +51,8 @@
       "install": "共同候选已安装至当前模拟器",
       "verdict": "当前命名入口链已观察",
       "verdictKind": "review",
-      "runtime": "普通首入96→97、重入423→424同帧交接；Reload245/246保图与准备提示、247提示撤下；原始3–639已审阅且PTS一致，原生Library恢复NemoP1/9%。",
-      "remaining": "共同Kitcb4f2f5命名受影响路径有限接受；N真实无缓存普通入口已补。全部替换、FPS、其他提供者不能推断。既有布局切换黑屏、增强成功条件和章节目录缺口仍OPEN。"
+      "runtime": "普通首入96→97、重入423→424同帧交接；Reload245/246保图与准备提示、247提示撤下；原始3–639已审阅且PTS一致，原生Library恢复NemoP1/9%。 当前safe真实源精英干员：启程上/下篇：普通183→184、菜单185→186、快速P1→P7→P1无空白/准备提示，Swiper1929保留，新增缓存页7–12；原菜单切回上篇567→568并系统返回同Detail。原始1–660/1–520/1–700与全部PTS已核对。",
+      "remaining": "命名普通入口/真实网络/章节菜单往返有限接受；原生书架Nemo P1/9%已恢复。当前章节末端/边界/进程死亡持久化与其他源不由本记录接受；目录选择、F2及布局黑屏独立OPEN。"
     }
   ],
   "gaps": [
@@ -134,25 +134,48 @@
     },
     {
       "title": "Koma 章节：文件夹选择尚未完成",
-      "status": "待补齐",
+      "status": "原生选择条件未具备",
       "kind": "open",
-      "detail": "原生文件夹选择器看到章节样本，但没有取得已选目录和完成结果；CBZ文件导入成功不代表这条章节路径通过。其余网络等适用状态仍列在完整工作单，不能据本地结果推断。",
-      "action": "保留原入口、已有书籍和进度；没有新的原生选择条件时不重复同一失败动作，不重写导入器。",
+      "detail": "原FOLDER选择原图没有确认/选择此目录控件；K宿主只在DocumentViewPicker返回URI后扫描/入库。官方API26声明Phone支持FOLDER，实际guest26/260000，但本模拟器未返回目录，排他原因未建立。真实TerraHistoricus网络章节菜单往返现在有独立当前证据，不能替代目录导入结果。",
+      "action": "保留OPEN与原导入器；没有新的原生完成条件，不重复点击/长按或改导入代码。",
       "id": "remaining-host-acceptance",
       "reportedAt": null,
       "reportedAtSource": "本项是可核实的章节调查缺口：10月4日23:14:01已有公开记录。未核实原始用户提出时间；不把章节与网络等不同边界混用一个时间。",
       "firstEvidenceAt": "2026-10-04T15:14:01.361Z",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 0,
-        "activeSince": "2026-10-05T03:58:55+08:00",
-        "activeUntil": "2026-10-05T04:13:55+08:00",
+        "recordedSeconds": 543,
+        "activeSince": null,
+        "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
+        "historicalCoverage": "incomplete"
+      }
+    },
+    {
+      "id": "koma-network-chapters",
+      "title": "Koma 真实源：章节与网络阅读",
+      "status": "命名网络/章节菜单路径已接受",
+      "kind": "accepted",
+      "detail": "TerraHistoricus精英干员：启程：原普通入口上篇60页、原菜单下篇71页、快速P1→P7→P1、切回上篇与系统返回Detail已审阅。新缓存页7–12随翻页推进，原生Swiper1929未替换；不等于FPS/其他源/章节末端/持久化接受。 原生三次Back已恢复Library，布局根com.honjow.koma/[0,117][1320,2232]及继续阅读Nemo第1页9%经当前终态核对。",
+      "action": "冻结此命名路径；原生Library已恢复Nemo P1/9%。不重复入口/菜单/快速翻页，末端章节和持久化不由此链接受。",
+      "reportedAt": null,
+      "reportedAtSource": "原始提出时间未核实；此项是既有替换验收缺口，不与目录选择共用问题时间。",
+      "firstEvidenceAt": "2026-10-05T04:08:00+08:00",
+      "closedAt": "2026-10-05T04:45:01+08:00",
+      "handling": {
+        "recordedSeconds": 2223,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T04:07:58+08:00",
         "historicalCoverage": "incomplete"
       }
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-05T04:45:01+08:00",
+      "text": "Koma真实safe源原入口链完成审阅：上篇60页→下篇71页→快速P1/P7/P1→上篇→原Detail；12次手势均发布页码且Swiper1929不替换，网络新缓存页7–12。无产品源码修改，目录选择未被此链替代。 原生Library已恢复Nemo第1页9%，原源包和实际阅读缓存保留。"
+    },
     {
       "at": "2026-10-05T03:58:55+08:00",
       "text": "普通入口切片有限验证收尾：N非H682531真实首次GET/新缓存与录屏189→190一致，系统返回保留；共同Kit不再修改。原图/提示问题本轮已记录处理下界累计68分30秒，历史覆盖不完整。"
@@ -199,6 +222,41 @@
     }
   ],
   "evidence": [
+    {
+      "id": "k-terra-fast-review",
+      "label": "Koma快速滑动审阅与PTS",
+      "path": "koma-terra-fast-pages-return-reviewed.json"
+    },
+    {
+      "id": "k-terra-chapter-review",
+      "label": "Koma章节菜单审阅与PTS",
+      "path": "koma-terra-native-chapter-switch-reviewed.json"
+    },
+    {
+      "id": "k-terra-entry-review",
+      "label": "Koma真实入口审阅与PTS",
+      "path": "koma-terra-ordinary-entry-reviewed.json"
+    },
+    {
+      "id": "k-terra-fast",
+      "label": "Koma快速滑动/切回/原返回录像",
+      "path": "host-recording/koma-terra-fast-pages-chapter-return.mov"
+    },
+    {
+      "id": "k-terra-chapter",
+      "label": "Koma原章节菜单切换录像",
+      "path": "host-recording/koma-terra-native-real-chapter-switch.mov"
+    },
+    {
+      "id": "k-terra-entry",
+      "label": "Koma真实网络原入口录像",
+      "path": "host-recording/koma-terra-ordinary-network-entry-chrome-decision.mov"
+    },
+    {
+      "id": "k-terra-package",
+      "label": "Koma现成safe源包身份",
+      "path": "koma-terra-source-package-binding.json"
+    },
     {
       "id": "nextn-binding",
       "label": "NextN 源码 / HAP 绑定 · 当前入口候选",
@@ -298,10 +356,15 @@
       "id": "e-continuous-restore",
       "label": "NextE 连续恢复 / 布局黑屏录像",
       "path": "host-recording/package5-stable-crop-E-continuous-restore-return.mov"
+    },
+    {
+      "id": "koma-real-library-restore",
+      "label": "Koma真实网络链后书架恢复终态",
+      "path": "emulator__PHEMU-FD00/not-applicable/portrait-1320x2232/koma-terra-restore-original-library/screen.png"
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "现有Koma章节目录只作一次接收契约/已保留原生证据审查；只有新的可执行完成条件才进入实操。不要重复目录点击/长按，不重写导入器。布局、增强条件与整体替换保持原证据边界。",
+  "stopRule": "只完成既有Package5尚未接受且当前可执行的命名边界；真实源已具备，不扩大提供者矩阵，不改源协议/菜单/数据模型，不回放冻结路径。",
   "excluded": "保留宿主原菜单、设置、数据、导航、根转场和旧版回退；不切换默认阅读器，不推送，不回到实机，不新增宿主专用状态。",
   "costNote": "不显示虚构完成百分比或费用。当前工具不能提供这段任务的准确费用；只记录可查证产出和实质更新时间。"
 }
@@ -348,10 +411,10 @@ data.
 The current package is the ordinary reader route, not a collection of isolated
 controls. Its closure path is: ordinary entry and asset handoff → initially
 hidden chrome → full-screen/viewport ownership → exit and re-entry at the same
-source, plus F2 only where a processed replacement is applicable. The current
-candidate still lacks matching runtime evidence for those F1/F2 transitions;
-the historical terminal screenshots and prior Pass results are retained but do
-not fill that gap.
+source, plus F2 only where a processed replacement is applicable. The current ordinary F1 entry/handoff/reentry paths have bounded matching
+runtime evidence below. F2 successful processed replacement and the separately
+recorded remaining boundaries are still OPEN; historical terminal screenshots
+and prior Pass results do not fill those gaps.
 
 ### 当前总体状态和有限收尾安排（2026-10-04）
 
@@ -364,7 +427,7 @@ not fill that gap.
   `ee9fc71` 在保留旧图的替换请求中恢复加载反馈，复用请求编号和真实进度，不新增状态。
   共同 Kit `4f0cf1a` 复用已有分页保留图投影和两个稳定图片位置，修复连续模式在替换时
   移除旧图片的路径。三应用同源构建、NextE 原图往返和重新加载、NextN 分页/连续重新加载、
-  Koma 本地分页/连续重新加载的受影响区间已核对。首次图片与加载提示重叠和布局切换黑屏仍未解决。
+  Koma 本地分页/连续重新加载的受影响区间已核对。首次图片与加载提示重叠由共同 Kit `cb4f2f5` 在当前命名路径有限接受；布局切换黑屏仍未解决。
 - 连续模式切换黑屏在候选和干净 `15eb75c` 包均存在；当前 Core 资源保留，Surface 布局
   分支会重新挂载原生图片。一次当前追踪确认同一缓存文件重新解码，且解码期间原生节点
   记录约束未变、跳过布局；尚不能排除所有尺寸贡献，不以此扩写布局或添加遮罩。
@@ -379,7 +442,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5: ordinary first-image wrappers share the existing cell snapshot with Stage; no new lifecycle state or ACK change. Same 7-line source built/installed in E/N/K; current cached ordinary entry/reentry, retained Reload, and E continuous first/root flight return reviewed. Original E P3/LTR/cropfalse, NDetailP38, KLibrary NemoP1/9% retained. Frozen crop-node evidence7032 remains applicable. | The affected ordinary first-image candidate is bounded-accepted, now including N fresh non-H682531 ordinary Read/return. Current E/K layout-switch black, successful F2, chapter folder result and other applicable network paths stay OPEN. No synchronous ACK, extra body/state owner, host-specific patch or default promotion. | N752a86ca/E391e6de6/Kd9b2f833 scoped checkpoints consume the same Kitcb4f2f5; source/HAP binding remains equal. Current same-HAP Legacy layout reference also blanks both branches; no equal timing/FPS claim or unsupported remount patch. Fresh N first acquisition now has HTTP/cache/MOV proof; examine the retained K native-folder completion boundary before any repeat. No repeated frozen entry/crop/layout runs or identical unavailable F2/folder requests; each issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored. Commit the network boundary checkpoint and assess only existing current-candidate chapter-end gaps with the now available real source. Keep unavailable layout/F2/FOLDER paths OPEN without identical retries; preserve original importer. Each issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
