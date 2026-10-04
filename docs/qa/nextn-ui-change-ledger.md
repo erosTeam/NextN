@@ -12555,6 +12555,92 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   replacement, initial image+stage and layout-switch black remain OPEN; no node,
   menu, cache, source semantics or host-specific timing change is accepted here.
 
+### 2026-10-04 — first-acquisition loading above retained entry pixels (OPEN)
+
+- Newly actionable evidence: current E7d0ee351 ordinary native Detail tile9
+  is fully visible, with source9 body cache absent immediately before entry
+  and present afterward (402586 bytes). Movie29f130ca original sequential
+  frames1–431 retain the thumbnail then show the decoded body (249 onward),
+  but waiting frames178/200/240 have no visible loading stage. No cache was
+  deleted, source delayed or data/settings written. This counterexample
+  reopens only the post-flight first-acquisition handoff.
+- Whole parent/reference: Native E ReaderPage paints canvas, then the retained
+  opening thumbnail, then image/loading siblings and chrome. Its loading stage
+  uses the existing transition panel: width80%, max228, padding top40/bottom16/
+  sides24, blur BACKGROUND_THIN, color #665F6368, radius24. Native N has the
+  same panel. Shared Surface paints its opening builder before the pager/list;
+  cell loading is a sibling above its image. Root navigation owns flight/return.
+- Source cause: E1ef76e978 keeps the root proxy visible in WAITING_READER_CONTENT
+  and OPEN_HANDOFF while disabling the Reader-owned placeholder there; the
+  root therefore covers every Reader child until decode. Its inner placeholder
+  also has zIndex1 above the content parent. ArkUI zIndex only orders siblings,
+  so cell zIndex2 cannot repair that cross-container cover. N already hands
+  the root flight to its Reader-owned placeholder in those phases. The Kit
+  stage omits the Native transition panel and wrongly states the host supplies it.
+- Minimal plan: restore E's existing proxy-handoff phase ownership to the
+  Native/N pattern, preserving the mounted identical placeholder before the
+  root is removed. Remove only E's misplaced placeholder zIndex. Restore the
+  existing Native panel in the shared stage for the matching pending entry part
+  in paged/continuous cells. No shadow lifecycle, extra image, timer or host
+  loading adapter. Ordinary progress and current-request ACK remain authoritative.
+- Impact/risk: uncached first entry, cached root handoff, entry cancellation and
+  reverse/return. E flight geometry/departure/readiness and root-close ownership
+  are unchanged; N host transition and K host source/menu remain untouched.
+  Retained replacement uses plain stage as before. A missing placeholder,
+  duplicate image, empty handoff frame, residual stage or failed reverse rejects
+  the candidate. No FPS/performance or full replacement claim follows.
+- Verification: exact source diff, existing affected transition/state suites
+  (no UI-shape acceptance), V2 inventory and three signed consumers; then one
+  ordinary uncached acquisition, cached handoff/return and interruption with
+  current bundle/viewport binding and sequential original-pixel review. No
+  forced network delay, cache clearing, fullscreen-first or inner zoom.
+- Counterexample before the next edit: E6c07692b movie257b8a63, ordinary
+  uncached tile17, retains entry pixels and displays real progress, then the
+  decoded image without Stage from227; however original frames170–174 dim
+  the whole placeholder during handoff. Candidate remains failed QA. N's
+  existing708f33260 mounts the same placeholder during root OPENING, avoiding
+  a cold Image mount inside the post-flight arrival animation; E still mounts
+  at OPEN_PROXY_HANDOFF. Apply only that existing root-owned OPENING condition
+  to E. No new image, opacity, timing, geometry or phase write. A dim dip,
+  exposed fullscreen before flight, missing loading or broken return rejects
+  this correction. Three consumers already built the unchanged shared panel;
+  only E requires another build for this host delta.
+- Corrected E5684f474 movie8fa557b7 has intact original host pixels and no
+  whole-placeholder dim at146→147; flight122–146 remains root-owned. Reviewed
+  actions1–971 include cached re-entry/return and reversal before full bounds
+  at812→813. However original184–185 show decoded body plus bare100%, with
+  Stage absent by187: this is counter-evidence, not acceptance. Native E's
+  onImageDecoded immediately calls markImageLoaded; shared Image publishes its
+  current decoded target before the existing next-frame presentation ACK. The
+  entry panel becomes plain while Core still reports decoding. Reuse that
+  already fenced decoded target only to hide first-entry Stage for the exact
+  part/slot/load/asset identity. Keep preparation feedback, replacement ACK,
+  resource retirement, phase writes and all timing unchanged. Paged and
+  continuous use the same pure predicate; null/stale targets preserve loading.
+  Verify predicate stale/retry identities after implementation, compile all
+  consumers, and review uncached entry plus cached return/interruption again.
+  Residual Stage, empty handoff or premature fullscreen still rejects this slice.
+
+- Current9f06/Ead950 moviecc513a9c reviewed0–971 preserves the root flight,
+  transition panel159–215, actual42%/100% and intact return/cached flight.
+  Original216 is the first decoded body and still has one bare fill;217 has
+  none. This candidate remains REJECTED. The60ms Back has no visible flight,
+  so it does not accept interruption. Root-owned E reveal is outside animateTo;
+  do not attribute this bar to a supposed reveal transaction.
+- Bounded next edit: both shared fill Rows have attribute animation and no
+  explicit insertion/removal contract. Official ArkUI transition documentation
+  states that subtree changes inside animation scope receive default opacity
+  unless TransitionEffect.IDENTITY disables it. Add IDENTITY only to those
+  two Rows; preserve220ms width and900ms slider motion, panel geometry, decode
+  predicate, preparation feedback and Core ACK. This removes the source-level
+  permission for an animated fill to outlive its loading subtree; exclusive
+  attribution of frame216 is not yet established. It is not a timer, redraw,
+  new image or fullscreen-first workaround. Build all three consumers and review
+  uncached handoff/retained replacement/cached return plus a visible midflight
+  Back; any residual fill still rejects it. Do not expand this into Native UI,
+  menus, caching, layout remount or performance work.
+- Current affected-path result: Current common patch14507f52 adds IDENTITY only to the two animated fill Rows, preserving existing220ms width/900ms slider motion. Signed N150eb7dd/Ed4ef1749/K3f44dceb builds succeed. Ed4ef movie d58caf80 source36 body cache absent before/present384322B after, reviewed original7–971 (startup0–6 excluded). Root flight130–155, panel156–221 and real25%/100% retain pixels; full original222 is first decoded body with no fill/label/panel. Cached flight609–624 and returns retain image. Visible incomplete flight793 reverses from794, shrinking800/801 before Detail813. Contact preview at222 disagrees with original pixels and is not the boundary authority. This accepts only the named E thumbnail path; exclusive cause of old216, FPS and full replacement remain unproven. E progress3 is restored through ordinary tile3/Back, terminal Continue P3. Same shared-source signed N150eb7dd/K3f44dceb are installed on the authorized simulator. N entry8dc1257c reviewed24–287 (0–23 stale) has first body77 without Stage; Reload/return ec31cefe reviewed0–503 preserves source38, but original reentry319 has body+preparing Stage and320 does not. K entry0072475e reviewed1–287 (0 stale) has body+preparing label93, absent94; local Reload/return180a660b reviewed1–467 preserves1/11 and Bookshelf progress, but reentry273 has body+label, absent274. All sequential sample PTS match ffprobe. Normal no-thumbnail entry remains OPEN: its Core presentation ACK is next-frame guarded, whereas the entry-only decoded-target predicate does not apply. Do not synchronize resource ACK, add per-host decoded state or call this complete. Scoped checkpoint: common Kitb2def9c4, NextE31bc61df and Koma e0154c32 retain the same reviewed source hashes; this NextN commit records the pin and exact boundary. Next perform the existing finite K chapter/auto-read capability gates; ordinary-entry first-frame ownership, layout remount and successful F2 remain separate OPEN boundaries.
+
 ### 2026-10-04 — continuous retained replacement (bounded acceptance; Package5 OPEN)
 
 - Newly actionable boundary: current NextE9d272fbb ordinary source3 continuous
