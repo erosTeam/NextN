@@ -66,9 +66,19 @@
   runtime parity is not established. No retry, URL refresh or product edit.
   Receipts are `koma-auto-read-functional-reviewed.json` and
   `{koma,nextn,nexte}-media-panels-reviewed.json` in the same local evidence root.
-  Official CoreVision abnormal-service documentation recommends restarting the
-  device; one simulator restart is the newly actionable F2 recovery condition.
-  Do not replay unchanged unavailable layout/FOLDER or failed HTTP403 requests.
+  Official CoreVision abnormal-service recovery was executed once: guest
+  reboot05:23, bootcompletedtrue, ScreenLock16 neutral unlock to Desktop11 and
+  finalAWAKE/86400000ms gate. E sameP3/System1280x1808 actually starts05:32:27.105
+  and fails27.214 with The service is abnormal; no enhanced output, actualInfo
+  stillWEBP1280x1808/153.4KB/notapplied. OFF/System2000px and nativeDetailP3 are
+  restored. Movie09ece127 has10 reviewed functional samples/all944 matchingPTS;
+  no full-frame continuity/FPS/successful replacement acceptance. Receipt
+  `f2-after-restart-functional-reviewed.json` records unavailable current
+  service condition and the rejected early settings-route chain/P3 recovery.
+  Successful F2 staysOPEN; no repeat reboot/call without a different capability
+  condition. Existing native change-source may make a new E save resource
+  available; require actual fresh retrieval before a new save, not original403
+  request replay. No importer/backend/source edit follows these observations.
   The historical ordinary
   image/Stage counterexamples below are superseded only for these named paths.
 

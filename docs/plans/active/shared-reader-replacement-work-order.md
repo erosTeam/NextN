@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T05:21:37+08:00",
+  "updatedAt": "2026-10-05T05:41:53+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
   "title": "共享阅读器 · 有限收尾",
   "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "既有Package5有限收尾；媒体403与增强成功保持OPEN",
+  "scope": "既有Package5有限收尾；官方增强恢复已穷尽当前动作",
   "activity": {
-    "title": "媒体边界已收束；提交有限结论",
-    "detail": "K本地NemoP1和N在线P38的系统保存/分享面板已核对并取消；E在线P3分享面板已核对并取消。E保存导出收到HTTP403三次，未出现系统确认框。最终KLibraryNemoP1/9%、NDetail继续P38、EDetail继续P3均恢复，无相册写入或发送。",
-    "startedAt": "2026-10-05T05:21:37+08:00"
+    "title": "增强恢复方案未奏效，原状态已恢复",
+    "detail": "按官方异常恢复建议完成一次guest重启、boot/unlock/亮屏门槛后，E同P3系统模型实际调用仍于05:32:27.214返回The service is abnormal，无处理后图片；信息为WEBP1280x1808/153.4KB、系统超分未应用。OFF/System2000px和原DetailP3已恢复；10个功能样本及全部944 PTS已核对，不是成功替换/FPS或全帧连续性接受。",
+    "startedAt": "2026-10-05T05:41:53+08:00"
   },
-  "nextAction": "提交本地自动阅读和媒体面板的有限结论；然后按官方CoreVision服务恢复建议执行一次模拟器重启，再核对同一增强路径。",
+  "nextAction": "按既有媒体403边界评估原生换源动作：仅当新资源被实际成功取得后再尝试一次E保存；不重发原403URL或更换保存实现。",
   "hosts": [
     {
       "name": "NextN",
@@ -115,17 +115,17 @@
     },
     {
       "title": "图像增强的成功替换路径",
-      "status": "环境限制",
+      "status": "重启后仍服务异常",
       "kind": "open",
-      "detail": "API 26 模拟器公布增强能力，但系统服务返回异常、没有处理后图片。失败回退已有记录；成功替换仍未证实。Koma 无此宿主端口。",
-      "action": "没有新的能力条件时不重复相同请求，不重写增强后端。",
+      "detail": "按官方异常恢复建议完成一次guest重启、boot/unlock/亮屏门槛后，E同P3系统模型实际调用仍于05:32:27.214返回The service is abnormal，无处理后图片；信息为WEBP1280x1808/153.4KB、系统超分未应用。OFF/System2000px和原DetailP3已恢复；10个功能样本及全部944 PTS已核对，不是成功替换/FPS或全帧连续性接受。",
+      "action": "成功路径保留OPEN；一次官方恢复方案未恢复服务。没有不同的真实能力条件或用户新目标，不再重启/重发同样请求，不重写后端。",
       "id": "enhancement-success",
       "reportedAt": null,
       "reportedAtSource": "调查发现的模拟器服务异常；10月3日19:54:41已有公开记录，不冒充原始用户提出时间。",
       "firstEvidenceAt": "2026-10-03T11:54:41.360Z",
       "closedAt": null,
       "handling": {
-        "recordedSeconds": 0,
+        "recordedSeconds": 900,
         "activeSince": null,
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
@@ -211,6 +211,10 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-05T05:41:53+08:00",
+      "text": "官方建议的一次guest重启后，实际System1280×1808调用仍服务异常无输出。原设置OFF/System2000px和DetailP3已恢复；成功路径保持OPEN，不重复调用。"
+    },
+    {
       "at": "2026-10-05T05:21:37+08:00",
       "text": "K本地自动前进/停止与原Library恢复已有功能证据；K/N保存、三宿主分享面板已取消并恢复原位。E保存HTTP403未通过，无产品源码修改，未写相册/发送。"
     },
@@ -264,6 +268,16 @@
     }
   ],
   "evidence": [
+    {
+      "id": "f2-restart-reviewed",
+      "label": "重启后增强仍失败的有限审阅",
+      "path": "f2-after-restart-functional-reviewed.json"
+    },
+    {
+      "id": "f2-restart-movie",
+      "label": "重启后系统增强实际调用录像",
+      "path": "host-recording/f2-after-restart-system-enhancement-on.mov"
+    },
     {
       "id": "e-media-review",
       "label": "NextE分享取消与保存403边界",
@@ -509,7 +523,7 @@ and prior Pass results do not fill those gaps.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. K/N save and E/N/K share system-panel/cancel boundaries now have current native evidence and original positions restored; E save remains OPEN after three HTTP403 export responses, without a repeated request or causal product edit. Checkpoint local auto-read/media dispositions, then perform one official-recommended simulator restart as a new CoreVision service condition for F2. Unchanged layout/FOLDER gaps remain OPEN without identical retries. Each issue retains timing/provenance. |
+| **5 ACTIVE / OPEN** | Common Kitcb4f2f5 ordinary7-line affected paths are bounded-accepted; E/N/K cached entry/reentry, retainedReload and E rootflight/continuous preserved. N real uncached682531 and K original TerraHistoricus9381 upper60/lower71 entry/chapter-menu roundtrip/fastP1→P7→P1 now have current MOV/network proof. Frozen crop7032 retained. | E/K layout-switch black remainsOPEN; same-HAP Legacy also blanks. F2 success blocked by current platform service result; native FOLDER URI not returned. No all-provider/FPS/chapter-end/persistence conclusion or default promotion. | K native Library/NemoP1/9% is restored; network checkpoint1f63511b committed. P9 chapter-end/cancel stays frozen without new counter-evidence. Current local auto-read start/stop/Library restore is bounded-accepted. K/N save and E/N/K share system-panel/cancel boundaries now have current native evidence and original positions restored; E save remains OPEN after three HTTP403 export responses, without a repeated request or causal product edit. Local auto-read/media dispositions committed4d38487e. One official-recommended guest restart is completed; actual same-source SystemCoreVision call still fails/nooutput, originalOFF/System2000px and nativeDetailP3 restored. Assess only existing native change-source recovery for E save403; do not repeat enhancementcalls. Unchanged layout/FOLDER gaps remain OPEN without identical retries. Each issue retains timing/provenance. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
