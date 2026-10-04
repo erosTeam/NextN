@@ -1,5 +1,165 @@
 # Shared Reader Replacement Work Order
 
+<!-- reader-progress-snapshot
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-05T00:54:18+08:00",
+  "owner": "主代理 / root",
+  "package": "Package 5",
+  "state": "OPEN",
+  "title": "共享阅读器 · 有限收尾",
+  "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
+  "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
+  "scope": "一份共同裁切图片节点改动；三个消费者",
+  "activity": {
+    "title": "进度页已打开；继续审阅 NextN 裁切恢复录像",
+    "detail": "本地进度页已真实渲染，三个 Kit 当前版本、绑定文件与录像链接可读取。共同裁切改动仍待 NextN 录像审阅和 Koma 分割 / 旋转等受影响路径核对。",
+    "startedAt": "2026-10-05T00:54:18+08:00"
+  },
+  "nextAction": "先审阅 NextN 已录制的裁切 ON/OFF 录像并核对恢复状态；再通过 Koma 原导入入口打开真实横图，核对分割、旋转及恢复。",
+  "hosts": [
+    {
+      "name": "NextN",
+      "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
+      "kit": "7032a31eaeb58373020d9835aea7ca2459490621",
+      "hap": "6e69711961fca12188652475328008628979e76c8b363c9530b6e5ce2c83c7fb",
+      "build": "签名构建成功 · exit 0",
+      "install": "已安装至当前模拟器",
+      "verdict": "录像待审阅",
+      "verdictKind": "review",
+      "runtime": "当前裁切 ON/OFF 与普通返回已录制，尚未审阅全部受影响帧，不能宣布接受。",
+      "remaining": "当前候选裁切连续性、恢复状态和相关连续路径尚待核对。"
+    },
+    {
+      "name": "NextE",
+      "checkout": "/Users/honjow/git/NextE",
+      "kit": "7032a31eaeb58373020d9835aea7ca2459490621",
+      "hap": "c2f33c5db99d6c2fc392ed07940f6487fe4408f685be626ade95be91ce523e5d",
+      "build": "签名构建成功 · exit 0",
+      "install": "已安装至当前模拟器",
+      "verdict": "局部已观察",
+      "verdictKind": "accepted",
+      "runtime": "当前 P3 裁切与根转场/重新加载/返回的命名区间已观察；图片保留，原设置和 P3 恢复。",
+      "remaining": "普通无缩略图重入仍有图片与 100% 提示重叠；不代表完整替换或性能验收。"
+    },
+    {
+      "name": "Koma",
+      "checkout": "/Users/honjow/git/Koma-current-kit-verify",
+      "kit": "7032a31eaeb58373020d9835aea7ca2459490621",
+      "hap": "7bc5bc38782dad97299933d16880052f560fb05052cbafa0da6dcef261bd2bc0",
+      "build": "签名构建成功 · exit 0",
+      "install": "已安装至当前模拟器",
+      "verdict": "受影响路径待核对",
+      "verdictKind": "review",
+      "runtime": "当前签名包已打开原书架；真实 577 × 311 横图已传入，尚未通过原入口导入。",
+      "remaining": "当前分割、旋转与连续图片路径待核对；先前本地自动阅读仅有限接受，章节缺口仍在。"
+    }
+  ],
+  "gaps": [
+    {
+      "title": "共同裁切改动的受影响路径",
+      "status": "当前工作",
+      "kind": "review",
+      "detail": "NextE 同源 P3 裁切 ON/OFF 的受影响区间不再出现此前黑帧；缩略图从详情页开始飞入，重新加载期间保留图片，返回恢复 P3。NextN 录像尚未审阅，Koma 分割/旋转及连续图片路径尚未接受。",
+      "action": "只补齐这份共同改动的必要证据；出现反例才重新分析源码。"
+    },
+    {
+      "title": "普通入口：图片与加载提示短暂重叠",
+      "status": "未解决",
+      "kind": "open",
+      "detail": "当前 NextE 普通重入录像仍有图片与 100% 提示重叠（原始帧 301–303）。之前 NextN/Koma 普通入口也保留相应反例。",
+      "action": "保持 Core 回执及资源退休围栏；只有最小共同修复不破坏生命周期才修改。"
+    },
+    {
+      "title": "分页 / 连续布局切换的黑屏",
+      "status": "未解决",
+      "kind": "open",
+      "detail": "当前候选与此前干净基底都有布局切换黑屏。已观察到原生 Image 重挂和缓存图片解码；尚未建立唯一原因或安全共同方案。",
+      "action": "不得增加第二套保图状态、叠图或软件特调来掩盖。"
+    },
+    {
+      "title": "图像增强的成功替换路径",
+      "status": "环境限制",
+      "kind": "open",
+      "detail": "API 26 模拟器公布增强能力，但系统服务返回异常、没有处理后图片。失败回退已有记录；成功替换仍未证实。Koma 无此宿主端口。",
+      "action": "没有新的能力条件时不重复相同请求，不重写增强后端。"
+    },
+    {
+      "title": "剩余适用验收边界",
+      "status": "待补齐",
+      "kind": "open",
+      "detail": "Koma 章节导入缺少原生文件夹选择结果；普通本地自动阅读开始/翻页/停止已有限接受。网络、章节及其余适用状态尚不能从既有结果推断。",
+      "action": "按原入口和现有职责处理明确缺口；不扩展为导入器或网络功能重写。"
+    }
+  ],
+  "milestones": [
+    {
+      "at": "2026-10-05T00:54:18+08:00",
+      "text": "本地进度页已真实打开并核对宽 / 窄布局，绑定文件及录像分段请求可读取。进度每 3 秒从唯一工作单更新；连接正常不代表进度完成。"
+    },
+    {
+      "at": "2026-10-04T16:23:24.926930+00:00",
+      "text": "NextE 当前转场 / 重载 / 返回录像录制完成；其受影响区间随后已审阅。裁切 ON/OFF、原设置及 P3 恢复已有记录，普通重入提示重叠仍保留。"
+    },
+    {
+      "at": "2026-10-05T00:13:46+08:00",
+      "text": "三个消费者的共同 Kit / 签名 HAP 绑定记录完成；构建成功，之后已通过受控协议安装。此项不代表整体验收。"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "nextn-binding",
+      "label": "NextN 源码 / HAP 绑定",
+      "path": "package5-stable-crop-nextn-binding.json"
+    },
+    {
+      "id": "nexte-binding",
+      "label": "NextE 源码 / HAP 绑定",
+      "path": "package5-stable-crop-nexte-binding.json"
+    },
+    {
+      "id": "koma-binding",
+      "label": "Koma 源码 / HAP 绑定",
+      "path": "package5-stable-crop-koma-binding.json"
+    },
+    {
+      "id": "e-crop-on",
+      "label": "NextE 裁切 ON 录像",
+      "path": "host-recording/package5-stable-crop-E-on.mov"
+    },
+    {
+      "id": "e-crop-off",
+      "label": "NextE 裁切 OFF / 重入录像",
+      "path": "host-recording/package5-stable-crop-E-off-reenter.mov"
+    },
+    {
+      "id": "e-entry-reload",
+      "label": "NextE 转场 / 重载 / 返回录像",
+      "path": "host-recording/package5-stable-crop-E-thumbnail-reload-return.mov"
+    },
+    {
+      "id": "n-crop",
+      "label": "NextN 裁切录像 · 待审阅",
+      "path": "host-recording/package5-stable-crop-N-toggle-restore-return.mov"
+    }
+  ],
+  "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
+  "stopRule": "这一轮只完成共同裁切改动的受影响普通操作证据与范围提交；整体替换须逐项处置现有有限缺口。没有新反例或源码原因时，不重复同一检查，也不追求录像帧数完全相同。",
+  "excluded": "保留宿主原菜单、设置、数据、导航、根转场和旧版回退；不切换默认阅读器，不推送，不回到实机，不新增宿主专用状态。",
+  "costNote": "不显示虚构完成百分比或费用。当前工具不能提供这段任务的准确费用；只记录可查证产出和实质更新时间。"
+}
+-->
+
+### 本地进度页的维护
+
+运行 `python3 scripts/serve-reader-progress.py`，打开 `http://127.0.0.1:8765`。
+页面读取本单顶部 `reader-progress-snapshot` JSON，不创建第二份队列。每次开始一个
+有限动作、取得实质结果、发现反例或改变下一动作时，同步更新这里的快照与当前包行；
+持续工作超过15分钟也需更新实际进行的动作，不得仅刷新时间戳。构建、安装、运行接受
+分别记录，证据时间以产物记录为准，未记录的审阅时刻不补造。页面轮询与版本读取是
+实时的；工作进度来自代理维护的事实记录，不是独立后台执行器。页面未更新超过15分钟
+即提示过期。服务只监听本机，重启后可用上面的命令恢复。
+
 This is the only live execution queue for replacing the NextN, NextE, and Koma
 readers with `reader-kit`. The architecture document preserves design and prior
 evidence. Per-app QA ledgers preserve durable counterexamples and accepted
@@ -57,7 +217,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kit4f0cf1a retains displayed pixels through exact replacement with the existing guarded candidate ACK; previous E/N/K ordinary Reload intervals retain their bounded acceptance. Current common commitb2def9c4 (patch14507f52), E31bc61df/K e0154c32 pins and signed N150eb7dd/Ed4ef1749/K3f44dceb are built and installed. E uncached36 movie d58caf80 original7–971 retains thumbnail, real progress and root-owned flight/return; first decoded body222 has no Stage. E Continue P3 restored through UI. N8dc1257c/ec31cefe and K0072475e/180a660b retain ordinary body/Reload/return and original progress; original sequential PTS verified. | Full replacement OPEN. No-thumbnail entry counterexamples remain: N reentry319 body+Stage, absent320; K entry93/reentry273 body+label, absent94/274. Existing next-frame Core ACK is distinct from entry-only decoded-target visibility. Layout remount black, successful F2, rotated/cropped/chapter/network/auto-read finite boundaries remain. No synchronous ACK, extra UI-state owner, host-specific patch, FPS/parity or default promotion. | The bounded thumbnail handoff slice and same Kit pins are checkpointed in this commit; next run the existing finite K chapter/auto-read capability gate from ordinary Bookshelf on the simulator. Investigate normal first-frame ownership only if a minimal shared solution preserves current decode/retirement fences; do not add synchronization to chase one-frame parity. |
+| **5 ACTIVE / OPEN** | Current common Kit7032a31e keeps one non-sprite Image build site across crop changes, without new lifecycle state or geometry algorithm. Signed N6e697119/Ec2f33c5d/K7bc5bc38 are built and installed on the authorized API26 simulator. E current crop ON/OFF moviesf6f3df1c/375cbb00 reviewed1–212/1–550 retain affected crop pixels and restore false/standard/P3. E ordinary thumbnail/Reload/return860b8a45 reviewed2–650 retains root-owned flight, current body through Reload and return to original DetailP3; raw300 has loading feedback and600 has none. Current N crop ON/OFF16ebcf7b is recorded but unreviewed; K real wide original577×311 CBZ transferred but not imported. | Full replacement OPEN. Current E no-thumbnail reentry still has decoded body+100% Stage301–303, absent304; earlier N/K ordinary-entry counterexamples remain. Layout remount black, successful F2 and chapter/network boundaries stay OPEN. Current crop candidate fragment/rotation/continuous affected evidence is pending. No synchronous ACK, extra UI-state owner, host-specific patch, FPS/parity or default promotion. | Review already-recorded N crop/restore/return, then import the unchanged real wide comic through Koma native CBZ route and verify split/rotation plus affected continuous image geometry, restoring original settings/progress. If a source-proven regression appears, isolate one common cause before editing; otherwise checkpoint current pins/evidence without expanding scope. The local progress monitor reads this work order, not a second queue. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:
