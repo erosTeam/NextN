@@ -17,6 +17,8 @@ let lastData=null,lastKey='',lastSuccess=null;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n};
 const date=s=>new Date(s).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
 const badge=(text,kind='open')=>el('span',text,'badge '+kind);
+const fullDate=s=>new Date(s).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+function duration(seconds){let s=Math.max(0,Math.floor(seconds)),days=Math.floor(s/86400);s%=86400;const hours=Math.floor(s/3600);s%=3600;const minutes=Math.floor(s/60);s%=60;return (days?days+'天 ':'')+(hours?hours+'小时 ':'')+minutes+'分 '+s+'秒';}
 function render(d){
  const fragment=document.createDocumentFragment(),hero=el('section',null,'hero');
  hero.append(badge(d.package+' · '+d.state),el('h1',d.title),el('p',d.outcome,'summary'),el('div','最近实质更新：'+date(d.updatedAt)+' · '+d.owner,'timestamp'));
@@ -29,13 +31,19 @@ function render(d){
  for(const [label,value] of [['源码',same?'共同 Kit '+h.kit.slice(0,8):'当前源码与记录不一致'],['构建',h.build],['安装',h.install]])proof.append(el('span',label,'label'),el('span',value,!same&&label==='源码'?'bad':''));card.append(proof,el('div',h.runtime,'runtime'));
  const detail=el('details'),sum=el('summary','查看版本与未覆盖范围');detail.append(sum,el('p',h.remaining),el('p','工作目录：'+h.checkout));detail.append(el('code','HAP SHA-256 '+h.hap,'hash'),el('code','当前 Kit '+(live||'读取失败'),'hash'));card.append(detail);hosts.append(card)}hostPanel.append(hosts);fragment.append(hostPanel);
  const cols=el('div',null,'columns'),gaps=el('section',null,'panel');gaps.append(el('h2','有限收尾：仍未过关的边界'));
- for(const g of d.gaps){const item=el('article',null,'gap'),top=el('div',null,'gap-top');top.append(el('h3',g.title),badge(g.status,g.kind));item.append(top,el('p',g.detail),el('p','处理边界：'+g.action,'small'));gaps.append(item)}
+ for(const g of d.gaps){const item=el('article',null,'gap'),top=el('div',null,'gap-top');top.append(el('h3',g.title),badge(g.status,g.kind));item.append(top,el('p',g.detail),el('p','处理边界：'+g.action,'small'));
+ const timing=el('div',null,'small');timing.style.cssText='background:#f4f7f8;border-radius:6px;padding:10px 12px;margin-top:10px';
+ timing.append(el('div','首次提出：'+(g.reportedAt?fullDate(g.reportedAt):'原始消息时间未核实')));
+ if(g.reportedAtSource)timing.append(el('div',g.reportedAtSource,'muted'));
+ if(g.firstEvidenceAt)timing.append(el('div','当前候选可核实记录：'+fullDate(g.firstEvidenceAt),'muted'));
+ const elapsed=el('div'),effort=el('div');elapsed.dataset.elapsedIssue=g.id;effort.dataset.effortIssue=g.id;timing.append(elapsed,effort,el('div','实际处理工时从 '+fullDate(g.handling.trackingSince)+' 起分段记录；此前工时未完整记录。','muted'));item.append(timing);gaps.append(item)}
  const milestones=el('section',null,'panel');milestones.append(el('h2','最近取得的实际产出'));const list=el('ol',null,'timeline');for(const m of d.milestones){const li=el('li');li.append(el('time',date(m.at)),el('p',m.text));list.append(li)}milestones.append(list);cols.append(gaps,milestones);fragment.append(cols);
  const evidence=el('section',null,'panel');evidence.append(el('h2','可查证的记录'));const links=el('div',null,'evidence');for(const e of d.evidence){const a=el('a',e.label);a.href='/evidence?id='+encodeURIComponent(e.id);a.target='_blank';a.rel='noopener';links.append(a)}evidence.append(links,el('p',d.evidenceNote,'small muted'));evidence.lastChild.style.marginTop='13px';fragment.append(evidence);
- const limits=el('section',null,'panel limits');limits.append(el('h2','这轮工作的停止边界'),el('p',d.stopRule),el('p',d.excluded),el('p',d.costNote));fragment.append(limits);content.replaceChildren(fragment);updateAge();
+ const limits=el('section',null,'panel limits');limits.append(el('h2','这轮工作的停止边界'),el('p',d.stopRule),el('p',d.excluded),el('p',d.costNote));fragment.append(limits);content.replaceChildren(fragment);updateTimings();
 }
 function updateAge(){if(!lastData)return;const age=Math.max(0,Math.round((Date.now()-Date.parse(lastData.updatedAt))/60000)),n=document.querySelector('#stale');if(n){n.style.display=age>=15?'block':'none';n.textContent='已 '+age+' 分钟没有实质进度更新。页面连接正常不代表任务仍在执行；以上是最后一次记录。'}}
+function updateTimings(){if(!lastData)return;for(const g of lastData.gaps){const until=g.closedAt?Date.parse(g.closedAt):Date.now(),opened=g.reportedAt||g.firstEvidenceAt;const wall=document.querySelector('[data-elapsed-issue="'+g.id+'"]'),effort=document.querySelector('[data-effort-issue="'+g.id+'"]');if(wall)wall.textContent=(g.reportedAt?'提出后经过：':'现存证据后经过：')+(opened?duration((until-Date.parse(opened))/1000):'待核实')+(opened?(g.closedAt?' · 已冻结':' · 持续计时'):'');if(effort){const h=g.handling,limit=h.activeUntil?Date.parse(h.activeUntil):Date.parse(lastData.updatedAt),active=h.activeSince?Math.max(0,(Math.min(Date.now(),limit)-Date.parse(h.activeSince))/1000):0;effort.textContent='已记录实际处理：'+duration(h.recordedSeconds+active)+(h.activeSince&&Date.now()<limit?' · 本段计时中':h.activeSince?' · 当前记录已过期，停止累加':' · 当前未计时')}}updateAge();}
 async function refresh(){try{const r=await fetch('/api/progress',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(!d.hosts||!d.gaps)throw Error('进度结构不完整');lastData=d;const copy={...d};delete copy.servedAt;const key=JSON.stringify(copy);if(key!==lastKey){lastKey=key;render(d)}lastSuccess=Date.now();connection.replaceChildren(el('span',null,'dot'),document.createTextNode('连接正常 · '+date(d.servedAt)+' 读取'));updateAge()}catch(error){connection.replaceChildren(el('span',null,'dot'),document.createTextNode('连接中断 · 保留最后记录'));connection.firstChild.style.background='var(--red)';if(!lastSuccess)content.replaceChildren(el('div','无法读取进度：'+error.message+'。请启动 scripts/serve-reader-progress.py。','panel'));}}
-refresh();setInterval(refresh,3000);
+refresh();setInterval(refresh,3000);setInterval(updateTimings,1000);
 </script>
 </html>

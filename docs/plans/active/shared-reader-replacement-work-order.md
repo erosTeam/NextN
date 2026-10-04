@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T00:54:18+08:00",
+  "updatedAt": "2026-10-05T01:06:48+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN",
@@ -12,9 +12,9 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "一份共同裁切图片节点改动；三个消费者",
   "activity": {
-    "title": "进度页已打开；继续审阅 NextN 裁切恢复录像",
-    "detail": "本地进度页已真实渲染，三个 Kit 当前版本、绑定文件与录像链接可读取。共同裁切改动仍待 NextN 录像审阅和 Koma 分割 / 旋转等受影响路径核对。",
-    "startedAt": "2026-10-05T00:54:18+08:00"
+    "title": "给每项问题补充提出时间与耗时记录",
+    "detail": "已从原始用户消息核实加载提示叠加的提出时间。其它条目明确显示原始时间未核实，并列出现存候选证据时间；实际处理只累加明确开始和结束的记录区间，历史未完整记录。",
+    "startedAt": "2026-10-05T01:06:48+08:00"
   },
   "nextAction": "先审阅 NextN 已录制的裁切 ON/OFF 录像并核对恢复状态；再通过 Koma 原导入入口打开真实横图，核对分割、旋转及恢复。",
   "hosts": [
@@ -61,38 +61,102 @@
       "status": "当前工作",
       "kind": "review",
       "detail": "NextE 同源 P3 裁切 ON/OFF 的受影响区间不再出现此前黑帧；缩略图从详情页开始飞入，重新加载期间保留图片，返回恢复 P3。NextN 录像尚未审阅，Koma 分割/旋转及连续图片路径尚未接受。",
-      "action": "只补齐这份共同改动的必要证据；出现反例才重新分析源码。"
+      "action": "只补齐这份共同改动的必要证据；出现反例才重新分析源码。",
+      "id": "crop-continuity",
+      "reportedAt": null,
+      "reportedAtSource": "调查发现；原始用户提出时间未核实。现存裁切反例录像是当前候选可核实起点。",
+      "firstEvidenceAt": "2026-10-04T15:42:45.359788+00:00",
+      "closedAt": null,
+      "handling": {
+        "recordedSeconds": 0,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T01:06:48+08:00",
+        "historicalCoverage": "incomplete"
+      }
     },
     {
       "title": "普通入口：图片与加载提示短暂重叠",
       "status": "未解决",
       "kind": "open",
       "detail": "当前 NextE 普通重入录像仍有图片与 100% 提示重叠（原始帧 301–303）。之前 NextN/Koma 普通入口也保留相应反例。",
-      "action": "保持 Core 回执及资源退休围栏；只有最小共同修复不破坏生命周期才修改。"
+      "action": "保持 Core 回执及资源退休围栏；只有最小共同修复不破坏生命周期才修改。",
+      "id": "ordinary-entry-loading",
+      "reportedAt": "2026-09-24T20:28:12.008Z",
+      "reportedAtSource": "同类问题的原始用户反馈：加载指示器叠在图片上。经过时间含历史处置及重新发现区间，不表示连续未修复。",
+      "firstEvidenceAt": "2026-10-04T08:50:39.928011+00:00",
+      "closedAt": null,
+      "handling": {
+        "recordedSeconds": 0,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T01:06:48+08:00",
+        "historicalCoverage": "incomplete"
+      }
     },
     {
       "title": "分页 / 连续布局切换的黑屏",
       "status": "未解决",
       "kind": "open",
       "detail": "当前候选与此前干净基底都有布局切换黑屏。已观察到原生 Image 重挂和缓存图片解码；尚未建立唯一原因或安全共同方案。",
-      "action": "不得增加第二套保图状态、叠图或软件特调来掩盖。"
+      "action": "不得增加第二套保图状态、叠图或软件特调来掩盖。",
+      "id": "layout-switch-black",
+      "reportedAt": null,
+      "reportedAtSource": "原始用户提出时间未核实。9月25日05:48:31的反馈针对缩略图转场后的黑帧，不冒充本项首次提出时间。",
+      "firstEvidenceAt": "2026-10-04T08:50:39.928011+00:00",
+      "closedAt": null,
+      "handling": {
+        "recordedSeconds": 0,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T01:06:48+08:00",
+        "historicalCoverage": "incomplete"
+      }
     },
     {
       "title": "图像增强的成功替换路径",
       "status": "环境限制",
       "kind": "open",
       "detail": "API 26 模拟器公布增强能力，但系统服务返回异常、没有处理后图片。失败回退已有记录；成功替换仍未证实。Koma 无此宿主端口。",
-      "action": "没有新的能力条件时不重复相同请求，不重写增强后端。"
+      "action": "没有新的能力条件时不重复相同请求，不重写增强后端。",
+      "id": "enhancement-success",
+      "reportedAt": null,
+      "reportedAtSource": "当前模拟器适用性调查缺口；未找到针对该服务异常的原始用户提出时间。",
+      "firstEvidenceAt": "2026-10-04T10:37:09.154160+00:00",
+      "closedAt": null,
+      "handling": {
+        "recordedSeconds": 0,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T01:06:48+08:00",
+        "historicalCoverage": "incomplete"
+      }
     },
     {
       "title": "剩余适用验收边界",
       "status": "待补齐",
       "kind": "open",
       "detail": "Koma 章节导入缺少原生文件夹选择结果；普通本地自动阅读开始/翻页/停止已有限接受。网络、章节及其余适用状态尚不能从既有结果推断。",
-      "action": "按原入口和现有职责处理明确缺口；不扩展为导入器或网络功能重写。"
+      "action": "按原入口和现有职责处理明确缺口；不扩展为导入器或网络功能重写。",
+      "id": "remaining-host-acceptance",
+      "reportedAt": null,
+      "reportedAtSource": "这是章节 / 网络等适用验收边界的集合，不能把一条规划消息当成各问题首次提出时间。",
+      "firstEvidenceAt": null,
+      "closedAt": null,
+      "handling": {
+        "recordedSeconds": 0,
+        "activeSince": null,
+        "activeUntil": null,
+        "trackingSince": "2026-10-05T01:06:48+08:00",
+        "historicalCoverage": "incomplete"
+      }
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-05T01:06:48+08:00",
+      "text": "进度页为每项边界增加提出时间、可核实记录、动态经过时间和独立实际处理计时；历史未记录工时明确保留未知。"
+    },
     {
       "at": "2026-10-05T00:54:18+08:00",
       "text": "本地进度页已真实打开并核对宽 / 窄布局，绑定文件及录像分段请求可读取。进度每 3 秒从唯一工作单更新；连接正常不代表进度完成。"
@@ -159,6 +223,11 @@
 分别记录，证据时间以产物记录为准，未记录的审阅时刻不补造。页面轮询与版本读取是
 实时的；工作进度来自代理维护的事实记录，不是独立后台执行器。页面未更新超过15分钟
 即提示过期。服务只监听本机，重启后可用上面的命令恢复。
+每项问题的 `reportedAt` 只取核实过的原始消息时间，查不到时为null；
+`firstEvidenceAt` 是明确登记的现存证据时间，不替代首次提出。经过时间持续计时，
+实际处理 `handling.recordedSeconds` 只累计已结束区间；开始动作填写activeSince及
+最长15分钟的activeUntil，取得结果或切换问题时结算并清空。期间失去执行记录时
+计时到activeUntil即停止，恢复时另开一段，不回填间隔；历史工时不完整须明确标注。
 
 This is the only live execution queue for replacing the NextN, NextE, and Koma
 readers with `reader-kit`. The architecture document preserves design and prior
