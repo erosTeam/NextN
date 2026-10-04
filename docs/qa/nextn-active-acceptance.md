@@ -17,10 +17,21 @@
   f90d7e14 black85–90/image+100%219–221; saved clean15 E053e1a59 movie84827338 also
   black78–87/image+100%214–219. Both current E roots[0,117][1320,2232], source3/124;
   status previous-app text and Detail scroll differ, excluding exact pixel/timing
-  parity. Original ON/OFF control and picture continuity observed, actual file
-  identity/eligibility and reload-stage parity OPEN. Final checked restoration
-  installs E8909f8ee, native LTR visually checked, source3/124. Raw current reviews
-  are ignored artifacts; the single work-order row owns the next action. No
+  parity. Cached source3 original ON/OFF actual files now verified independently:
+  WEBP1280×1808/d65d91d3 -> JPEG4299×6071/5e737f57 -> same WEBP; active
+  information dialogs match. OFF raw475 loses host bezel/toolbar pixels too,
+  so corrupted intervals are not product-black or full-continuity evidence.
+  Pending replacement feedback is restored in common Kit `ee9fc71` (three signed
+  builds/110 existing checks). E9d272fbb source3 ON/OFF55b5dd58 and actual More
+  Reloade8ef2347 are reviewed1–251 with exact-PTS AVFoundation extraction: retained
+  pixels, stage ends, no black/source jump in those affected intervals. K99c8d01b
+  local Reload162e95be reviewed1–215 retains1/11 with no visible/residual stage.
+  Leading0 is stale and excluded; software and FFmpeg VideoToolbox extracts lose
+  host bezel/tiles and are not continuity proof. Current E terminal info is
+  WEBP1280x1808/source3; current K foreground is normal local1/11. Native original
+  is disabled in the reference route, and its mistaken Share chain is rejected.
+  Continuous replacement, other eligibility, uncached and Native visual parity
+  remain OPEN. Raw reviews are ignored artifacts; the work-order row owns the next action. No
   full-replacement, FPS, uncached or physical-device acceptance follows.
 
 - NextE remaining-reader-defect audit (2026-09-25): identified defects repaired; bounded device197 paths ACCEPTED, full replacement OPEN. Baselinec94b43fa preserved. Installed production hoste5625bd0/corea433017 HAPbd4f95be3b80860c86a45a5e4fffa98b4919499a36001eaf96c2db031bb63396. Fresh113 menu opens while original loads and survives arrival (214 frames). Final native-close-candidate: continuous-return30 fast6000px/s roundtrip and clipped-thumbnail system fallback272frames; paged liveLTR/31→32→31 and thumbnail return307frames; downloaded local doubleON/OFF, right-part entry and companion fade878frames; second-spread thumbnail3 return/reentry and task-body native push/pop592frames. Every frame of each recording reviewed; no prior black handoff/edge or stale-original indicator in named paths. Both second-spread closes log index2 prepared/finished. Original timeout120000 restored with PowerManager AWAKE/OverrideTimeout120000 readback; lease20260924-235646-83933ddf released. Exact evidence and remaining unexercised settings rows in NextE docs/plans/active/reader-settings-runtime-audit.md. No all24-settings, rotation/fold, Back-midflight or other-host acceptance; no200/Koma or push. No pending physical action for this bounded regression; source/evidence checkpoint is final bookkeeping.

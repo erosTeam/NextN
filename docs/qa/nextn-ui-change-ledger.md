@@ -12493,6 +12493,68 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   E116 still show image+stage. Neighbor constraint slice FROZEN; loading remains
   OPEN with next source ordering investigation. No loading or FPS acceptance.
 
+### 2026-10-04 — retained replacement progress (bounded paged feedback accepted; replacement OPEN)
+
+- Newly actionable boundary: user expects original-switch loading feedback;
+  current cached E source3 gate verifies actual WEBP/JPEG files change, while
+  ON/OFF movies show no obvious replacement stage. File facts close cached
+  identity only, not uncached feedback or reference parity.
+- Cause map: ReaderSession.begin changes requestId; retainDisplayed deliberately
+  keeps displayed/uri/assetRequestId while page/plan download runs. That branch
+  neither resets progress nor emits its pending epoch; reportProgress accepts
+  only phase asset and discards retained transport bytes. After new asset returns,
+  retainedUri is published with decoding, but ReaderPagedCell explicitly requires
+  retainedFrameValue null to mount the stage. Its retained image uses zIndex1,
+  so a default-zIndex0 stage would also sit below it. Failure/cancel/current epoch
+  and composed-frame retirement are already owned by Core.
+- Native whole parent: ReaderPage original preference monitor -> same image
+  Stack -> resetImageState/resolve -> real bytes -> local image-completion flag ->
+  ReaderLoadingStage sibling. Shared whole parent: Surface/native pager/stable
+  lazy item/Viewport/Cell -> stable presented Image plus exact candidate site;
+  continuous list/cell uses the same Core requests. Host original preparation
+  already exposes preparingSourceIndexes; no new preparation state is needed.
+- Proposed minimal change: retain displayed phase and all URI/lease identities;
+  publish/reset real progress at retained request start, accept only that current
+  epoch's progress, and derive asset-pending from existing requestId versus
+  assetRequestId. Both UI cells combine it with existing source preparation;
+  stage remains one sibling through prepare/acquire/decode, above retained pixels,
+  and ends on the existing composed-frame ACK. No new field, timer, readiness
+  mirror, image remount, delay, opacity, cache or host-adapter API.
+- Fence: ordinary local/preloaded requests are unchanged; displayed matching IDs
+  have no stage. Single/spread/continuous loading siblings are affected, including
+  force reload and processed replacement; menus/entry geometry/rail/navigation/
+  settings/source semantics are unchanged. Continuous replacement native-node
+  retention and initial image+stage are not claimed solved by this change.
+- Reference limitation: current Native source3/root1320x2115 original control
+  is disabled; no Native original toggle was executed. The attempted Reload
+  route actually opened system Share (movie8dace4f3 frames182-191), so that
+  chain is REJECTED. No Native same-action parity claim or eligibility patch.
+  Native source lifecycle and current shared cached ON/OFF file evidence ground
+  the source-isolated transition; they do not provide Native same-action visual parity.
+- Validation/disproof: existing owner state suites, three signed consumers, one
+  bounded original ON/OFF route and relevant ordinary local/current-request stale guards.
+  Reject if stale bytes publish, old lease retires before ACK, matching displayed
+  state retains a stage, or retained pixels/entry ownership regress. Unknown
+  progress stays indeterminate. No TDD or synthetic UI acceptance.
+
+- Disposition: Kit `ee9fc71` restores pending replacement feedback from existing
+  request/asset identities and real bytes; old URI/lease and replacement ACK stay
+  intact. Product diff2ba0b893 has three files, 31 additions/12 deletions; all three
+  signed consumers build and 110 existing state checks pass. E9d272fbb ordinary
+  source3 original ON/OFF movie55b5dd58 reviewed1–251: stage97–135/196–202,
+  absent136/203, old picture retained and no source jump/black in those intervals.
+  Actual More Reload moviee8ef2347 reviewed1–251: indeterminate86–209,
+  100%210–214, absent215, retained picture/source3; terminal info is WEBP1280x1808.
+  K99c8d01b ordinary local1/11 and More Reload movie162e95be reviewed1–215 retain
+  the body and have no visible stage or black; terminal source remains1/11.
+  Leading0 in each is stale and excluded. Each reviewed frame was extracted by
+  AVAssetImageGenerator with zero tolerances and exact original/actual PTS checked.
+  Software and FFmpeg VideoToolbox extraction lose host bezel/tiles at matching
+  times while AVFoundation is complete; those extracts are REJECTED for continuity.
+  No whole-movie-tail, Native parity, uncached byte-rate or FPS claim. Continuous
+  replacement, initial image+stage and layout-switch black remain OPEN; no node,
+  menu, cache, source semantics or host-specific timing change is accepted here.
+
 ### 2026-10-04 — ordinary frame-start acknowledgement (bounded wait removal committed; loading OPEN)
 
 - Newly actionable loading boundary: clean Nfe0e raw102 and E053e raw116 have
@@ -12536,8 +12598,11 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   source-proven ordinary idle-wait removal, not image/stage continuity or FPS.
   Three builds/110 existing checks pass; full K/N/E entry movies and E original/
   continuous movies reviewed. K85, N223, E265–266 and Econtinuous219–221 still
-  contain image+stage. E original ON/OFF retains source3 and picture, but actual
-  file identity/eligibility and reload-stage parity remain unproven.
+  contain image+stage. The current E source3 file-owner gate accepts cached
+  ON/OFF actual identity: WEBP1280×1808/d65d91d3 -> JPEG4299×6071/5e737f57
+  -> same WEBP, active information matches. OFF raw475 loses host bezel and
+  toolbar pixels, so those intervals cannot prove product black or continuity.
+  Other eligibility, uncached/reload-stage parity remain unproven.
 - Continuous counterexample: candidatef90d7e14 black85–90, clean15 comparison
   84827338 black78–87. Both rootcom.erosteam.nexte[0,117][1320,2232], source3/124;
   previous-app status text and Detail scroll differ. This proves the phenomenon
