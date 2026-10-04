@@ -40,10 +40,12 @@ not fill that gap.
   NextN/NextE 返回保留 P38/P3，Koma 书架继续阅读进入本地书籍 1/11。此项仅接受邻页尺寸修正。
 - 当前加载路径改动：共同 Kit `65f8770` 移除普通图片回执的不必要空闲帧等待；
   `ee9fc71` 在保留旧图的替换请求中恢复加载反馈，复用请求编号和真实进度，不新增状态。
-  三应用同一实现构建通过；NextE 原图往返和重新加载、Koma 本地重新加载的受影响完整
-  过渡区间已核对。首次图片与加载提示重叠和连续布局切换黑屏仍未解决。
+  共同 Kit `4f0cf1a` 复用已有分页保留图投影和两个稳定图片位置，修复连续模式在替换时
+  移除旧图片的路径。三应用同源构建、NextE 原图往返和重新加载、NextN 分页/连续重新加载、
+  Koma 本地分页/连续重新加载的受影响区间已核对。首次图片与加载提示重叠和布局切换黑屏仍未解决。
 - 连续模式切换黑屏在候选和干净 `15eb75c` 包均存在；当前 Core 资源保留，Surface 布局
-  分支会重新挂载原生图片。尚未分离原生解码与尺寸贡献，不以此扩写布局或添加遮罩。
+  分支会重新挂载原生图片。一次当前追踪确认同一缓存文件重新解码，且解码期间原生节点
+  记录约束未变、跳过布局；尚不能排除所有尺寸贡献，不以此扩写布局或添加遮罩。
 - 剩余操作路径只做有限核验：原图/处理图切换、旋转与裁切、在线无缓存、转场中断、
   Koma 章节、网络和自动阅读；既有历史结果不能代替当前版本，但未验证不等于已发现缺陷。
   只有确认了当前实现差异、用户影响和原因才新增源码修改。
@@ -55,7 +57,7 @@ not fill that gap.
 
 | Package | Current capability/evidence | Remaining boundary | One next action |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kit `ee9fc71` over `65f8770` restores retained-replacement loading feedback from existing request/asset identities and real progress; displayed URI/lease and composed-frame fence are unchanged. Three signed consumers build, 110 existing state checks pass, identical product diff2ba0b893. E9d272fbb source3 ON/OFF55b5dd58 reviewed1–251: stage97–135/196–202 ends136/203; More Reloade8ef2347 reviewed1–251: indeterminate86–209,100%210–214 ends215. Retained body/source3 and no black in these intervals; terminal info WEBP1280x1808. K99c8d01b ordinary local1/11 plus More Reload162e95be reviewed1–215 retain body/source with no visible or residual stage. Leading0 stale excluded. Accepted extraction uses AVAssetImageGenerator, zero tolerance and exact original/actual PTS for every reviewed frame; software and FFmpeg VideoToolbox host-bezel/tile corruption is rejected. Prior cached actual file-owner gate WEBP d65d91d3 → original JPEG5e737f57 → same WEBP remains bounded identity evidence. Earlier Kit65 ordinary entry/Back and N/E root-flight boundaries stay frozen. Native source3 original disabled; attempted Native Reload opened Share and is REJECTED. Raw bindings/reviews under ignored emulator-reader-20261003. | Full replacement OPEN: initial tiny source0/image+stage, paged→continuous black, continuous replacement feedback/pixel retention, Native same-action parity, F2 API26 applicability, rotated/cropped/uncached/midflight/chapter/network/auto-read remain finite pending boundaries. Earlier continuous candidate and clean15 share the black counterexample; decode versus geometry cause is not isolated. New N576d6b84 is built only in this slice; no new N runtime claim. No whole-movie-tail/FPS/full-replacement claim or default/cache/menu/197/host-specific change. | Resolve F2 applicability through the current host enhancement/capability owner on API26, then execute one ordinary applicable processed-replacement route with current displayed-source identity and existing retirement fence. An unavailable platform capability is recorded precisely, not bypassed by a mock or an app-specific patch. Other loading counterexamples stay OPEN; no repeat timing/opacity/parent redesign. |
+| **5 ACTIVE / OPEN** | Common Kit4f0cf1a retains the presented continuous image through the existing guarded candidate ACK; Paged projection is reused unchanged. Identical N36f10901/E7d0ee351/Kc1a559d6 build sources and installed ordinary routes are bound. E2ef59173 reviewed108–1327 retains source3 through continuous ON/OFF/Reload and Paged ON/OFF. N65386019/b7d5bc3c reviewed0–287 each retains source38 through actual Paged/continuous Reload; paged stage absent192, continuous absent272 (exact last-stage frame not asserted). Kf53f7d4d/8fa4826a reviewed0–179/0–287 retains local1/11 through actual Paged/continuous Reload with no visible/residual stage; JPEG1740x2376 terminal, Single restored. Sequential PTS are checked; original pixels, not preview omissions or rejected seeking output, own continuity. E/N/K layout-switch body black remains separate OPEN. Earlier root-flight/entry is frozen. F2 service is abnormal/no output and OFF restored; K has no port. | Full replacement OPEN: initial image+stage, layout remount black, uncached/rotated/cropped/midflight/chapter/network/auto-read finite pending boundaries and successful processed F2. Current remount trace shows same cached native-image re-decode; safe geometry fix and exclusive attribution are unproven. No FPS, Native parity, full replacement, default/cache/menu/197 or host-specific change. | Map the current uncached acquisition/readiness path and its ordinary bounded action before executing it. Preserve layout/F2 gaps separately; do not replay accepted replacement, FPS or failed enhancement-service paths. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:

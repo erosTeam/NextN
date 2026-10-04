@@ -12555,6 +12555,67 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   replacement, initial image+stage and layout-switch black remain OPEN; no node,
   menu, cache, source semantics or host-specific timing change is accepted here.
 
+### 2026-10-04 — continuous retained replacement (bounded acceptance; Package5 OPEN)
+
+- Newly actionable boundary: current NextE9d272fbb ordinary source3 continuous
+  original ON/OFF movie7e806668 has intact host chrome but no current picture
+  in frames193–216 and297–301. Raw193/297 confirm empty source3 body beneath
+  100%;217 has body+100%,218 has no stage,302 restores the OFF picture.
+  Reviewed interval108–539 only; no whole-movie, FPS or Native parity claim.
+- Whole parent: native ReaderVerticalImage owns one full-width image/zoom Stack,
+  real source resolution/completion and sibling loading stage; parent List owns
+  scroll positioning. Shared Surface/List/Lazy item/ContinuousCell owns the same
+  layout and loading sibling; ContinuousZoomImage owns image interaction and
+  ReaderPagedImage owns decode/current-request presentation callbacks. Adjacent
+  failure/notice panels, list height, crop/rotation and gesture reset are outside
+  this repair. PagedCell already has a stable presented site and a separate
+  retained replacement candidate, so it is the established shared reference.
+- Source cause: Core retains the displayed URI/lease during acquisition and
+  publishes retainedUri/request when the candidate begins decoding. ContinuousCell
+  keys its normal-image ForEach by slotId plus assetRequestId, removing the
+  previous native image on each replacement epoch. ContinuousZoomImage renders
+  only the current candidate and never uses retainedUri. PagedCell preserves
+  its first image site and releases the retained asset only after the guarded ACK.
+- Minimal change: extract PagedCell's existing pure retained-frame projection
+  into an internal helper, with identical values and same-URI epoch handling.
+  Reuse that projection and the same two image sites in ContinuousZoomImage;
+  normal continuous wrapper identity becomes slotId, while requestId still fences
+  callbacks and gestures. Read current frame identity on disappearance. Keep the
+  existing per-image transform modifiers; give the existing loading sibling its
+  explicit foreground stacking order. No new lifecycle owner, public API,
+  timer, opacity gate, cache policy, host adapter or entry/layout branch.
+- Impact/risk: exact original/variant/force-reload replacement, including equal
+  URIs, and cancellation/retirement in continuous layout. Paged projection is
+  an exact extraction, not a behavior change. Failure/suppressed branches retain
+  their existing keys. Old callbacks must stay suppressed; candidate ACK and
+  Core retirement fences remain unchanged. A retained body gap or missing
+  same-URI completion disproves acceptance. Native same-action original is
+  disabled in the current reference, so source comparison does not prove parity.
+- Bounded validation: existing request/session/retained/paged state suites and
+  three signed consumers, then current continuous ON/OFF plus same-URI Reload
+  with picture, loading, source and restoration reviewed. Pure paged extraction
+  requires exact-diff review and one affected replacement regression, not entry,
+  menus, rail or FPS replay. The unique Package5 row owns continuation.
+- Current candidate: identical four-file patch dd15169f builds in N36f10901,
+  E7d0ee351 and Kc1a559d6. E current movie2ef59173 sequential original-PTS
+  frames108–1327 retains source3 throughout continuous ON/OFF and actual Reload;
+  stage ends at200/281/552. Paged ON/OFF regression retains body and stage
+  ends879/960. Layout switch black109–111/794–796 is separate and OPEN.
+  Original-detail raw boundaries confirm these ends; default preview can omit
+  host pixels despite identical original RGB. Seeking extraction is rejected
+  for this movie due pixel differences; sequential PTS and independent original
+  RGB probes are retained. No whole-movie, uncached, F2 success, FPS or Native
+  parity follows. Common Kit `4f0cf1a` commits this exact four-file change.
+  N36f ordinary source38/40 actual Paged/continuous Reload movies65386019/
+  b7d5bc3c are reviewed0–287 each: retained body, paged stage absent192 and
+  continuous absent272 (exact last-stage frame not asserted). Kc1a ordinary
+  local1/11 actual Paged/continuous Reload moviesf53f7d4d/8fa4826a are reviewed
+  0–179/0–287: retained body and no visible/residual stage; Single restored,
+  terminal JPEG1740x2376/610.8KB. Current K252/601 sequential samples match
+  ffprobe PTS1/600 exactly, supplementary to reviewed pixels. Mode-change black
+  N90–96/K86–96 remains in the separate layout OPEN boundary. These current
+  affected paths accept this retention change only; full replacement stays OPEN.
+
 ### 2026-10-04 — ordinary frame-start acknowledgement (bounded wait removal committed; loading OPEN)
 
 - Newly actionable loading boundary: clean Nfe0e raw102 and E053e raw116 have
