@@ -59,11 +59,18 @@
   or full motion acceptance. Current media panel/cancel boundary: Koma localP1
   and NextN onlineP38 open native save confirmation and share panels; NextE
   onlineP3 opens native HYPERLINK share. All panels cancelled, no album write/send;
-  native host originalP1/P38/P3 positions restored. E save remains OPEN: first500ms
-  busy later returns idle without confirmation; complete1077-line PID19438
-  hilog records HTTP403 export retries at05:08:44.498/46.864/49.989. Shared and
-  Legacy both callEhHttpClient.downloadBinaryToFile; exact403 cause or Legacy
-  runtime parity is not established. No retry, URL refresh or product edit.
+  native host originalP1/P38/P3 positions restored. E initial save failure is
+  retained: complete1077-line PID19438 hilog records HTTP403 export retries at
+  05:08:44.498/46.864/49.989. Shared and Legacy both use
+  EhHttpClient.downloadBinaryToFile; exact403 cause or Legacy runtime parity is
+  not established. Existing native More change-source in fresh PID4859 then
+  obtained157118B at05:44:01.439 (source2/slot1/request2); same host was observed,
+  not proof of a different server. New-resource Save at05:45:55.045 opened the
+  actual system “允许NextE保存1张图片” panel with matchingP3 preview. Per-request
+  cancel and Back completed05:51:09.530; nativeE/root[0,117][1320,2232] terminal
+  screenshot retains Detail继续P3. This closes only preparation/panel-open/cancel,
+  not a completed album write/send, spread export, other sources or403 cause.
+  No product/default edit or replay of the old failing request occurred.
   Receipts are `koma-auto-read-functional-reviewed.json` and
   `{koma,nextn,nexte}-media-panels-reviewed.json` in the same local evidence root.
   Official CoreVision abnormal-service recovery was executed once: guest
@@ -75,10 +82,12 @@
   no full-frame continuity/FPS/successful replacement acceptance. Receipt
   `f2-after-restart-functional-reviewed.json` records unavailable current
   service condition and the rejected early settings-route chain/P3 recovery.
-  Successful F2 staysOPEN; no repeat reboot/call without a different capability
-  condition. Existing native change-source may make a new E save resource
-  available; require actual fresh retrieval before a new save, not original403
-  request replay. No importer/backend/source edit follows these observations.
+  Current backend is API26 ImageSRAnalyzer.create/process/destroy. Service
+  failure does not establish simulator-wide unsupported capability or a numeric
+  error code. User explicitly requested skipping simulator system enhancement;
+  successful F2 staysOPEN under that execution hold. No further reboot/call or
+  alternate-model provisioning; resume only on user reopening with a different
+  real capability condition. No importer/backend/source edit follows.
   The historical ordinary
   image/Stage counterexamples below are superseded only for these named paths.
 
