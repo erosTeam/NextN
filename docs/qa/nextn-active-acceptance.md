@@ -40,13 +40,23 @@
   and wrong-book2/2 cold coordinate chain rejected, current target read accepted
   separately. Chinese default title remains encoded (P1). Old/orphan generations
   retained; no fault-injection/power-loss/all-local-path claim.
-  Current App ACTIVE BAK-001: map all BackupService restore writers and failure
-  order before minimal data-safety implementation. No Reader/Kit/menu/layout
-  changes. Current next unverified runtime path is normal backup selection and
-  failure/restore on emulator after the scoped implementation/build.
-  Artifact root .hvigor/outputs/koma-production-20261005/; App receipt under
-  /private/tmp/koma-production-20261005/.hermes-artifacts/20261005-production/.
-  Physical197 unused; no repeat accepted source/catalog loop.
+  BAK-001A committed Koma bd8bda72 on HAP7261cfab: all payload/source staging
+  precedes live writes; both normal picker callers consume granted URI by fd.
+  Bad-source fixture reached ordinary preview/confirmation then failed, with
+  byte-identical Library/progress/registry/queue and3 existing prefs hashes.
+  Ordinary valid plaintext and encrypted local export/restore accepted9books/
+  8progress; no-data-clear cold Library still9, actual Images detail/Read1/1.
+  Receipt binds2 source hashes/HAP/Kit and checked manifests/raw captures.
+  Encrypted preview card remains stale after decrypt, while restore confirmation
+  correctly shows9/8; independent P1, not whole-page visual acceptance.
+  Intermediate picker9251036 omitted preview caller and was rejected; post-IME
+  encrypted wrong-coordinate picker run and a review's contradicted string
+  validation claim also rejected. Current App ACTIVE BAK-001B: map fixed raw
+  checkpoint, startup recovery and actual concurrent writer boundary before edits.
+  I/O/process interruption remains OPEN; no full atomic/power-loss claim.
+  No Reader/Kit/menu/layout changes. Artifacts .hvigor/outputs/koma-production-
+  20261005/; App receipt under /private/tmp/koma-production-20261005/
+  .hermes-artifacts/20261005-production/. Physical197 unused.
 
 - Patch-release delivery (2026-10-05): RELEASED on main.
   [NextE v1.3.5](https://github.com/erosTeam/NextE/releases/tag/v1.3.5) is
