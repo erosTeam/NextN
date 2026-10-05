@@ -105,8 +105,20 @@
   source diff retains original parent tree/actions; no rebuild or crypto/restore
   write changes. Firstbf2688db metadata none/emptyKDF expressly rejected.
   Same retained-pane FilePicker replacement, dynamic automatic backup and
-  performance unverified; no restore executed. Next finite P1 is private
-  endpoint identity cause/compatibility assessment before editing. Local Koma page http://127.0.0.1:8767/ reflects
+  performance unverified; no restore executed. PRIVATE-ID001 four-model candidate
+  HAP0c90e308/sourceDiffd9c74245 accepted named normal NONE Komga identity:
+  same normalizedA retainsdefaultID; B newID103books/JoinLibrary; A return and
+  clear/reconfiguredefaultID/connection succeed. Configuration-only Library,
+  Reader andqueue byte-identical; coldoriginalfavorite103/103, Catalogue1021/1
+  actualXKCD image and Back currentdetail reviewed, root[0,117][1320,2232].
+  Progress9entries retains originalqualifiedIDs/page0; normalreading updates
+  timestamp/ReaderSHA4a6157d8, Library/queue remainunchanged. FirstrawURL table
+  candidate neverinstalled/rejected; inputTextappend and wrongfport routes
+  rejected/corrected, no productpatch. Reader first screenCap failedpixelMap
+  exit0/oldPNG rejected; uniquefresh output verifiedactualimage. Four-source/HAP
+  receipt and named currentchecked artifacts retained. Other3protocols/security,
+  nativeidentitybackuprestore/inflight/performance unproved. Next finite P1:
+  unfavored privatehistory/return existingowner and minimumreuse assessment. Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
   native PREPARED recovery and Tracker real-account boundaries remain OPEN.

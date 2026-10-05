@@ -13017,3 +13017,30 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   paths and frozen; wrong-passphrase matrix, dynamic automatic results, native
   interrupted restore and performance remainunverified. No repeated UI review
   absent new visible source change/user feedback/counter-evidence.
+
+- FROZEN — Koma PRIVATE-ID-001 named Komga identity boundary (2026-10-06).
+  Finite private endpoint identityP1 from current work-order, source-confirmed
+  four fixed defaultIDs. New functional boundary, no UI source/layout edits.
+  Ordinary Settings->Services->Komga current before rootcom.honjow.koma
+  [0,117][1320,2232], own public25605/NONE form captured; parent secondary
+  scaffold/list/form/segmented auth/save/remove unchanged. Expected difference:
+  same URL retains identity; distinct configured URL gets distinct identity;
+  returning originalURL re-associates original Library/qualified progress IDs.
+  Candidate table hashedendpointKey+opaqueID, no old data rewrite or rawURL
+  retention. Current HAP0c90e308/diffd9c74245, exact four model source owners;
+  source/host bindings separate from named current native acceptance.
+  Normal own A->B->A via isolated transport addresses, then no-data-clear cold
+  ordinary original book/read; preserve original config/Library/progress/queue.
+  No new favorite, account, menu, controls, geometry or Reader UI/Kit edit.
+  Other native providers/secureAsset/restoreinterrupt/performance stayunproved.
+
+  Current named ordinary NONE Komga A/B/return/clear-reconfigure accepted:
+  B distinctID/103books/JoinLibrary; A defaultID/connection, configuration-only
+  Library/Reader/queue byte-identical. Cold originalfavorite103/103 and102chapter
+  1/1 actualXKCD/Back reviewed with currentrawcom.honjow.koma root[0,117][1320,2232].
+  First Reader screenCapfailed exit0/oldPNG expressly rejected; unique freshcapture
+  accepted. Source/HAP/fourfileSHA match receipt. Reader timestamp changed after
+  actualreading, originalqualifiedIDs retained; not byte-identical sessions claim.
+  This named interface frozen without new visible change/user/counter-evidence;
+  privatehistory/search separateOPEN. Other3nativeprovider/identityrestore/secure
+  credentials/inflight/performance remainunproven. No menu/layout/Kit edit.
