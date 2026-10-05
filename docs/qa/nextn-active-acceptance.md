@@ -10,6 +10,28 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
+- Patch-release delivery (2026-10-05): RELEASED on main.
+  [NextE v1.3.5](https://github.com/erosTeam/NextE/releases/tag/v1.3.5) is
+  `af5fa83b`/code40; [NextN v1.0.6](https://github.com/erosTeam/NextN/releases/tag/v1.0.6)
+  is `036d4e46`/code8. Each release commit changes only AppScope, root package
+  version and concise changelog. Main CI and final tag CI E `37308953070` /
+  N `37309874838` passed. Downloaded public unsigned HAPs have matching GitHub
+  SHA-256, expected bundle/version, Release mode, API levels and native libraries;
+  published notes exactly match the committed logs, with one general reader bullet.
+  Signed local Release builds covered the emulator's installed 1.3.4/code39 and
+  1.0.5/code7 without clearing data: each app's seven database/preference hashes
+  matched immediately before/after installation. Ordinary cold starts showed
+  retained Home content and loaded covers. Public unsigned HAPs were separately
+  verified, not installed; baselines are not asserted identical to historical
+  public HAPs. Authenticated requests and full reader replay were not repeated.
+  N first tag run `37308951424` failed before compilation on OHPM HTTP503. The
+  unpublished tag annotation was renewed via SSH with an expected-old-object
+  guard, preserving target commit `036d4e46`; the subsequent run published.
+  Guest timeout readback is30000ms and the emulator lease is released.
+  Receipt: `.hvigor/outputs/patch-release-20261005/release-receipt.json`.
+  No unverified publication action remains; existing finite reader limits below
+  retain their recorded scope.
+
 - Final finite-scope reader handoff (2026-10-05): the latest user instruction
   ends dedicated reader expansion and prioritizes each host's own features.
   Existing accepted named paths and matching signed artifacts are delivered as
