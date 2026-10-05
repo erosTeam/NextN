@@ -150,9 +150,22 @@
   emulator7.0.0.107 readback disproveslowruntimeAPI hypothesis. HAPtargetAPI23
   differs, causeunestablished. OrdinaryXcancel normalLibrary root[0,117][1320,2232],
   originalLibrary/Reader/remotePrefsSHAunchanged. Folderimport/coldread/rescanOPEN;
-  no sourcepatch/fakeURI/repeatedgesture. NextexistingP2foregroundupdate/backup
-  executionowner/prefs/restoreadmission sourcecausal andindependentreview, then
-  onejustifiednormalpath. NoReader/Kit/menu/backgroundscheduler expansion.
+  no sourcepatch/fakeURI/repeatedgesture. FOREGROUND001A finalDebug84da9522
+  independent five-source review/build/retained-data install/current ordinary
+  disabled cold and Home resume, enabled but not-due retained Settings pane,
+  manual10/9unchanged/1skipped/0failed and originalauto=false/24h restored cold
+  Library observed. OriginalLibraryc61706a3/Readerba2aab7f/remotePrefs78b96a61
+  byte-identical; current manual summary intentionally retained. Narrow state/
+  shared execution owner, existing Index foreground bridge/readiness, whole-job
+  restore writer and shortPrefs queue; no Reader/Kit/menu/parent/schema change.
+  Settings due foreground guard/duplicate observer/oldPrefs UI overwrite gaps
+  found independently and corrected before finalbuild. Current named root
+  com.honjow.koma[0,117][1320,2232], raw same-viewport original tree reviewed;
+  this named Settings/Library boundary FROZEN. Positive expired auto (12h min),
+  nativeconcurrency/IO/restore race/notification delivery remain unaccepted.
+  Final receipt foreground001-final-acceptance-receipt.json binds immutableHAP
+  and five sources. Next finite P2 automatic backup owner/Prefs lifecycle;
+  no system scheduler or synthetic clock/Prefs. Overall outcome stays OPEN.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0

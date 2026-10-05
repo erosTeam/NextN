@@ -13112,3 +13112,35 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   injection/wholelicensecompliance/productionRelease signing not accepted.
   Keep this named surface frozen absent explicitfeedback/sourcechange/counter-
   evidence; foldermaintenance andReleasepackaging separate finiteOPEN boundaries.
+
+- **Koma FOREGROUND-001A — FROZEN named path, 2026-10-06**. Existing P2 app lifecycle
+  gap, currentApp52db8162/Release7cf2bcbe: Library update due entry exists only
+  in Settings, while existing copy promises check on open/foreground. Current
+  native auto=false/24h, original Settings/Library scaffold and rows retained.
+  Parent contract is Index HdsTabs + existing NavDestination SettingsPage,
+  SecondaryListScaffold and original grouped rows/order/actions. The change
+  moves execution ownership from component-local busy/check to one existing-WIP
+  application coordinator; row busy/summary observe narrow state, no keys,
+  component remount, menu/geometry/copy changes. Index reuses existing foreground
+  state and refreshes original Library snapshot on completed update only. Manual
+  and due share one slot; completion does not trigger another due. Entire job
+  and short preference mutations use existing restore admission, preventing
+  writes after restore has started. Source scope: coordinator/state, Prefs,
+  Index/Settings handlers only; backup separate. Same viewport native candidate
+  foreground disabled/not-due and original manual result/Settings state needed;
+  positive expired interval (12h minimum), concurrency, IO failures and restore
+  racing remain separate unproven conditions. No synthetic time/preferences or
+  tests mirroring implementation. Baseline/candidate raw evidence under
+  koma-production-20261005/foreground001-*; boundary not accepted before review.
+
+  Current finalDebug84da9522 five-source/HAP identity verified; actualordinary
+  disabled cold/Home return and enabled but not-due same Settings pane retain
+  original scaffold/rows/geometry. Manualcheck10/9unchanged/1skipped/0failed live
+  row result; originalauto=false/24h restored and cold Library currentPNG reviewed.
+  All named roots com.honjow.koma[0,117][1320,2232], originalLibrary/Reader/private
+  config hashes unchanged. Whole trees/rawPNG/checked manifests retained in
+  foreground001-final-*; immutable final receipt records binding. Source review
+  due foreground/duplicate observers/oldPrefs gaps corrected beforefinalbuild.
+  Freeze this named surface; expired auto/nativeconcurrency/IO/restore race/
+  notifications unproven, not closed by screenshot. Next separateBackupService
+  owner slice needs its own before-edit boundary; no Reader/Kit/menu redesign.
