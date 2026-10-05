@@ -81,16 +81,24 @@
   Asset.add24000010 before App HTTP; official IPC failure, asset_service exists,
   exact IPC cause unestablished. Native chapter/read boundary held; no emulator
   restart/plaintext fallback/private-pref injection. Library SHAf1aec9f0 unchanged.
-  Two-file transient snapshot host checks/build succeeded; HAP772d327e installed
-  with no data clear, ordinary blank Kavita settings and actual local cold-read1/1
-  observed. Third adapter file query-auth candidate is unbuilt; real owned image
-  API400 requiresapiKey, primary controller confirms query contract. Independent
-  review found source/fixture/true-close clear boundary missing; fix that narrow
-  context before host transport/owned HTTP/build, native Kavita still unaccepted.
-  User-requested local Koma page is live http://127.0.0.1:8767/ from sole work order;
-  browser screenshot reviewed, exact readonly routes accepted and old8765 retained.
-  Unknown initial report times/prior handling time are explicit; no overall percent.
-  Koma page snapshot returned to KAV-001, next unverified action auth context clear.
+  KAV001 three-file checkpoint committed Koma18e074a6, sourceDiff3b957fdd/HAP1a85a794;
+  host production state/transport and owned actual image accepted only those layers,
+  independent current review no concrete residual defect. Current signed candidate
+  installed-r/no-data-clear; ordinary unconfigured Kavita settings both blank,
+  rootcom.honjow.koma[0,117][1320,2232], and Images cold-read realNemo1/1,
+  root[0,0][1320,2232], raw current screenshots reviewed. Library actualSHAf1aec9f0
+  unchanged. Native Kavita configuration/read/favorite/crossing remainsOPEN at
+  Asset.add24000010 beforeHTTP; no security bypass/emulator restart/repeated retry.
+  Current KAV source checkpoint complete, native runtime held. TITLE001 current
+  HAPf6510fa1/sourceDiff3077ac1e accepted normal new Chinese/space/percent archive
+  title on shelf/detail/chapter and no-data-clear cold actualNemo1/3. Library9->10,
+  all original9 Comic objects exactly retained; no old-title migration. Roots
+  com.honjow.koma shelf/detail[0,117][1320,2232], Reader[0,0][1320,2232]; raw
+  screenshots/layout/checked manifests reviewed. Initial sharedDownload shell write
+  failed despite exit0; whole-directory transfer actualfinish/1file precedes import.
+  One malformed manifest rejected dry-run before UI actions, corrected. Current
+  finite P1 is encrypted-preview observer/state mapping; cause/impact before edits. Local Koma page http://127.0.0.1:8767/ reflects
+  same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
   native PREPARED recovery and Tracker real-account boundaries remain OPEN.
   No Reader/Kit/menu/layout changes. Artifacts .hvigor/outputs/koma-production-

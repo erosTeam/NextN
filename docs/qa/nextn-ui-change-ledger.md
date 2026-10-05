@@ -12933,3 +12933,36 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   stays200. Data refresh follows work-order changes without rebuilding App.
   Port8766 was already owned by another local server; retained it and used8767.
   Layout is frozen; content records remain dynamic under the user monitor request.
+
+  KAV001 current three-file checkpoint18e074a6/HAP1a85a794/sourceDiff3b957fdd:
+  reviewed current ordinary Kavita settings and Images cold-read screenshots.
+  Roots com.honjow.koma[0,117][1320,2232] and[0,0][1320,2232], retained geometry
+  matches respective prior named states. Exact Library SHA unchanged. Actual
+  provider route remainsOPEN at secure-configuration IPC precondition; source
+  clear guards plus old-async rejection and independent review are separate layers.
+
+- FROZEN — Koma TITLE-001 new default archive title (2026-10-06, bounded acceptance).
+  Source-confirmed existing native Chinese import counterexample, finite productionP1.
+  Parent retained: normal Library/import menu -> native DocumentViewPicker -> existing
+  archive copy/extract/commit -> same shelf card/detail/Reader. Only default title and
+  derived sortTitle/chapter title change for a newly imported URI-named archive.
+  ArchiveImportService uses stripExtension(originalfileURI) without decoding;
+  Image/folder picker title helpers already safely decode the display segment.
+  Before: %E5%90%8C%E5%90%8D; after: 同名. Decode once only when file:// URI
+  supplies an implicit title; raw file paths, explicit/old/user titles preserved.
+  Malformed encoding falls back rather than failing import. No sourceURI/UUID/page
+  identity, origin comparison, merge, classification, picker, geometry/menu or Kit edit.
+  Existing bad-title evidence loc001b-native-cold-origin-items, current own origin
+  fixtures A/B/同名.cbz. Validate current signed package through ordinary new distinct
+  own Chinese archive picker import, shelf/detail label and cold actual reading.
+  Existing old/user titles remain governed by untouched mergeLocalImport.
+
+  TITLE001 current HAPf6510fa1/sourceDiff3077ac1e actually shows new implicit title
+  标题验证 100% 中文 on normal Library/Detail/chapter, then no-data-clear cold
+  actualNemo1/3. Original9 stored Comic objects exactly retained, new total10.
+  Reviewed raw current roots com.honjow.koma[0,117][1320,2232] and[0,0][1320,2232],
+  whole parent retained. Named manifests/screens/layouts title001-current-detail-
+  decision/cold-new-library-decision/cold-new-reader; no animation/FPS/all-format
+  claim. Existing old names deliberately retained, no repeated UI review absent
+  visible source change/user feedback/counter-evidence. Existing reimport may
+  regenerate implicit Chapter title while merge retains prior/user Comic title.
