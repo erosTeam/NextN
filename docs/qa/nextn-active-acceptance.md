@@ -141,8 +141,18 @@
   Libraryc61706a3/Readerba2aab7f/remotePrefs78b96a61 unchanged. Independent review
   privacy-overclaim/emptyfallback corrected before currentbuild. Reader/Kit/menu
   geometry unchanged. This notice boundary accepted/FROZEN; sourceerrorinjection,
-  folderpersistence andformalRelease signing remainOPEN. Next existingRelease
-  explicitdefault/buildModerelease packaging/upgrade, not productioncert claim.
+  folderpersistence andformalRelease signing remainOPEN. ExistingRelease explicit
+  default/buildModerelease actualHAP7cf2bcbe metadatarelease/debugfalse, install-r/
+  force-stop/coldordinaryLibrary root[0,117][1320,2232], originaldataSHA preserved.
+  Nondebugmode/upgrade accepted, formaldistribution signing/CIRelease not claimed.
+  FOLDER001 finite gate currentRelease7cf2bcbe: ordinaryFOLDERpicker/Browse/Download
+  plusoneownedfolderlongClick returnedno selecteddirectory/URI. ActualPhone/API26/
+  emulator7.0.0.107 readback disproveslowruntimeAPI hypothesis. HAPtargetAPI23
+  differs, causeunestablished. OrdinaryXcancel normalLibrary root[0,117][1320,2232],
+  originalLibrary/Reader/remotePrefsSHAunchanged. Folderimport/coldread/rescanOPEN;
+  no sourcepatch/fakeURI/repeatedgesture. NextexistingP2foregroundupdate/backup
+  executionowner/prefs/restoreadmission sourcecausal andindependentreview, then
+  onejustifiednormalpath. NoReader/Kit/menu/backgroundscheduler expansion.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
