@@ -133,7 +133,16 @@
   remain unaccepted. Superseded mismatch copy and one-arg inputText positive run
   rejected; raw measurement forced-stop rejected dry-run before actions.
   Current exact binding/limits: privatehistory001-acceptance-receipt.json.
-  Next finite source item SEA-002 current Kavita search first10×20 truncation.
+  SEA-002 confirmed current Kavita first10×20 truncation; proposedglobalLIKE
+  changes normalize/compact semantics and ranking, not implemented. Holdpending
+  clean behavior-preserving approach/nativeAssetprecondition; no fullscanpatch.
+  RELEASE001 finalHAP07b0ac80 actualnormalAbout/OSS shows full41323byte source,
+  scrollrealfooter/Confirmreturnsoriginal4rows, no-data-clear/install/cold;
+  Libraryc61706a3/Readerba2aab7f/remotePrefs78b96a61 unchanged. Independent review
+  privacy-overclaim/emptyfallback corrected before currentbuild. Reader/Kit/menu
+  geometry unchanged. This notice boundary accepted/FROZEN; sourceerrorinjection,
+  folderpersistence andformalRelease signing remainOPEN. Next existingRelease
+  explicitdefault/buildModerelease packaging/upgrade, not productioncert claim.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0

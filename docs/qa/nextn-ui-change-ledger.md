@@ -13080,3 +13080,35 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   query OPDS/performance unaccepted. Keep History full parent/UI frozen; no
   further layout/Reader sweep. One-arg inputText attempt retained A and is rejected,
   corrected observed-coordinate input restored B; no product workaround.
+
+- FROZEN named notice path — Koma RELEASE-001 existing Open-source content (2026-10-06).
+  Finite approved first-production release materials queue. Existing native
+  c35d729c ordinary Settings->About->Open-source dialog says only the localized
+  placeholder; source SettingsPage.showOpenSourceDialog proves this owner.
+  Baseline release001-open-source-placeholder-baseline rootcom.honjow.koma
+  [0,117][1320,2232],1320x2232 portrait; raw screen/layout reviewed. Whole parent:
+  original secondary list/4About rows/order/geometry, existing promptAction
+  showDialog/title/Confirm. Only message changes from placeholder to packaged
+  actual dependency notices; no new page, navigation, controls, shared owner,
+  Reader or Kit. Resource read/decode failure gets localized honest error.
+  Copy exact vendored WAMR/Apache and Lexbor LICENSE+NOTICE, SDK LLVM license
+  and libc++ dual-license block; document provenance. No general compliance
+  certification or every vendored dormant component claim. Validate current
+  signed HAP normal same entry/viewport, opening and scrolling actual full
+  message including final marker/Confirm; untouched original list after dismiss.
+  Long-message system scrolling/API resource availability are unproven before
+  current native result. Permission change is document only: explain already
+  declared selected-folder permission; production grant integration is OPEN,
+  with no manifest/grant edits.
+
+  Final HAP07b0ac80 ordinary install-r/cold Settings/About/OSS text exactly matches
+  bundled41323bytes, actualvisiblefooter and Confirm-return original4rows reviewed.
+  Rootcom.honjow.koma[0,117][1320,2232], same viewport. Raw unique PNG/layout,
+  checked manifests/receipt retained. Library/progress/remotePrefs unchanged.
+  First31f13731 proof keeps its package; subsequent empty-text guard required
+  actual new build/native acceptance. Initial privacy doc overstated actual
+  folder persistence; independentreview proved helper has no production caller,
+  corrected beforecommit. No grant/schema/Reader/Kit/parent change. Resource-error
+  injection/wholelicensecompliance/productionRelease signing not accepted.
+  Keep this named surface frozen absent explicitfeedback/sourcechange/counter-
+  evidence; foldermaintenance andReleasepackaging separate finiteOPEN boundaries.
