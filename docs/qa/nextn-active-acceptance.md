@@ -180,6 +180,23 @@
   foreground001b-final-acceptance-receipt.json bindsimmutableHAP. Nextfinite existing
   releaseCI onlyDebug materialsgap, no system scheduler/syntheticclock/Prefs.
   Overall outcome stays OPEN.
+  RELEASE001B current product source00818b2e / Kitcb4f2f54: existing local
+  default/release build succeeds, immutable signed42134137 / unsignedc0ae2164
+  actualrelease/debugfalse metadata and manifestSHA match. Candidate workflow
+  switches five mode/label/artifact checks to Release; README single word matches,
+  master trigger/unsigned status/dependencies/permissions/signing unchanged.
+  Actual workflow inspection Python runs locally against that unsigned HAP,
+  emits correct Kit/fullAppSHA/packageSHA; not a GitHub/container run.
+  Checked install-r/force-stop/ordinary aaStart without isolation flags observes
+  current native Library/rootcom.honjow.koma[0,117][1320,2232] and raw screen.
+  Libraryc61706a3/Readerba2aab7f/queue0be5cc54/remotePrefs78b96a61 remain exact,
+  automaticPrefs77b3b2b2 matches previous bytes, originaltwo backups hashes and
+  four total backup inventory preserved. Only current nondebug Release upgrade/
+  cold identity/data accepted; frozen Reader/Backup/OSS not replayed. No actual
+  newCI, formaldistribution certificate, fullApp or performance claim. Current
+  receipt/review/build/inspection in ignored release001b-*; no push. Overall
+  production OPEN; next existing finite boundary is Tracker connection URL/
+  manualcallback/foreground ownership source map, no connected account assertion.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
