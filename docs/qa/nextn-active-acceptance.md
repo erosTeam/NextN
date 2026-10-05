@@ -62,8 +62,21 @@
   preparation also rejected; no restore executed there. Finite interruption
   timing attempt ended, no production timing hook/retry sweep. Native I/O,
   power-loss, concurrent mutation and active Back window remain unverified.
-  Next finite App package TRK-001: source map chapter vs work completion and
-  persisted retry semantics before edits; backup P0 not declared fully closed.
+  TRK-001 committed Koma3bc9eb84: service submits chapter count without inferring
+  work status; optional explicit client status retained; MAL correct PATCH via
+  API23 customMethod. Production service/client/Pending/Prefs host bindings
+  execute initial/incomplete/failed-queue/retry requests with status omitted;
+  algorithm/request evidence only. Current HAPec8f816e install-r and normal
+  Settings->Tracking->Trackers observes both accounts unconnected. Library SHA
+  f1aec9f0 unchanged; no-data-clear cold Images detail/Read displays actual1/1.
+  Positive native NetworkKit/connected accounts/upstream status preservation
+  remain unaccepted; no synthetic native account or production endpoint swap.
+  Independent review found no concrete source blocker; its accidental full
+  build-config output emitted signing-password values (no key/certificate bytes),
+  stopped and recorded ignored incident with no values repeated or file changes.
+  Next finite App package Kavita reading/favorite overwrite P0: source owner,
+  full catalog and ordinary browse->read->return map before edits. Backup P0
+  native PREPARED recovery and Tracker real-account boundaries remain OPEN.
   No Reader/Kit/menu/layout changes. Artifacts .hvigor/outputs/koma-production-
   20261005/; App receipt under /private/tmp/koma-production-20261005/
   .hermes-artifacts/20261005-production/. Physical197 unused.
