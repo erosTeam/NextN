@@ -51,9 +51,19 @@
   correctly shows9/8; independent P1, not whole-page visual acceptance.
   Intermediate picker9251036 omitted preview caller and was rejected; post-IME
   encrypted wrong-coordinate picker run and a review's contradicted string
-  validation claim also rejected. Current App ACTIVE BAK-001B: map fixed raw
-  checkpoint, startup recovery and actual concurrent writer boundary before edits.
-  I/O/process interruption remains OPEN; no full atomic/power-loss claim.
+  validation claim also rejected. BAK-001B committed Koma aacab13f on HAP55fa29da: fixed six-file/four-Prefs private
+  checkpoint, startup recovery and restore-only admission. Normal plaintext
+  preview9/8 -> confirmation -> success, no-data-clear cold Library9/current
+  Images actual1/1 accepted. Final owned-title reset returns byte-identical
+  Library f1aec9f0 and cold actual1/1. Host file/API fault order supports rollback,
+  retry and admission only. Native PREPARED recovery remains OPEN: SIGSTOP denied;
+  permitted aa termination happened after COMMITTED cleanup, so no retained
+  checkpoint/cold recovery acceptance. Wrong Back-layer encrypted-preview
+  preparation also rejected; no restore executed there. Finite interruption
+  timing attempt ended, no production timing hook/retry sweep. Native I/O,
+  power-loss, concurrent mutation and active Back window remain unverified.
+  Next finite App package TRK-001: source map chapter vs work completion and
+  persisted retry semantics before edits; backup P0 not declared fully closed.
   No Reader/Kit/menu/layout changes. Artifacts .hvigor/outputs/koma-production-
   20261005/; App receipt under /private/tmp/koma-production-20261005/
   .hermes-artifacts/20261005-production/. Physical197 unused.
