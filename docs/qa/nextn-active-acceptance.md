@@ -197,6 +197,19 @@
   receipt/review/build/inspection in ignored release001b-*; no push. Overall
   production OPEN; next existing finite boundary is Tracker connection URL/
   manualcallback/foreground ownership source map, no connected account assertion.
+  TRK002 bounded one-file MAL parameter correction follows actual upstream
+  plain-only contract: production generator passes provider; MAL challenge equals
+  its saved/exchanged verifier, URLplain, other defaultS256 unchanged. Independent
+  exact source review and actual production host API method observations only;
+  not rewritten UI fixtures. Current sourceSHA4837b41a/base959176e9/Kitcb4f2f54,
+  nondebug Release signed2b54b198 built/installed-r. Ordinary force-stop/cold known
+  Tracker route observes both unconnected accounts; before/after actual same
+  com.honjow.koma root[0,117][1320,2232], whole original texts/geometry/actions and
+  raw PNG reviewed. Library/Reader/queue/remotePrefs byte hashes unchanged.
+  Receipt trk002-acceptance-receipt.json binds source/HAP/current native case.
+  No configured fake client/accounts or native PKCE/AssetStore/positive callback/
+  token/upstream status acceptance. AniList code-grant/public-client contract
+  remains finite source investigation; no automatic callback routing expansion.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
