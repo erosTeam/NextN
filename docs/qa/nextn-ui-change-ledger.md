@@ -13177,3 +13177,45 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   concurrency/IO/restore collision/interruption/retentiondelete remainunproven;
   hostAPI observations notnativeacceptance. NoReader/OSS replay. Two source review
   error branches corrected beforefinalbuild; no parent/tree/copy/format changes.
+
+- FROZEN named OPDS ordinary publication/read/history boundary — Koma OPDS001 (2026-10-06).
+  Newly actionable existing PRIVATE-P1: own real Komga OPDS2 service is available,
+  original native OPDS config was absent; original URL form/connection/catalog
+  reached current2361 baseline com.honjow.koma[0,117][1320,2232]. Publication103
+  raw opds001-current-owned-publication-reader-action-decision says Read1 but URI
+  is thumbnail. Actual production Accept lacks standard publication MIME and
+  real self endpoint returns406; actual parser concatenates1 readingOrder page
+  plus resource cover into2 images. Before edit: source/impact boundary retained
+  in ignored opds001-manifest-boundary.md; independent design review accepted.
+  Scope only existing request/parser and openPublication readiness/current result;
+  preserve SecondaryListScaffold/NavigationBar/ListItems/card/action geometry,
+  all UI builders/Reader/Kit/menus/schema. Expected original Read1 after successful
+  manifest means exact full page/1 page; declared manifest failure must not offer
+  cover fallback as a valid page. Normal no-manifest direct-image path unchanged.
+  Independent pre-edit design review accepted a safe SELF relation-token URI
+  fallback after explicit identifiers, without userinfo/query/fragment; existing
+  resolved links reused, no schema or migration. Current native Library has no
+  OPDS records. Original positional records are retained without auto-migration;
+  no-safe-SELF/canonical URL changes remain OPEN. No native account/Asset/auth
+  or all OPDS claim.
+
+  Current exact two-source diff32290c83/baseb380a304/Kitcb4f2f54 produced non-debug
+  Release signedHAP3cf556e1. Raw-href collision was caught by independent review
+  and protected before build; final review found no new concrete source blocker.
+  Install-r/ordinary Browse/OPDS/Catalogue103/originalRead displays real full
+  image1/1; normal Back returns original publication with JoinLibrary retained.
+  Cold ordinary root/History/own title reopens the same real full image1/1.
+  Original publication parent/actions/geometry preserved at matching portrait
+  viewport1320x2232, app[0,117][1320,2232]; Reader[0,0][1320,2232]. Raw whole
+  screens reviewed; not thumbnail/command-injection acceptance. Only own new
+  history/config removed through original UI, final cold History retains all
+  original9 progress/sourceHistory objects and12 chapter states, Library/queue
+  byte hashes and Komga record. Original removal keeps1 own chapter preference,
+  normal save keeps endpoint identity map; Reader file hash therefore changes.
+  First return-to-History extraBack chain ended at system Browser and is rejected,
+  then recovered by known ordinary cold root without product edit. Binding/raw
+  named cases: ignored opds001-acceptance-receipt.json. Failed/empty/stale/order
+  checks are host production-method evidence only; native faults/race/reorder,
+  old positional migration/canonical URL and all-provider/auth limits remain OPEN.
+  Freeze this named current surface; next finite SEA-002 is source-contract
+  assessment, no Reader/menu/tree redesign or repeated Asset retries.

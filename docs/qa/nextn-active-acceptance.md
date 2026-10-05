@@ -229,6 +229,28 @@
   no rawtoken fallback or refresh/expiry/URL framework. Finite queue returns to
   existing private provider history/ordinary directory conditions, no Reader
   reopening or synthetic account acceptance.
+  OPDS001 existing normal publication path: source-proven real406 from missing
+  standard publication MIME, readingOrder+resources thumbnail mixed into2pages,
+  failed manifest retaining cover and stale result write, positional ID reorder.
+  Independent design review precedes exacttwo-source implementation; rawhref
+  collision corrected beforebuild/finalreview. Baseb380a304/diff32290c83/Kitcb4f2f54
+  currentnondebug Release3cf556e1 install-r. Ordinary Browse/OPDS/Catalogue103/Read
+  actualcompleteXKCD1/1, normal Back original unfavorited publication, cold normal
+  root/History/own title actualsame full1/1 accepted. Publication original parent/
+  actions/geometry reviewed sameviewport1320x2232, app[0,117][1320,2232], Reader
+  [0,0][1320,2232]. Single-row ownhistory/configremoved through originalUI, final
+  coldHistory9originalprogress/sourceHistory objects equal, original12 chapter
+  statesretained, Libraryc61706a3/queue0be5cc54 unchanged andKomgarecordequal.
+  Originalremoval retains1 ownchapter preference; normalexplicitconfigsave keeps
+  endpointidentitymap, so wholeReader/Prefs hashes are not claimedunchanged.
+  One extraBack Historychain reachedsystemBrowser and isrejected; knownordinary
+  coldroot recovered withoutproductpatch. Receiptopds001-acceptance-receipt.json
+  binds sources/HAP/checked manifests/currentrawPNG/layout. Host200/ordered1page/
+  reorder/failure/stale observations method-only. OldpositionalIDmigration,
+  canonicalselfURL changes/unsafeorabsentself, otherformats/auth/nativefaults/
+  reorder/race remainOPEN. CurrentnamedOPDSsurfaceFROZEN; overallproductionOPEN.
+  NextfiniteexistingSEA-002 is sourcecontract/minimalbehavior-preserving assessment;
+  no Assetretry/fullscan/UI/Reader expansion.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
