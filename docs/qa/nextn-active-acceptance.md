@@ -10,20 +10,26 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
-- Koma production work (2026-10-05): overall OPEN under the latest user direction.
-  The finite reader handoff remains closed. PRI-001 complete Komga catalog is
-  accepted for the named normal emulator paths: saved local QA configuration,
-  Browse→Komga→102 books, favorite102, book102 actual image, manual library
-  update102→103, and force-stop/cold-start persisted results/detail103 with
-  book102 progress retained. Current signed Debug HAP30327034 / source diff7bb7fb6f,
-  target `127.0.0.1:5555`, model PHEMU-FD00,1320×2232 portrait. Real service uses
-  public disposable test credentials via a local auth bridge; App authentication
-  is not accepted. No Reader/Kit/menu/geometry change. Canonical work order:
-  `/private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md`. Next unverified
-  physical path is the independently developed WEBTOON source's ordinary App
-  installation/search/read/download; the next App source package is LOC-001
-  identity/durable import/reimport preservation, design before edits. Artifact
-  root: `.hvigor/outputs/koma-production-20261005/`. Physical197 remains unused.
+- Koma production work (2026-10-05): overall OPEN; finite reader handoff stays
+  closed. PRI-001 complete Komga catalog accepted on named normal emulator
+  browse/favorite/read/update/cold-reopen paths (App082c8132, HAP30327034).
+  SRC-001 WEBTOON English0.1.1 committed independently as dcba07f: normal index
+  update/search covers/Meme Girls284 chapters/download4 pages, then source
+  disabled and cold-reopen actual downloaded story at retained4/4. Named public
+  Canvas paths only, no all-site/airplane-mode/performance claim.
+  LOC-001A committed in Koma015b2628: sibling write/fsync/readback/rename protects
+  single Library file before commit. Host fault checks preserve old document;
+  emulator normal archive import then force-stop/cold Library retains own new
+  three-page item and prior five; ordinary detail/Read displays actual1/3.
+  Current signed Debug HAP3e37b4b6; no Harmony fault injection or full-import
+  safety claim. Target127.0.0.1:5555/PHEMU-FD00, portrait1320×2232; original data
+  retained. No Reader/Kit/menu/geometry change. Canonical work order:
+  /private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md.
+  Current App ACTIVE LOC-001B: finish exact-origin compatibility and changed
+  content/progress design, then implement durable generations and preserved
+  reimport state. Next unverified physical action belongs to that coherent
+  package after source/build; no repeat accepted source or catalog loop.
+  Artifact root .hvigor/outputs/koma-production-20261005/. Physical197 unused.
 
 - Patch-release delivery (2026-10-05): RELEASED on main.
   [NextE v1.3.5](https://github.com/erosTeam/NextE/releases/tag/v1.3.5) is
