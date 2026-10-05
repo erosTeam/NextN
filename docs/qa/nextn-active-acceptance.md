@@ -25,11 +25,28 @@
   safety claim. Target127.0.0.1:5555/PHEMU-FD00, portrait1320×2232; original data
   retained. No Reader/Kit/menu/geometry change. Canonical work order:
   /private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md.
-  Current App ACTIVE LOC-001B: finish exact-origin compatibility and changed
-  content/progress design, then implement durable generations and preserved
-  reimport state. Next unverified physical action belongs to that coherent
-  package after source/build; no repeat accepted source or catalog loop.
-  Artifact root .hvigor/outputs/koma-production-20261005/. Physical197 unused.
+  LOC-001B committed Koma c851d886 after current HAPe6fe216a native acceptance:
+  changed exact archive keeps book ID/new chapter and starts actual1/3 without
+  stale67%; unchanged ordered bytes keep chapter/67% and actual2/3 in new durable
+  generation. Corrupt44B import shows failure and leaves byte-identical Library;
+  cold actual2/3 remains readable. Different A/B origins with same Chinese
+  basename coexist6->7->8; selected single image makes9, exact URI reimport stays9
+  with same book/chapter/page IDs and new generation; post-cold normal current
+  target detail opens actual1/1. Receipt binds13 source hashes/HAP/Kit and raw
+  checked manifests/screens/layouts. HAPbea668 repeat-import claims rejected:
+  existing recursive mkdir target returns13900015; corrected only real existing
+  shared parent, exclusive UUID root still required. Host binding corrected.
+  Native batch-selection/Folder remain unproven; longClick FileManager capture
+  and wrong-book2/2 cold coordinate chain rejected, current target read accepted
+  separately. Chinese default title remains encoded (P1). Old/orphan generations
+  retained; no fault-injection/power-loss/all-local-path claim.
+  Current App ACTIVE BAK-001: map all BackupService restore writers and failure
+  order before minimal data-safety implementation. No Reader/Kit/menu/layout
+  changes. Current next unverified runtime path is normal backup selection and
+  failure/restore on emulator after the scoped implementation/build.
+  Artifact root .hvigor/outputs/koma-production-20261005/; App receipt under
+  /private/tmp/koma-production-20261005/.hermes-artifacts/20261005-production/.
+  Physical197 unused; no repeat accepted source/catalog loop.
 
 - Patch-release delivery (2026-10-05): RELEASED on main.
   [NextE v1.3.5](https://github.com/erosTeam/NextE/releases/tag/v1.3.5) is
