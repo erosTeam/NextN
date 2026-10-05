@@ -577,6 +577,15 @@ data.
 本轮没有新增产品改动，因此不重复构建、安装或已冻结的 UI 路径。
 既有证据不证明全量替换、所有网络提供者、完整性能/FPS、进程死亡持久化，或实际保存/发送等未命名分支。
 
+2026-10-05 后续授权推送：共同 Kit 和三应用候选已发布；NextE 的精确提交
+`391e6de6` 云端构建成功。NextN 首次运行 `37288105671` 在编译前被遗留
+`test_reader_seek_animation_contract.mjs` 阻断：它仍要求 `seekWithAnimation`。
+10 月 4 日 UI ledger 的完整旧版调用链已否定强制动画假设，Kit `1ef28d3`
+与消费者 `c8a21244` 已改回既有直接跳页语义，并有命名运行证据。
+本次仅退役遗漏的宿主源码正则检查及 CI 步骤；不修改产品代码或共同 Kit，
+不以另一份 UI 正则替代，也不将 CI 构建当作新的运行验收。重新推送后仍需检查
+精确提交的云端构建结论。Koma 远端没有 Actions 工作流，不能报告为 CI 通过。
+
 ### 本轮包状态（取代原唯一 ACTIVE 行）
 
 | Package | Candidate delivered | Retained limitations | Execution |
