@@ -117,8 +117,24 @@
   rejected/corrected, no productpatch. Reader first screenCap failedpixelMap
   exit0/oldPNG rejected; uniquefresh output verifiedactualimage. Four-source/HAP
   receipt and named currentchecked artifacts retained. Other3protocols/security,
-  nativeidentitybackuprestore/inflight/performance unproved. Next finite P1:
-  unfavored privatehistory/return existingowner and minimumreuse assessment. Local Koma page http://127.0.0.1:8767/ reflects
+  nativeidentitybackuprestore/inflight/performance unproved. PRIVATE-HISTORY001
+  current c35d729c/sourceDiff e0bdab19 installed-r/no-data-clear: ordinary configured
+  A/B History refuses with explicit mismatch message; B normal config readback,
+  cold History reopens Catalogue001 actualXKCD1/1. Own B single-row delete then
+  original A restoration/cold History retains original9 progress objects,
+  sourceHistory/chapter preferences exactly; Library/queue SHA unchanged.
+  Previous bd30 normal unstarred reading creates History and original-details
+  returns retained JoinLibrary directory; keep that screenshot's original HAP,
+  current return chain terminal History does not separately show directory.
+  Existing v3 same-document metadata/normal Browse routes; source independent
+  review no concrete blocker,26 host observations only algorithm/normalization.
+  No Reader/Kit/menu/parent geometry or automatic favorite. Other3protocols,
+  query/external nested OPDS feed, native history backup/clear/interruption/FPS
+  remain unaccepted. Superseded mismatch copy and one-arg inputText positive run
+  rejected; raw measurement forced-stop rejected dry-run before actions.
+  Current exact binding/limits: privatehistory001-acceptance-receipt.json.
+  Next finite source item SEA-002 current Kavita search first10×20 truncation.
+  Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
   native PREPARED recovery and Tracker real-account boundaries remain OPEN.

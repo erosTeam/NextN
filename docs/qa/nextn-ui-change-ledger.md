@@ -13044,3 +13044,39 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   This named interface frozen without new visible change/user/counter-evidence;
   privatehistory/search separateOPEN. Other3nativeprovider/identityrestore/secure
   credentials/inflight/performance remainunproven. No menu/layout/Kit edit.
+
+- FROZEN named Komga path / other protocol acceptance OPEN — Koma PRIVATE-HISTORY-001 unstarred private reading history (2026-10-06).
+  Existing finite production P1, source/current B reading counterexample: progress
+  saved under distinct B identity, History only projects shelf/source. Pre-edit
+  root com.honjow.koma[0,117][1320,2232], privatehistory001-normal-B-baseline.
+  Preserve full History SecondaryListScaffold/sections/time ordering/row geometry/
+  typography/actions and letter-cover fallback. Add validated remote metadata
+  projection and existing browse-route resume; no parent/Reader/Kit/menu changes,
+  auto-favorite or copied pages. Existing v3 file/snapshot/backup owns metadata;
+  remove/clear clean it. Non-Library Reader detail normally closes to browse.
+  Risks: wrong server, mismatched chapter, restored arbitrary OPDS URL/WebDAV
+  traversal. Guard before HTTP; root/safe catalog path plus hashed publicationID;
+  no signed cover retention. Query/external OPDS support remains OPEN. Validate
+  current signed package via same-viewport ordinary B read/history/cold resume/
+  return and original Library dedup. Own B remove only, no global clear.
+
+  Same-package current negative-path counterexample: restored A/default/25605
+  native prefs prove Komga is configured, while B history route correctly refuses
+  but says “请先在设置里配置 Komga” because the identity guard reuses the missing-
+  configuration error key. This conflates two states. Change only the four new
+  mismatch guards to one localized existing-error-card message identifying that
+  history belongs to another service. Missing-config branches and all geometry,
+  actions and Reader stay unchanged. Current bd30cfdf screenshot is pre-copy
+  evidence; verify corrected same-state/viewport A-configured/B-history refusal.
+
+  Current c35d729c/e0bdab19 A-configured/B-history error card exactly retains
+  parent/geometry and clearly says history belongs to another service; fresh
+  same-viewport raw screenshot reviewed. B ordinary save+readback/cold History
+  reopens actualXKCD Catalogue0011/1. Own B trash confirmation/cold remove retains
+  other9 progress/source history/chapter preferences and original A config;
+  Library/queue hashes unchanged. Current return chain terminal History is
+  accepted only as that chain; prior bd30 original-directory JoinLibrary capture
+  retains its original HAP identity. Other protocols/native history backup/clear/
+  query OPDS/performance unaccepted. Keep History full parent/UI frozen; no
+  further layout/Reader sweep. One-arg inputText attempt retained A and is rejected,
+  corrected observed-coordinate input restored B; no product workaround.
