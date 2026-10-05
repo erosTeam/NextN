@@ -13219,3 +13219,31 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   old positional migration/canonical URL and all-provider/auth limits remain OPEN.
   Freeze this named current surface; next finite SEA-002 is source-contract
   assessment, no Reader/menu/tree redesign or repeated Asset retries.
+
+- OPEN existing Koma FOLDER-001 selection gate (2026-10-06 06:36): SEA-002
+  contract assessment has an explicit deferred product disposition; no search
+  source diff. The existing Folder gate remains unaccepted. The retained normal
+  Download capture showed the owned Koma-QA-origins directory, while the earlier
+  attempt used longClick only. At registration ordinary click was still pending.
+  Current source factory still passes FOLDER/max1; official Phone API26 support
+  is established, but targetAPI23 is not a proven cause. This newly actionable
+  boundary was one first ordinary click in the same original picker route, with
+  current Release3cf556e1/App614f2f38/Kitcb4f2f54 and portrait1320x2232. No product
+  source/parameter/targetAPI/tree/menu/Reader edit, URI injection, alternate
+  coordinate sweep or repeated longClick was authorized by this gate. The
+  existing ordinary cold Library→Import→Folder→Browse→MyPhone→Download chain
+  ran continuously, then one owned directory click. Only the decisive current
+  selection/URI or changed-picker state was retained; command injection and
+  opened Picker never accept folder import/cold read.
+  This finite gate concluded06:39:59: ordinary click enters owned QA root,
+  then Images; raw current picker shows no files and no folder confirmation.
+  Checked exact-file stat confirms both known owned JPEGs exist625429/719878B.
+  This does not isolate filtering/indexing/platform cause or targetAPI behavior.
+  Original X cancellation leaves only Koma root[0,117][1320,2232]; Reader/Prefs
+  are byte-equal to pre-gate OPDS cleanup, Library/queue hashes remainc61706a3/
+  0be5cc54. No new product source diff, parameter trial, URI injection or Reader
+  work. Folder selection/import/persistent grant/cold reading/rescan stayOPEN;
+  no repeated selection attempt until an actionable platform contract/path exists.
+  Raw current cases/receipt: folder001-current-{ordinary-owned-directory-click,
+  owned-image-directory-decision,owned-content-cancel-preserved} and ignored
+  folder001-current-finite-gate-receipt.json. Page source/layout unchanged.

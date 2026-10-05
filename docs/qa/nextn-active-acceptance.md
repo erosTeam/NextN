@@ -25,6 +25,33 @@
   safety claim. Target127.0.0.1:5555/PHEMU-FD00, portrait1320×2232; original data
   retained. No Reader/Kit/menu/geometry change. Canonical work order:
   /private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md.
+  Current finite disposition2026-10-06: productHEAD614f2f38/Kitcb4f2f54,
+  installed non-debug Release3cf556e1; no subsequent product source diff.
+  SEA-002 contract assessment has a real compact-query counterexample to
+  all-v2 LIKE replacement. Search+bulk DTO works only at owned HTTP layer;
+  service15 candidates/matcher/rank differ, so product change awaits explicit
+  semantics or a new service contract, separately from native Asset precondition.
+  Current Folder normal directory clicks reach owned Images, where picker shows
+  no files/no folder confirmation despite two checked owned JPEGs existing.
+  Original X cancellation06:39:59 returns Koma root[0,117][1320,2232]; Reader/
+  remotePrefs are byte-equal to pre-gate OPDS cleanup, Library/queue hashes remain
+  c61706a3/0be5cc54. No URI selection or import/cold read/rescan acceptance.
+  Filtering/indexing/platform cause is not established; targetAPI23 is not a
+  proven cause. No parameter/target trial, security bypass or repeated longClick.
+  Evidence: current folder001-* checked manifests/layout/stat and ignored
+  folder001-current-finite-gate-receipt.json; SEA source/owned HTTP observations
+  and independent contract review under the canonical worktree artifact root.
+  Reader handoff and accepted named OPDS surface stay closed. Existing candidate
+  release material has been reviewed; remaining actions require the specific
+  recorded semantic/native/account/CI/signing conditions. Overall production
+  Goal OPEN, no push/release or whole-product acceptance from this evidence.
+  Finite emulator gate cleanup06:52:38 restored original display override
+  30000ms (PowerManager readback matched) and released the held lease; no app
+  data or simulator lifecycle change. Checked finite-session-original-timeout-
+  restored receipt is supplementary cleanup evidence, not product acceptance.
+  Separate finite-session-lease-release-receipt.json retains the lease helper
+  status readback showing this lease released; the power protocol alone does
+  not prove lease release. Both receipts are under the current output root.
   LOC-001B committed Koma c851d886 after current HAPe6fe216a native acceptance:
   changed exact archive keeps book ID/new chapter and starts actual1/3 without
   stale67%; unchanged ordered bytes keep chapter/67% and actual2/3 in new durable
