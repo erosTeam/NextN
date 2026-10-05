@@ -210,6 +210,25 @@
   No configured fake client/accounts or native PKCE/AssetStore/positive callback/
   token/upstream status acceptance. AniList code-grant/public-client contract
   remains finite source investigation; no automatic callback routing expansion.
+  TRK003 existing AniList public-client contract mismatch mapped and design
+  reviewed before two-file implementation. Official own docs require secret for
+  code grant and recommend implicit for native public clients. AniList now emits
+  token/noPKCE, fresh state only; fragment-only unique fields/state/providererror/
+  nonemptytoken/Bearer plus exact configured redirectbase are checked before
+  unchanged secretstore/account/profile lifecycle. No automatic URI handler,
+  newaccount/UI/schema/Reader/Kit change. MAL plain/code path remains.
+  Actual production host API fixtures observe valid order/9 invalid callback
+  refusals/nonpromotion on token-store failure and MAL preservation; algorithm
+  evidence only. Independent exact source review no concrete blocker.
+  Base800604e5+source2c8b0176/9844872a/Kitcb4f2f54, Release2361a8cd built/install-r.
+  Ordinary cold Tracker->AniList original unconfigured form same native
+  rootcom.honjow.koma[0,117][1320,2232], wholetexts/geometry/actions and rawPNG
+  reviewed; Library/Reader/queue/remotePrefs bytes retained. Receipttrk003 binds
+  exactsource/HAP/manifest. Registeredclient/nativefragment/AssetStore/profile/
+  upstream acceptance remainOPEN. Existing old code attempts restart normally;
+  no rawtoken fallback or refresh/expiry/URL framework. Finite queue returns to
+  existing private provider history/ordinary directory conditions, no Reader
+  reopening or synthetic account acceptance.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
