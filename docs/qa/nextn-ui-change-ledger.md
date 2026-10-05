@@ -12966,3 +12966,54 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   claim. Existing old names deliberately retained, no repeated UI review absent
   visible source change/user feedback/counter-evidence. Existing reimport may
   regenerate implicit Chapter title while merge retains prior/user Comic title.
+
+- FROZEN — Koma PREVIEW-001 encrypted backup preview observation chain (2026-10-06, pre-edit).
+  Finite existing work-order P1, current ordinary baseline HAPf6510fa1 via Settings
+  -> Backup -> management -> local files -> own encrypted preview -> decrypt.
+  Current raw preview001-before-encrypted-form/decrypted prove the same App root
+  com.honjow.koma[0,117][1320,2232]; decrypt removes passphrase and admits restore,
+  but preview retains “需要口令解密” and lacks counts. Full parent kept: existing
+  SecondaryListScaffold/ListItem ordering, selected card Column/Row, passphrase card,
+  actions and explanatory card; title/safe area/fonts/colors/spacing/actions untouched.
+  Source: @Local selectedBackupPreview receives a new decrypted object; confirmation
+  reads current state. SelectedPreviewCard receives a variable by value; nested
+  PreviewRow has two scalar parameters. Official ArkUI builder contract requires
+  single object-literal by-reference calls at every nested level for dynamic rows.
+  Planned change: two local parameter interfaces, one literal argument at both
+  builders; row Text reads fields. Same PreviewRow has two automatic-backup status
+  callsites; adapt only parameter syntax, preserve data/action/geometry. No new state,
+  timers, keys, remount, @Observed model, schema/restore/service/storage changes.
+  After decrypt the existing card must say verified and show9books/8progress;
+  detail expand/collapse and switching another plaintext preview must read current
+  selection; confirmation must agree and cancel without restore. Same viewport,
+  raw before/after normal paths, exact library SHA unchanged, current build/install.
+  Risk: nested observation lost at either layer; automatic summary initial rendering
+  needs separate bounded check. Current route/IME moved the action104px; decision
+  used fresh bounds rather than stale decrypt1460 that would hit another button.
+
+  Same-package counterexample before acceptance: HAPbf2688db normal decrypt card
+  correctly verified/9/8, but expanded preview001-candidate-expanded shows algorithm
+  none and no KDF value in current root[0,117][1320,2232]. Source decryptPreview
+  copies algorithm/kdfId from previewDocument plaintext defaults none/empty, despite
+  encrypted=true. Narrow second owner BackupService.decryptPreview must retain
+  those two display metadata values from existing validated encrypted envelope.
+  No crypto operation/validation/restore/schema/payload/count/screen structure edit;
+  obtain public metadata after successful decrypt, before returning same selection.
+  This actual source/data counterexample reopens only current package metadata,
+  does not justify background/interrupt/restore changes. Current9/8 display observation
+  is retained but package remainsOPEN until corrected algorithm/KDF build/native.
+
+  Current corrected HAP58d7f1a9/sourceDiffe5fd2a7c ordinary decrypt updates the
+  retained card to verified9books/8progress; expanded raw metadata AES-256-GCM
+  and PBKDF2-HMAC-SHA-256/current10books9progress reviewed. Collapse and restore
+  confirmation agree0new9/8overwrite; cancelled without any restore. Normal
+  return to local files then another plaintext pane shows unencryptedJSON9/8;
+  not same-retained-pane FilePicker replacement acceptance. Backup settings
+  shared status rows render never/none initially and switch remainsOFF; no
+  automaticrun/export. All corrected raw roots com.honjow.koma[0,117][1320,2232]
+  reviewed, whole parent/tree/actions retained. LibrarySHAc61706a3 unchanged.
+  Receipt binds named corrected expanded/confirmation/plain/settings cases and
+  exact2source hashes/currentHAP/Kit. Package accepted only those readonly
+  paths and frozen; wrong-passphrase matrix, dynamic automatic results, native
+  interrupted restore and performance remainunverified. No repeated UI review
+  absent new visible source change/user feedback/counter-evidence.

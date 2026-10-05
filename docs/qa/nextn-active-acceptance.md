@@ -97,7 +97,16 @@
   screenshots/layout/checked manifests reviewed. Initial sharedDownload shell write
   failed despite exit0; whole-directory transfer actualfinish/1file precedes import.
   One malformed manifest rejected dry-run before UI actions, corrected. Current
-  finite P1 is encrypted-preview observer/state mapping; cause/impact before edits. Local Koma page http://127.0.0.1:8767/ reflects
+  PREVIEW001 currentHAP58d7f1a9/sourceDiff e5fd2a7c accepted only ordinary
+  readonly encrypted decrypt9/8 and expanded AES-256-GCM/PBKDF2 metadata;
+  collapse/confirmation agreed0new9/8overwrite and cancelled, normal other
+  plaintext pane9/8, automatic summary initial never/none with switchOFF.
+  LibrarySHAc61706a3 unchanged; rawroot[0,117][1320,2232] reviewed. Two-file
+  source diff retains original parent tree/actions; no rebuild or crypto/restore
+  write changes. Firstbf2688db metadata none/emptyKDF expressly rejected.
+  Same retained-pane FilePicker replacement, dynamic automatic backup and
+  performance unverified; no restore executed. Next finite P1 is private
+  endpoint identity cause/compatibility assessment before editing. Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0
   native PREPARED recovery and Tracker real-account boundaries remain OPEN.
