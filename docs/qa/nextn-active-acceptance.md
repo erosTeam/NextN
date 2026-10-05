@@ -164,8 +164,22 @@
   this named Settings/Library boundary FROZEN. Positive expired auto (12h min),
   nativeconcurrency/IO/restore race/notification delivery remain unaccepted.
   Final receipt foreground001-final-acceptance-receipt.json binds immutableHAP
-  and five sources. Next finite P2 automatic backup owner/Prefs lifecycle;
-  no system scheduler or synthetic clock/Prefs. Overall outcome stays OPEN.
+  and five sources. FOREGROUND001B finalDebug7a01fe4e three-source identity/
+  independentreview/build/install observed. Ordinary autoOFFcold originalSettings;
+  actualenable+Home/sameprocessresume due createsone backup and retainedpane current
+  time; secondresume logsnot_due then originalNow createsone furtherbackup. Ordinary
+  autoOFFrestore/force-stop/cold keeps24h5 and currentlastRun1791235808658. Twooriginal
+  backups0de68e14/73d695d6, Library/Reader/remotePrefs same SHA; firstgeneratedschema3
+  Library/Reader payload strings exactlymatch nativefiles. Fourbackupfiles retained,
+  no originaldelete. Originalroot[0,117][1320,2232]/fullparent/geometry reviewed;
+  namedBackupSettingsFROZEN. Source sharedflight/shortfieldPrefs queue/fullrestore
+  writer, existingforeground/revision bridge; no newstateframework/Reader/Kit/menu/
+  format. Review restorebusy/failure rollback findings correctedbeforefinalbuild.
+  Host actualmethod API-fixture observations source-only; nativeconcurrency/IO/
+  restorecollision/interruption/retentiondelete remainunaccepted. Receipt
+  foreground001b-final-acceptance-receipt.json bindsimmutableHAP. Nextfinite existing
+  releaseCI onlyDebug materialsgap, no system scheduler/syntheticclock/Prefs.
+  Overall outcome stays OPEN.
   Local Koma page http://127.0.0.1:8767/ reflects
   same work order and separate proof layers; layout frozen, content dynamic.
   Backup P0

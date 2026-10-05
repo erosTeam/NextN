@@ -13144,3 +13144,36 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
   Freeze this named surface; expired auto/nativeconcurrency/IO/restore race/
   notifications unproven, not closed by screenshot. Next separateBackupService
   owner slice needs its own before-edit boundary; no Reader/Kit/menu redesign.
+
+- **Koma FOREGROUND-001B — FROZEN named path, 2026-10-06**. Existing finite automatic
+  backup lifecycle slice after4066a692. Before edit currentDebug84da9522 ordinary
+  Backup settings native baseline com.honjow.koma[0,117][1320,2232] rawPNG/layout
+  reviewed: autoOFF/24h/retention5/never/no failure; two original local backups.
+  Parent: Index HdsTabs -> existing appNav Settings Backup submenu -> original
+  BackupManagement destination/task settings, SecondaryListScaffold, original
+  AutomaticBackupCard and DomainsCard/order/geometry/actions/warnings. Source
+  proves Index consumes skipped first check, BackupService has no due/Now single
+  flight and overwrites starting prefs on completion; pane existing refreshRevision
+  monitor excludes settings. Change only execution/preference handlers in these
+  three files, reuse existing foreground bridge and revision parameter; no new
+  state framework/tree/remount/menu/copy/Reader/Kit/schema. Before-after state:
+  disabled retains original rows; enabled lastRun0/Home-return creates one backup
+  with current last-run in retained pane; second return not-due; explicitNow one
+  further backup; original toggle/rest config restored and two original files
+  unchanged. Original Library/Reader/private config hashes required. Strict current
+  preference read/field mutation queue and whole-job restore gate assessed; native
+  IO/concurrency/restore race not preaccepted. Source cause/impact/disproof map
+  foreground001b-boundary.md. Earlier submenu terminal is rejected baseline;
+  valid corrected unique native case namedforeground001b-current-automatic-backup-
+  settings-baseline. Do not reopen frozen Reader/OSS or use synthetic time/Prefs.
+
+  Current finalDebug7a01fe4e independentthree-source/HAP binding and10.636s build,
+  retained-data install/cold originalOFF Settings matches beforeparent/geometry.
+  Actual enable/Home/return one duebackup, same retainedpane currenttime; another
+  returnnot_due then originalNow one furtherbackup. OrdinaryOFFrestore/cold keeps
+  24h5/latestlastRun; twooriginalbackup hashes andLibrary/Reader/remotePrefs unchanged.
+  Named currentroot com.honjow.koma[0,117][1320,2232], rawwholePNG reviewed; receipt
+  foreground001b-final-acceptance-receipt.json. Freeze this named surface. Native
+  concurrency/IO/restore collision/interruption/retentiondelete remainunproven;
+  hostAPI observations notnativeacceptance. NoReader/OSS replay. Two source review
+  error branches corrected beforefinalbuild; no parent/tree/copy/format changes.
