@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T06:42:26+08:00",
+  "updatedAt": "2026-10-05T16:55:55+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN",
-  "title": "共享阅读器 · 有限收尾",
-  "outcome": "完成 NextE、NextN、Koma 的适用普通阅读路径替换验收。目前尚不能宣称全面替换旧版、性能超越旧版或所有运行分支无问题。",
+  "state": "有限收尾结束 · 保留限制",
+  "title": "共享阅读器 · 候选交付",
+  "outcome": "本轮按最新成本与范围指令收尾：交付NextE、NextN、Koma当前命名普通阅读路径已接受的共同候选，保留旧版回退。布局短黑未修、系统增强成功路径未验收；不宣称全量替换、所有分支通过或性能超越旧版。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "Package5有限收尾：跨父复用调查已收束，待范围选择；超分执行保持跳过",
+  "scope": "交付已验证候选与已有证据，结束本轮专门投入；应用各自功能不再被此工作单阻塞",
   "activity": {
-    "title": "有界调查已结束，等待布局项范围选择",
-    "detail": "当前没有产品源码变更、构建、安装或设备重试。计时已停止；候选机制的兼容与生命周期条件已记录。",
-    "startedAt": null
+    "title": "候选绑定核对完成；本轮收尾结束",
+    "detail": "三应用Kit一致且干净，受影响源码哈希和签名HAP均匹配原验证记录；产品提交之后无产品源码变化，既有证据文件完整。此次只作最终绑定核对与收尾记录，没有新构建、安装、测试或产品改动。",
+    "startedAt": "2026-10-05T16:51:57+08:00"
   },
-  "nextAction": "等待本轮范围选择：保留新旧共同短黑为OPEN，或纳入较大的共享复用改造。回复前不实现新组件作用域，不抬高最低版本，不重复UI链；没有把候选机制当作已可行方案。",
+  "nextAction": "本轮阅读器没有自动下一动作。由各应用自己的功能计划决定后续工作；阅读器仅因新的具体回归或明确专项决定重新开启。",
   "hosts": [
     {
       "name": "NextN",
@@ -24,11 +24,11 @@
       "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
       "hap": "8c22b6352d2b10aaec4188092d50c733d1e24bfc68808d3cc4ab7643900b3059",
       "build": "共同候选签名构建 exit 0",
-      "install": "共同候选已安装至当前模拟器",
-      "verdict": "当前命名入口链已观察",
+      "install": "既有模拟器安装回执与产物匹配；本轮未重新安装",
+      "verdict": "命名路径已接受的候选",
       "verdictKind": "review",
       "runtime": "普通首入102→103、重入500→501：提示与图片同帧交接；Reload300保图/提示、420提示撤下；当前原生Detail继续P38。原始2–640已审阅且PTS一致。 新非H682531真实无缓存ReadP1：189→190同帧交接，HTTP200/新缓存95338B，原始2–639及PTS一致。",
-      "remaining": "共同Kitcb4f2f5命名受影响路径有限接受；N真实无缓存普通入口已补。全部替换、FPS、其他提供者不能推断。既有布局切换黑屏、增强成功条件和章节目录缺口仍OPEN。"
+      "remaining": "本轮候选交付保留旧版回退。布局切换短黑仍未修，系统增强成功输出未验收；全量替换、FPS超越、其他提供者及未命名分支没有由本轮证据接受。"
     },
     {
       "name": "NextE",
@@ -36,11 +36,11 @@
       "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
       "hap": "e9beb6a373159aefcac6453b3262eac50460cdcc55264a0a811e6e45ffab19cc",
       "build": "共同候选签名构建 exit 0",
-      "install": "共同候选已安装至当前模拟器",
-      "verdict": "当前命名入口链已观察",
+      "install": "既有模拟器安装回执与产物匹配；本轮未重新安装",
+      "verdict": "命名路径已接受的候选",
       "verdictKind": "review",
       "runtime": "候选6ce27298：分页首入131→132、重入711→712，连续首入509→510同帧交接；保图重载和根飞行/返回仍在，原LTR/cropfalse/P3恢复。",
-      "remaining": "共同Kitcb4f2f5命名受影响路径有限接受；N真实无缓存普通入口已补。全部替换、FPS、其他提供者不能推断。既有布局切换黑屏、增强成功条件和章节目录缺口仍OPEN。"
+      "remaining": "本轮候选交付保留旧版回退。布局切换短黑仍未修，系统增强成功输出未验收；全量替换、FPS超越、其他提供者及未命名分支没有由本轮证据接受。"
     },
     {
       "name": "Koma",
@@ -48,11 +48,11 @@
       "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
       "hap": "ce2ee3bbddfbb5ac26feb33cb8f6ecb9d0cb70ac0dbc6715725bfb72142bfa35",
       "build": "共同候选签名构建 exit 0",
-      "install": "共同候选已安装至当前模拟器",
-      "verdict": "当前命名入口链已观察",
+      "install": "既有模拟器安装回执与产物匹配；本轮未重新安装",
+      "verdict": "命名路径已接受的候选",
       "verdictKind": "review",
       "runtime": "普通首入96→97、重入423→424同帧交接；Reload245/246保图与准备提示、247提示撤下；原始3–639已审阅且PTS一致，原生Library恢复NemoP1/9%。 当前safe真实源精英干员：启程上/下篇：普通183→184、菜单185→186、快速P1→P7→P1无空白/准备提示，Swiper1929保留，新增缓存页7–12；原菜单切回上篇567→568并系统返回同Detail。原始1–660/1–520/1–700与全部PTS已核对。",
-      "remaining": "命名普通入口/真实网络/章节菜单往返有限接受；原生书架Nemo P1/9%已恢复。当前章节末端/边界/进程死亡持久化与其他源不由本记录接受；目录选择、F2及布局黑屏独立OPEN。"
+      "remaining": "本轮候选交付保留旧版回退。布局切换短黑仍未修，系统增强成功输出未验收；全量替换、FPS超越、其他提供者及未命名分支没有由本轮证据接受。文件夹选择属于Koma导入待办，不再作为共享阅读器收尾阻塞。"
     }
   ],
   "gaps": [
@@ -96,10 +96,10 @@
     },
     {
       "title": "分页 / 连续布局切换的黑屏",
-      "status": "兼容性调查收束；范围决定待回复",
+      "status": "遗留未修；本轮停止扩展",
       "kind": "open",
       "detail": "同HAP、同P3/124、同根视口的旧版也出现布局切换短黑。当前原生追踪不支持1px或自动降采样原因。API26全局复用是候选机制；当前SDK26.0.0.105有接口，但编译器要求reusePool字符串字面量并无条件初始化池，不能直接用运行时判断兼容API23/24。当前图片叶的回执、挂载和转场测量字段不能盲目复用；按资源ID分池默认每池100项，没有已证实的总资源上限。尚无安全完整候选，也无运行验证。",
-      "action": "等待本轮范围选择：保留新旧共同短黑为OPEN，或纳入较大的共享复用改造。回复前不实现新组件作用域，不抬高最低版本，不重复UI链；没有把候选机制当作已可行方案。",
+      "action": "保留当前Shared/Legacy都有的布局切换短黑，原始反例与可行性记录继续可查；本轮不投入较大的API26跨父复用改造。此项仍未解决，不阻塞各应用独立功能；仅在明确专项决定或新的具体回归下重新开启。",
       "id": "layout-switch-black",
       "reportedAt": null,
       "reportedAtSource": "原始用户提出时间未核实。可核实的公开调查记录为10月3日18:11:07；9月25日的缩略图转场黑帧不是同一问题。",
@@ -113,18 +113,23 @@
         "historicalCoverage": "incomplete"
       },
       "scopeDecision": {
-        "state": "awaiting-user-reply",
-        "question": "本轮保留共同短黑为OPEN，或将完整共享复用改造纳入本轮",
-        "basis": "已有共同短黑反例且候选要求兼容作用域、资源匹配回执、转场测量及有界回收；需要控制用户已强调的范围与投入",
-        "feasibility": "mechanism-documented-candidate-unproven"
+        "state": "superseded-by-latest-finite-closure-instruction",
+        "recordedAt": "2026-10-05T16:55:55+08:00",
+        "selection": "本轮不扩大共享复用改造；不把遗留问题标为通过"
+      },
+      "disposition": {
+        "owner": "reader-kit",
+        "state": "deferred",
+        "recordedAt": "2026-10-05T16:55:55+08:00",
+        "reason": "本轮按用户成本与范围指令收尾；未承诺短黑已消除"
       }
     },
     {
       "title": "图像增强的成功替换路径",
-      "status": "按用户要求跳过模拟器系统超分",
+      "status": "成功路径未验收；按要求暂挂",
       "kind": "open",
       "detail": "按官方异常恢复建议完成一次guest重启、boot/unlock/亮屏门槛后，E同P3系统模型实际调用仍于05:32:27.214返回The service is abnormal，无处理后图片；信息为WEBP1280x1808/153.4KB、系统超分未应用。OFF/System2000px和原DetailP3已恢复；10个功能样本及全部944 PTS已核对，不是成功替换/FPS或全帧连续性接受。",
-      "action": "用户已要求先跳过。成功路径仍OPEN，不在模拟器继续重启或调用；待用户恢复该项且存在不同真实能力条件，再验证处理后图片的显示交接，不改后端或引入其他模型。",
+      "action": "系统增强成功替换仍未验收。保持用户已要求的执行跳过，不重启、不重复调用、不换模型；以后具备不同真实能力条件并由用户重新开启时再处理。",
       "id": "enhancement-success",
       "reportedAt": null,
       "reportedAtSource": "调查发现的模拟器服务异常；10月3日19:54:41已有公开记录，不冒充原始用户提出时间。",
@@ -141,14 +146,19 @@
         "reason": "用户明确要求先跳过模拟器系统API超分",
         "recordedAt": "2026-10-05T05:58:18+08:00",
         "resumeCondition": "用户恢复该项，且具备可成功返回处理图片的实际运行条件"
+      },
+      "disposition": {
+        "owner": "system-enhancement-runtime",
+        "state": "deferred-under-user-hold",
+        "recordedAt": "2026-10-05T16:55:55+08:00"
       }
     },
     {
-      "title": "Koma 章节：文件夹选择尚未完成",
-      "status": "原生选择条件未具备",
+      "title": "Koma导入：文件夹选择实际能力未确认",
+      "status": "移回Koma导入待办；未验收",
       "kind": "open",
       "detail": "原FOLDER选择原图没有确认/选择此目录控件；K宿主只在DocumentViewPicker返回URI后扫描/入库。官方API26声明Phone支持FOLDER，实际guest26/260000，但本模拟器未返回目录，排他原因未建立。真实TerraHistoricus网络章节菜单往返现在有独立当前证据，不能替代目录导入结果。 完整选项核对：ImportPage228/Index1199均传FOLDER+数量1，无suffix/merge/multiAuth覆盖；官方单目录不要求多选开关。未隔离应用参数冲突，不改原导入器。",
-      "action": "保留OPEN与原导入器；两个原入口只有FOLDER+max1，没有改变selectMode的聚合/批量授权选项。系统返回folderUris后才能继续扫描/入库/普通阅读；没有新的原生完成条件不重复点击/长按，不以其他已接受CBZ/网络章节替代目录结果。",
+      "action": "系统FOLDER接口有平台/系统能力条件，代码请求不等于当前模拟器能完成。实际目录返回与导入仍未验收，原因未隔离；原导入器保持不变，后续随Koma导入功能计划处理，不作为共享阅读器候选交付的阻塞。",
       "id": "remaining-host-acceptance",
       "reportedAt": null,
       "reportedAtSource": "本项是可核实的章节调查缺口：10月4日23:14:01已有公开记录。未核实原始用户提出时间；不把章节与网络等不同边界混用一个时间。",
@@ -160,6 +170,12 @@
         "activeUntil": null,
         "trackingSince": "2026-10-05T01:06:48+08:00",
         "historicalCoverage": "incomplete"
+      },
+      "disposition": {
+        "owner": "Koma/local-import",
+        "state": "transferred-to-host-feature-plan",
+        "recordedAt": "2026-10-05T16:55:55+08:00",
+        "runtimeAccepted": false
       }
     },
     {
@@ -222,6 +238,10 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-05T16:55:55+08:00",
+      "text": "按最新成本与范围指令完成有限候选交付：三消费者产品提交与Kit/HAP匹配，已接受命名场景保留，旧版回退不变。布局短黑遗留、系统增强暂挂、目录选择归Koma导入；不再扩大本轮阅读器任务。"
+    },
+    {
       "at": "2026-10-05T05:58:18+08:00",
       "text": "三宿主当前页媒体面板/取消有限收尾：E原生换源后新下载157118B，新资源保存确认框显示P3并取消，原Detail继续P3恢复；旧403原因仍未知。按用户要求跳过模拟器系统超分，成功路径OPEN且不继续调用。"
     },
@@ -283,6 +303,11 @@
     }
   ],
   "evidence": [
+    {
+      "id": "finite-handoff-binding",
+      "label": "本轮收尾：三宿主提交/Kit/签名包最终绑定",
+      "path": "package5-finite-handoff-binding.json"
+    },
     {
       "id": "remaining-feasibility-review",
       "label": "布局/目录的源码与官方API条件",
@@ -465,8 +490,8 @@
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "只完成既有Package5尚未接受且当前可执行的命名边界；真实源已具备，不扩大提供者矩阵，不改源协议/菜单/数据模型，不回放冻结路径。",
-  "excluded": "保留宿主原菜单、设置、数据、导航、根转场和旧版回退；不切换默认阅读器，不推送，不回到实机，不新增宿主专用状态。",
+  "stopRule": "按用户最新要求结束本轮阅读器专门投入。已接受命名场景冻结；不再为了布局共同短黑、模拟器增强或目录选择扩大本轮任务，不新增复用改造、测试矩阵或性能追平任务。",
+  "excluded": "保留现有宿主菜单、设置、数据、导航、根转场、默认选择与旧版回退；未切换默认、未推送、未操作实机。已知限制没有被标为通过。",
   "costNote": "不显示虚构完成百分比或费用。每项工时为已记录下界、历史覆盖不完整。本次剩余两项联合源码可行性核对另记录7分钟，未精确拆分，未伪分摊到单项工时。",
   "jointAssessmentHandling": {
     "recordedSeconds": 420,
@@ -474,6 +499,18 @@
     "end": "2026-10-05T06:07:45+08:00",
     "coverage": "lowerbound",
     "allocation": "布局/FOLDER联合源码可行性核对未能精确拆分，不伪分摊单项工时。"
+  },
+  "closure": {
+    "closedAt": "2026-10-05T16:55:55+08:00",
+    "kind": "finite-handoff-with-retained-limitations",
+    "authority": "用户最新要求尽快收尾、结束无止境延伸并释放各软件功能开发时间",
+    "fullReplacementAchieved": false,
+    "performanceSuperiorityProven": false,
+    "currentDelivery": "共同Kitcb4f2f5与对应三消费者提交/签名HAP、原命名场景证据",
+    "deferredOutcomesRemainUnresolved": true,
+    "readerSpecificWorkActive": false,
+    "bindingReceipt": "package5-finite-handoff-binding.json",
+    "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。"
   }
 }
 -->
@@ -514,49 +551,37 @@ resolves an absent key to Shared. This slice changes no default or persisted
 backend choice; its explicit shared Want is process-scoped and reversible. No package migrates or deletes user
 data.
 
-### 唯一 ACTIVE 包：有限收尾主线（2026-09-21）
+### 本轮有限收尾结论（2026-10-05）
 
-The current package is the ordinary reader route, not a collection of isolated
-controls. Its closure path is: ordinary entry and asset handoff → initially
-hidden chrome → full-screen/viewport ownership → exit and re-entry at the same
-source, plus F2 only where a processed replacement is applicable. The current ordinary F1 entry/handoff/reentry paths have bounded matching
-runtime evidence below. F2 successful processed replacement and the separately
-recorded remaining boundaries are still OPEN; historical terminal screenshots
-and prior Pass results do not fill those gaps.
+用户最新要求是尽快收尾、停止无止境延伸，并释放 NextE、NextN、Koma 各自功能开发时间。
+本轮以**已有验证范围的候选交付**结束专门投入；原全量替换目标没有被宣称达成。
+以下结论取代历史 ACTIVE 行及其待决/下一动作，不再自动开启布局复用或目录调查。
 
-### 当前总体状态和有限收尾安排（2026-10-04）
+| 交付项 | 当前结论 |
+| --- | --- |
+| 共同实现 | Kit `cb4f2f54212beeb52c9632a97671320f890f6dfa`；三个消费者指向同一提交，Kit 工作树干净 |
+| 产品提交 | NextN `752a86ca`、NextE `391e6de6`、Koma `d9b2f833`；之后仅有 NextN 文档提交，无产品源码变化 |
+| 签名产物 | 三份 `ordinary-first-image-{nextn,nexte,koma}.hap` 的 SHA-256 仍与原安装/审阅绑定相同；不是新构建或新运行验收 |
+| 已接受范围 | 三应用命名普通首入/重入、首图与提示交接、保图重载；原裁切/旋转/分割受影响路径；NextE 原根转场/连续首入；Koma 命名网络章节菜单往返、快速翻页及本地自动前进/停止；三应用当前页媒体面板打开/取消返回 |
+| 保留边界 | 宿主原菜单、设置、数据、导航、默认选择、根转场与旧版回退；不推送、不切默认、不清数据 |
 
-- 仍处于三应用替换验收，不能宣称全面替换或性能超越旧版。
-- 已收敛的共享实现：保留分页节点与缩略图栏身份；分页动画启动时进行有界资源准备；
-  当前邻页尺寸修正已成为三应用同一 Kit 提交 `15eb75c`，不增加缓存深度或应用专用分支。
-- 当前收尾已完成：去诊断日志后的三个包构建、安装和普通入口核对已完成；
-  NextN/NextE 返回保留 P38/P3，Koma 书架继续阅读进入本地书籍 1/11。此项仅接受邻页尺寸修正。
-- 当前加载路径改动：共同 Kit `65f8770` 移除普通图片回执的不必要空闲帧等待；
-  `ee9fc71` 在保留旧图的替换请求中恢复加载反馈，复用请求编号和真实进度，不新增状态。
-  共同 Kit `4f0cf1a` 复用已有分页保留图投影和两个稳定图片位置，修复连续模式在替换时
-  移除旧图片的路径。三应用同源构建、NextE 原图往返和重新加载、NextN 分页/连续重新加载、
-  Koma 本地分页/连续重新加载的受影响区间已核对。首次图片与加载提示重叠由共同 Kit `cb4f2f5` 在当前命名路径有限接受；布局切换黑屏仍未解决。
-- 连续模式切换黑屏在候选和干净 `15eb75c` 包均存在；当前 Core 资源保留，Surface 布局
-  分支会重新挂载原生图片。一次当前追踪确认同一缓存文件重新解码，且解码期间原生节点
-  记录约束未变、跳过布局。现有追踪精确查询三个原生节点：首次绘制均正常尺寸，
-  `CreateImagePixelMap` 的目标为 `[0,0]`，不支持 1px 或自动降采样假设；连续节点
-  第二次 `StartDecoding` 在首次绘制后。保留其他尺寸贡献未知，不扩写布局或添加遮罩。
-- 剩余操作路径只做有限核验：原图/处理图切换、旋转与裁切、在线无缓存、转场中断、
-  Koma 章节、网络和自动阅读；既有历史结果不能代替当前版本，但未验证不等于已发现缺陷。
-  只有确认了当前实现差异、用户影响和原因才新增源码修改。
-- 收尾标准：一个明确原因对应一份最小共同改动；三应用保持各自原菜单、数据、设置和
-  导航职责；受影响普通操作及转场没有已知退化，改动提交、产物和运行证据对应。
-  不以追平录像帧数或单软件特调作为持续投入理由；没有新证据时不重复同一检查。
-- 跨父复用的有界调查已收束：安装SDK `26.0.0.105` 具备全局复用接口；编译器要求
-  `reusePool` 字符串字面量并在池拥有者实例中无条件初始化，不能直接用运行时版本表达式
-  兼容现有最低API23/E/N发布API24。按资源标识匹配还需解决当前图片回执、转场测量与
-  有界回收；只确认候选机制，未证明完整方案。是否投入较大共享改造待当前范围问题回复。
+| 遗留项 | 收尾处置 | 重开条件 |
+| --- | --- | --- |
+| 分页/连续模式互切短黑 | 可复现且未修；同条件 Legacy 也有。本轮不扩大 API26 跨父复用改造，不作为应用独立功能的阻塞 | 新的具体回归或用户明确的专项投入决定 |
+| 系统超分成功替换 | 当前模拟器服务异常无输出，按用户要求暂挂；不接受为成功 | 用户重新开启且具备不同真实能力条件 |
+| Koma 文件夹选择 | 系统接口存在平台/系统能力条件；当前目录返回及导入未验收。属于 Koma 导入环节，移回宿主功能计划 | Koma 导入功能进入明确开发范围时核实实际能力与完成路径 |
 
-### Current package5 evidence boundary — 2026-10-04
+本次最终核对的本地原始记录是
+`.hvigor/outputs/emulator-reader-20261003/package5-finite-handoff-binding.json`。
+原始录像、截图、审阅记录和对应产物保留，进度页链接可查；未完成项的提出时间与处理工时不改为“通过”。
+本轮没有新增产品改动，因此不重复构建、安装或已冻结的 UI 路径。
+既有证据不证明全量替换、所有网络提供者、完整性能/FPS、进程死亡持久化，或实际保存/发送等未命名分支。
 
-| Package | Current capability/evidence | Remaining boundary | One next action |
+### 本轮包状态（取代原唯一 ACTIVE 行）
+
+| Package | Candidate delivered | Retained limitations | Execution |
 | --- | --- | --- | --- |
-| **5 ACTIVE / OPEN** | Common Kit `cb4f2f5` affected ordinary entry/reentry, retained reload, crop, real uncached N entry, K original network/chapter-menu/auto-read, and E/N/K media-panel cancel paths have bounded current evidence. Original host menus, data, navigation and Legacy fallback are retained. | Layout-switch black remains OPEN and also occurs in the matching Legacy path. Successful system enhancement is on explicit user execution hold. Native FOLDER has not returned a URI. No full replacement, FPS superiority, all-provider, chapter-end or persistence conclusion. | Cross-parent reuse feasibility review is bounded and finished: SDK26 has the API, but literal decorator configuration and unconditional pool initialization require a separate compatibility scope for minimum23/E-N release24. Image receipt/entry measurement/resource disposal remain unsettled, so no safe candidate or small-marker fix is proven. Await the pending scope choice before implementing broader shared reuse; do not repeat frozen UI paths, system enhancement calls or unchanged folder-picker actions. Original guest30000ms timeout was restored and lease released; issue clocks/provenance remain explicit. |
+| **5 FINITE HANDOFF / RETAIN LEGACY** | Same Kit and committed E/N/K products, matching signed artifacts and bounded named-route evidence | Layout black unresolved; enhancement success unaccepted under user hold; native folder import unaccepted and owned by Koma | Dedicated reader work ended under the latest scope instruction. No automatic implementation/test/design queue remains; future app feature work is independent. Full replacement and performance superiority are not claimed. |
 
 The following are historical finite pending checks inside this one package,
 not independent queues; the current row above governs execution:

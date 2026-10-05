@@ -10,7 +10,22 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
-- Current ordinary first-image boundary checkpoint (2026-10-05; Package5 OPEN):
+- Final finite-scope reader handoff (2026-10-05): the latest user instruction
+  ends dedicated reader expansion and prioritizes each host's own features.
+  Existing accepted named paths and matching signed artifacts are delivered as
+  a candidate with Legacy/default choices retained. Final live source/artifact
+  identity check confirms Kitcb4f2f5 and N752a86ca/E391e6de6/Kd9b2f833;
+  later N commits change only documentation. No product change, rebuild,
+  installation or device replay occurred in this closure. Local receipt:
+  `.hvigor/outputs/emulator-reader-20261003/package5-finite-handoff-binding.json`.
+  Layout-switch black remains unresolved, successful system enhancement is on
+  the explicit user hold, and native folder import remains unaccepted and
+  belongs to Koma's host feature plan. These are retained limitations rather
+  than accepted tests; none automatically reopens dedicated reader work.
+  The original full-replacement/performance outcome is not claimed achieved.
+  The authoritative work-order closure row supersedes historical next actions.
+
+- Supporting ordinary first-image evidence (2026-10-05; finite named scope):
   common Kit `cb4f2f5` uses the existing cell snapshot for initial image visibility
   and its loading sibling. Exact scope: two wrappers,7 added lines; no Core ACK,
   retirement, entry transition, host menus/settings or resource ownership change.
