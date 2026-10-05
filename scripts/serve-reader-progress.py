@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only local view of the authoritative reader work order; no device calls."""
+"""Read-only local view of an authoritative work order; no device calls."""
 import argparse
 import json
 import mimetypes
@@ -124,8 +124,18 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--order', type=Path, default=ORDER)
+    parser.add_argument('--page', type=Path, default=PAGE)
+    parser.add_argument('--artifacts', type=Path, default=ARTIFACTS)
+    parser.add_argument('--snapshot-key', default='reader-progress-snapshot')
     args = parser.parse_args()
+    ORDER = args.order.resolve()
+    PAGE = args.page.resolve()
+    ARTIFACTS = args.artifacts.resolve()
+    MARKER = re.compile(r'<!-- ' + re.escape(args.snapshot_key) + r'\s*\n(.*?)\n-->', re.S)
     snapshot()  # Refuse to serve a missing/malformed authority document.
+    if not PAGE.is_file():
+        parser.error('Progress page is missing')
     server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
-    print(f'Reader progress: http://127.0.0.1:{args.port}', flush=True)
+    print(f'Local progress: http://127.0.0.1:{args.port}', flush=True)
     server.serve_forever()

@@ -12888,3 +12888,48 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
 - Scoped source checkpoint: common Kitcb4f2f54212beeb52c9632a97671320f890f6dfa contains exactly two wrapper opacity predicates,7 added lines. Three checked-out sources are identical to the already built/installed diff6ce27298 and its binding receipts. Existing next-frame presentation, retained composition, resource retirement, root thumbnail handoff and image-node sites are unchanged. This accepts only the named cached affected chains, including E ordinary continuous first image; fresh uncached ordinary entry, full replacement, FPS and the separate layout-black issue remain OPEN.
 
 - Final affected ordinary first-image candidate check: N current signed8c22b635/Kitcb4f2f5 native non-H682531 ReadP1 is a real first acquisition, not a thumbnail flight or Reload. Before22 module cache files, after25; distinct first95338B and preload source1/2 completions63548B/19575B have HTTP200 stream evidence. Moviee5b6dba8 sequential raw2–639 reviewed, Stage189→body/noStage190; original system slide entry93–106 and return542–558 retained. Every reviewed PTS matches independent ffprobe; staleE samples0–1 and idle640+ excluded. Actual terminalN root[0,117][1320,2232]/Detail682531; original N663205 route and KLibrary restored through protocol. Three previously reviewed host cached/reentry/retained/root/continuous paths remain frozen. This closes only the7-line ordinary first-image publication candidate evidence; full replacement, other provider states and FPS remain OPEN.
+
+- OPEN — Koma KAV-001 reading/favorite separation (2026-10-06, pre-edit).
+  Authorized finite first-production package, App3bc9eb84/Kitcb4f2f5/HAPec8f816e.
+  Parent retained: root Browse -> existing Kavita destination -> libraries/series/chapters
+  -> ordinary root Reader; favorite detail remains ordinary MangaDetail. No scaffold,
+  titlebar, root tabs, Reader/Kit, menu, copy, radius or geometry changes. Before read
+  upserts fresh Comic (known chapter catalog exists) and replaces/creates favorites;
+  after only read snapshot reaches Index, explicit favorite remains sole write action.
+  Unfavorite detail action returns along normal close to already mounted chapter page.
+  Root Browse pushes Kavita without param; four optional route reads now retain
+  that established parameter-free entry, matching current Komga handling.
+  One work-scoped snapshot covers six Reader lookups; true close clears, covering
+  detail does not. Baselines kav001-services-baseline/settings-baseline, root Browse
+  capture currentcom.honjow.koma root[0,117][1320,2232]. Native ordinary save and
+  no-data-clear cold retry fail Asset.add24000010 before HTTP; service exists, cause
+  not established. Same-state chapter/read comparison held by that prerequisite.
+  Exact source map/impact/counterexamples in Koma ignored kav001-implementation-boundary.md.
+  Verify host production state methods/build and current ordinary reachable root/local
+  paths separately; do not claim Kavita accepted without native configuration/read.
+  Same-package real HTTP follow-up: directory APIs200, image400 errors.apiKey
+  required; primary ReaderController/OpenAPI require query auth, public marker401.
+  Added only Koma ReaderPageSourceAdapter outbound request decoration for exact
+  configured Kavita Reader/image endpoint; original descriptor/cache/store URIs
+  and logs stay key-free, runtime value clears on all other header installs.
+  No Kit, image layout, cache replacement or menu change. Host transport and
+  owned-service real-image proof separate from still-held native Asset path.
+
+- FROZEN — Koma local progress monitor (2026-10-06, user-requested before edit).
+  Local QA page only, not App UI. Reference: existing shared-reader-progress.html whole
+  parent tree: connection header, current activity, evidence layers, finite queue,
+  timing, evidence links and scope footer. Retain readonly same-origin refresh and
+  stale warning. Adapt three-host cards to one Koma production queue plus independent
+  source lane; no completion percentage. CURRENT_STATUS.md remains sole work order.
+  Unknown original report time and prior handling time remain unknown; verified
+  checkpoint elapsed time is separately labelled. Server default Reader routes/port
+  remain unchanged; Koma uses optional inputs and port8767, exact evidence allowlist.
+  Verify current live browser rendering and refresh, denied unknown evidence/path,
+  and old monitor remains reachable. No App/Kit/menu/device commands in this lane.
+
+  Current browser tab5 actually renders Koma page at127.0.0.1:8767, 1280x720;
+  screenshot koma-progress-page.jpg reviewed, no clipped current/proof panels.
+  API/work-order/exact PNG routes200, unknown evidence/private file404; old8765
+  stays200. Data refresh follows work-order changes without rebuilding App.
+  Port8766 was already owned by another local server; retained it and used8767.
+  Layout is frozen; content records remain dynamic under the user monitor request.

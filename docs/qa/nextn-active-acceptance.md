@@ -74,8 +74,24 @@
   Independent review found no concrete source blocker; its accidental full
   build-config output emitted signing-password values (no key/certificate bytes),
   stopped and recorded ignored incident with no values repeated or file changes.
-  Next finite App package Kavita reading/favorite overwrite P0: source owner,
-  full catalog and ordinary browse->read->return map before edits. Backup P0
+  Active Kavita reading/favorite overwrite P0: completed two-file source map;
+  current createReaderComic already includes known catalog, single-chapter wording
+  withdrawn. Only openChapter replacement/auto-favorite is confirmed bad transition.
+  Ordinary unconfigured setup baseline and owned-server save/cold retry observed
+  Asset.add24000010 before App HTTP; official IPC failure, asset_service exists,
+  exact IPC cause unestablished. Native chapter/read boundary held; no emulator
+  restart/plaintext fallback/private-pref injection. Library SHAf1aec9f0 unchanged.
+  Two-file transient snapshot host checks/build succeeded; HAP772d327e installed
+  with no data clear, ordinary blank Kavita settings and actual local cold-read1/1
+  observed. Third adapter file query-auth candidate is unbuilt; real owned image
+  API400 requiresapiKey, primary controller confirms query contract. Independent
+  review found source/fixture/true-close clear boundary missing; fix that narrow
+  context before host transport/owned HTTP/build, native Kavita still unaccepted.
+  User-requested local Koma page is live http://127.0.0.1:8767/ from sole work order;
+  browser screenshot reviewed, exact readonly routes accepted and old8765 retained.
+  Unknown initial report times/prior handling time are explicit; no overall percent.
+  Koma page snapshot returned to KAV-001, next unverified action auth context clear.
+  Backup P0
   native PREPARED recovery and Tracker real-account boundaries remain OPEN.
   No Reader/Kit/menu/layout changes. Artifacts .hvigor/outputs/koma-production-
   20261005/; App receipt under /private/tmp/koma-production-20261005/
