@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05T16:55:55+08:00",
+  "updatedAt": "2026-10-05T18:23:33+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "有限收尾结束 · 保留限制",
@@ -12,9 +12,9 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "交付已验证候选与已有证据，结束本轮专门投入；应用各自功能不再被此工作单阻塞",
   "activity": {
-    "title": "候选绑定核对完成；本轮收尾结束",
-    "detail": "三应用Kit一致且干净，受影响源码哈希和签名HAP均匹配原验证记录；产品提交之后无产品源码变化，既有证据文件完整。此次只作最终绑定核对与收尾记录，没有新构建、安装、测试或产品改动。",
-    "startedAt": "2026-10-05T16:51:57+08:00"
+    "title": "Koma master 构建工作流已交付",
+    "detail": "Koma master 69af0c14 已推送；Build OHOS 云端运行37295853272通过，用时2分22秒。支持master推送、PR和手动构建，上传未签名Debug HAP及提交/Kit/校验值清单，保留14天。产物已下载核验。为Linux构建补齐Git目录信任、xxd依赖与旧xxd参数兼容；生成头文件与原Mac结果逐字节一致。本次CI记录不扩大原阅读器命名设备验收范围。",
+    "startedAt": "2026-10-05T18:23:33+08:00"
   },
   "nextAction": "本轮阅读器没有自动下一动作。由各应用自己的功能计划决定后续工作；阅读器仅因新的具体回归或明确专项决定重新开启。",
   "hosts": [
@@ -47,7 +47,7 @@
       "checkout": "/Users/honjow/git/Koma-current-kit-verify",
       "kit": "cb4f2f54212beeb52c9632a97671320f890f6dfa",
       "hap": "ce2ee3bbddfbb5ac26feb33cb8f6ecb9d0cb70ac0dbc6715725bfb72142bfa35",
-      "build": "共同候选签名构建 exit 0",
+      "build": "命名验收候选签名构建exit 0；另master 69af0c14云端未签名Debug CI通过，产物已下载核验",
       "install": "既有模拟器安装回执与产物匹配；本轮未重新安装",
       "verdict": "命名路径已接受的候选",
       "verdictKind": "review",
@@ -300,6 +300,10 @@
     {
       "at": "2026-10-05T00:13:46+08:00",
       "text": "三个消费者的共同 Kit / 签名 HAP 绑定记录完成；构建成功，之后已通过受控协议安装。此项不代表整体验收。"
+    },
+    {
+      "at": "2026-10-05T18:23:33+08:00",
+      "text": "Koma master 69af0c14 的新Build OHOS工作流已通过云端构建与上传；下载HAP后完成提交、Kit、SHA-256、ZIP及arm64原生库核验。"
     }
   ],
   "evidence": [
