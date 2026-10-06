@@ -102,12 +102,25 @@
 > timestamp inferred. Full bindings/findings remain in the current work order
 > and ignored status-intent-current-acceptance-receipt.json.
 > Frozen settings/title/rail stay frozen; independent K production remains held.
-> Package OPEN: natural pending cancellation, N late duplicate, actual N area,
+> Package OPEN: natural pending cancellation, N late duplicate, zero-top input,
 > non-owned Debug and required visual boundaries remain unaccepted. Existing
 > Shared/Legacy mode gap is deferred under its separate work-order disposition.
-> Next finite ordinary E P3→80ms→Back→1800ms whole interval addresses motion/route
-> cancellation only; no artificial latency, cache clear, repetition sweep,
-> fullscreen-first, internal zoom, remount or new feature scope.
+> Current clean earlyBack9e2e1ecb original0–288 whole reviewed: admission11.587/
+> layout11.771/Back12.041/routefalse12.054/cancelled_from=layout12.075,
+> same Detail/root217[0,117][1320,2232]/ContinueP3 through terminal. No late
+> forward/fullscreen observed; raw48/56/174/288 withdraw contact-sheet drift
+> suspicion. This hits before-target cancellation, not moving/uncached loading.
+> N actual-area probe2c4d8c7c/71d2fd7b proves ready/chrome25.362 at native
+> top0, actual top39 arrives25.418; cutout23.333 is not status readiness. Both
+> temporary sites removed byte-exact and clean673ae263 restored before repair.
+> Current sole N embedded gate16c1f407/a258c835 whole0–478/all14 sheets reviewed:
+> source2–102/root103–113/body114+, status icons186 before toolbar188, hide258,
+> source dark status312 before reverse, same FullPreview324–478. Terminal
+> root220[0,117][1320,2232]/P38 matches baseline. Permanent ready=true05.220
+> precedes chrome=true05.221; it does not independently timestamp native inset.
+> Portrait ordinary show/hide/Back accepted only. Next check changed zero-top/
+> landscape compatibility against actual policy/capability once; no timing sweep,
+> geometry/guard change, forced success or independent K production resume.
 
 
 > Earlier physical boundary (2026-10-06; later source finding above supersedes

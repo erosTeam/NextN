@@ -2307,9 +2307,22 @@ struct Index {
   }
 
   private async prepareSharedReaderChrome(isCurrent: () => boolean): Promise<boolean> {
-    if (!isCurrent() || !this.readerDestinationVisible || this.readerDestinationClosing) return false
+    const current = (): boolean => isCurrent() && this.readerDestinationVisible && !this.readerDestinationClosing
+    if (!current()) return false
     await this.requestReaderStatusBar(true, true)
-    return isCurrent() && this.readerDestinationVisible && !this.readerDestinationClosing
+    if (!current()) return false
+    const win = await window.getLastWindow(this.context())
+    if (!current()) return false
+    // Setter completion is not status-area readiness; cutout insets can stay
+    // nonzero while the actual status bar is still hidden.
+    const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
+      const systemTop = this.getUIContext().px2vp(win.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height)
+      if (systemTop <= 0 || this.layoutSafeArea.topAvoidHeight < systemTop) return ''
+      const rect = this.readerEntryRect('rkit-reading-surface')
+      return rect.valid() ? `${systemTop}:${this.layoutSafeArea.topAvoidHeight}:${rect.x},${rect.y},${rect.width},${rect.height}` : ''
+    }, current)
+    console.info(`[ReaderTrialHost] embedded_show_layout_ready=${ready}`)
+    return ready && current()
   }
 
   /**

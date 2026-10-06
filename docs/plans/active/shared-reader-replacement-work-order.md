@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T04:31:31.306233+08:00",
+  "updatedAt": "2026-10-07T05:02:03.603725+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "ACTIVE · 三应用既有阅读行为一致性复核",
@@ -12,66 +12,66 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "保存三应用状态栏颜色修正；有限核验入场中返回",
-    "detail": "Common5b9014cc checkpoint saved inall3; no sourcebytes changed by Git advancement. E preview/original refinement mapped and root flight preserved byexisting owners. Next finite interrupted ordinaryP3 route only, frozen product surfaces untouched.",
+    "title": "NextN状态栏实际布局交接与零顶部区域兼容边界",
+    "detail": "Portrait setter-only source race corrected with existing native-area/layout gate; complete current P38 interval reviewed. Next bounded compatibility decision is zero-top/landscape, no timing or geometry expansion.",
     "startedAt": "2026-10-06T23:10:00.397131+08:00"
   },
-  "nextAction": "Review exact status-intent checkpoint diffs, commit applicable hosts on common5b9014cc, then one predeclared ordinaryE P3 early-Back whole interval. No geometry/timer/guard tuning; N area and uncached cancellation limits remain explicit.",
+  "nextAction": "Check the changed N embedded beforeShow zero-system-area/orientation branch against existing Window policy and emulator capability once; preserve portrait P38/data and do not force success or broaden into rotation/geometry redesign. Current portrait status gate is frozen after scoped checkpoint.",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
-      "kit": "7326ade7da088b2517c96e0ce770ad1f9babbe01 + continuous candidate SHA10f0d26",
-      "hap": "2144ce4380270b7399eb633c8bad452e2740a1fe17466d0aa36a28044eec440c",
-      "build": "当前同字节候选签名构建成功；源码/HAP绑定；这是构建证据，不是运行时验收",
-      "install": "checked protocol正向install bundle successfully，原生bundle包身份已读；安装摘要读取未执行，不冒充已读回",
+      "kit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930 + uncommitted geometryf715588a/ac0c8c90",
+      "hap": "16c1f40729819ef5db513b460b9a7f76933f444a255373d36e54c90ea69dda94",
+      "build": "Sole N embedded actual-area gate signed build0; common/E/K bytes unchanged. Geometry WIP included, no full replacement.",
+      "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route.",
-      "remaining": "Whole-entryWindow visibility/colorwriter时序不由MOV像素接受；真实取消motion同请求等待UI/失败fallback未命中；不宣称uncachedness/FPS。",
-      "appHead": "83048c1a7e42938b0bbb72b5e8ecdb14afcb20ce",
+      "remaining": "Proxy/body geometry handoff N/E; Landscape/zero-system-area input of N embedded prepare gate; Natural pending same-request cancellation (unhit); N later duplicate progress UI callback (unhit); Mode-switch blank gap remains reproduced on Shared and Legacy; Non-owned Debug initial intent; All-layout/performance/full replacement",
+      "appHead": "083415aa1d32c85d8a01c45f62a9586d3fb79bb1",
       "titleConsumerBuild": {
         "hapSha256": "e7d7b4d9d58973000224edb9fe8605bf5c25f415a5dde1b4f2bc77955a0716b8",
         "buildExit": 0,
         "scope": "Source and three-consumer compilation only; no N/E install or new native acceptance",
         "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nextn-koma-title-r4-consumer-signed.binding.json"
       },
-      "installedKit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
-      "appHeadLayer": "source build base before this title-only gitlink/docs sync; new commit does not imply new installed runtime"
+      "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
+      "appHeadLayer": "Current source candidate includes sole embedded gate correction; checkpoint binding records exact committed source after scoped commit."
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
-      "kit": "7326ade7da088b2517c96e0ce770ad1f9babbe01 + continuous candidate SHA10f0d26",
-      "hap": "c2bc27103176b98830bcd63feca3e5c2e6a766e58621ec4438d5a939510a8a1f",
-      "build": "当前同字节候选签名构建成功；源码/HAP绑定；这是构建证据，不是运行时验收",
-      "install": "checked protocol正向install bundle successfully，原生bundle包身份已读；安装摘要读取未执行，不冒充已读回",
+      "kit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930 + uncommitted geometryf715588a/ac0c8c90",
+      "hap": "e3f51352f966907f49d9a26214beee9c0ce4e39bf8928910e05911bf504dea19",
+      "build": "Current status-intent signed HAP exact source binding; all3 compiled. Geometry WIP included, no full replacement claim.",
+      "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions.",
-      "remaining": "E未挂载取消及motion取消背景UI仍未观察；实际共同状态执行单独记录，不作全量通过。",
-      "appHead": "5f632e720a0f7ed38293700631833e5031cedce2",
+      "remaining": "Proxy/body geometry handoff N/E; Landscape/zero-system-area input of N embedded prepare gate; Natural pending same-request cancellation (unhit); N later duplicate progress UI callback (unhit); Mode-switch blank gap remains reproduced on Shared and Legacy; Non-owned Debug initial intent; All-layout/performance/full replacement",
+      "appHead": "b92eeb70b016c39bdc3b80d86c8baab12eaed834",
       "titleConsumerBuild": {
         "hapSha256": "71ef5efe5e64d1d79abb484c74f95f73159ce8f9d3ad8149e5bff693ec79a2d2",
         "buildExit": 0,
         "scope": "Source and three-consumer compilation only; no N/E install or new native acceptance",
         "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nexte-koma-title-r4-consumer-signed.binding.json"
       },
-      "installedKit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877"
+      "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930"
     },
     {
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
-      "kit": "7326ade7da088b2517c96e0ce770ad1f9babbe01 + continuous candidate SHA10f0d26",
-      "hap": "4019966f6578696149e178edd12b45e36c777eb29fa4a04ed4d531e41cdb4deb",
-      "build": "当前同字节候选签名构建成功；源码/HAP绑定；这是构建证据，不是运行时验收",
-      "install": "compile-only；本轮没有K安装或UI操作，原Library102P1保持冻结",
+      "kit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930 + uncommitted geometryf715588a/ac0c8c90",
+      "hap": "3a32ff76cca0295ae19b6560a2303467edadcbc4f754cf891460ae32d231ff3c",
+      "build": "Current status-intent signed HAP exact source binding; all3 compiled. Geometry WIP included, no full replacement claim.",
+      "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "本书设置与标题命名路径接受；总体Reader替换仍OPEN",
       "verdictKind": "open",
       "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。",
-      "remaining": "单图Catalogue102不证明双图spread/RTL页序；Debug强制布局/队列竞争为真实逻辑内存协作者证据，非native视觉或立即kill持久化。共享Reader其他既有未接受分支保持OPEN。",
-      "appHead": "8acd87562d8ef1da29ede67dc69bd407dc9f06d4",
-      "installedKit": "b118406db06598c9550a53db01b767223d6d6bf5"
+      "remaining": "Proxy/body geometry handoff N/E; Landscape/zero-system-area input of N embedded prepare gate; Natural pending same-request cancellation (unhit); N later duplicate progress UI callback (unhit); Mode-switch blank gap remains reproduced on Shared and Legacy; Non-owned Debug initial intent; All-layout/performance/full replacement",
+      "appHead": "0cc4bf471866866eba3a60698ac07f0ee9172416",
+      "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930"
     }
   ],
   "gaps": [
@@ -240,7 +240,7 @@
         "impact": "Direct: common canonical cancelled-readiness predicate/RootEntryHandoff and N/E snapshot argument; N Index terminal cleanup now reuses E route lifetime. Indirect: N normal/cancelled image content IDs ReaderPagedViewport726/730 use entryId, so clearing causes identity replacement; keeping existing object prevents remount. N currentWindowEntry sees terminal transition rather than null: readerEntryWindowReady pending=false remains equivalent, and independent root-settled admission unchanged. Source claim still released at settle; close/disappear/background/safe-mode/navigation retire existing transition. E already retains object; K no RootEntryHandoff caller/compile dependency. N observation callback directly exposed: same-page delivered original acknowledgement no longer depends on progress-save dedupe; progress mapper/store/write queue unchanged. Existing Surface canonical position requires current selection/visible original; no metadata/commanded-anchor notification. No menu/rail/provider/preload/Legacy change.",
         "reject": "No actual motion cancellation or no pending same request does not accept the row; backdrop loss during loading or premature window presentation rejects the route.",
         "limits": "Rotation capability sample rejected because actual viewport unchanged. Cached continuous sample is a current lost-readiness counterexample, not delayed-loading backdrop proof. Whole Window writer chronology/full replacement/FPS remain unaccepted.",
-        "nextAction": "Review whole clip-parent E selected83/actualcontent/fastinput/Back Grid/Detail/P3LTR interval against original five rows, source chrome and actual measured geometry. Any visible counterexample rejects route; then only source-mapped necessary action.",
+        "nextAction": "Check the changed N embedded beforeShow zero-system-area/orientation branch against existing Window policy and emulator capability once; preserve portrait P38/data and do not force success or broaden into rotation/geometry redesign. Current portrait status gate is frozen after scoped checkpoint.",
         "capabilityObservation": "Checked rotation command returned no size change; N root remained1320x2232; not an accepted cancellation sample. Native CUA unavailable but scoped host-window capture independently works and contains current native Library.",
         "selectedAlternative": "Existing continuous List onDidScroll cancels entry while pendingPosition=false and positionInFlight=false, with no provider/session mutation. Use native continuous mode temporarily, ordinary current Gallery thumbnail, one fast within-image swipe during loading, Back and exact original LTR/P38 restoration. No forced delay/cache clear or timing sweep.",
         "declaredRun": {
@@ -460,13 +460,13 @@
           }
         },
         "statusIconHandoffInvestigation": {
-          "state": "OPEN: ordinary hidden-intent color observation retained; complete geometry/readiness package unaccepted",
+          "state": "OPEN package; named portrait embedded status gate accepted, remaining orientation and entry rows distinct",
           "evidence": [
             "E73190831 whole0–436: white icons175–176/196; Nfae1afad whole0–456: white icons151–153 after finished. One root flight and same source return in both."
           ],
-          "established": "N ordinary root-owned Window visibility queue and native .systemBarStyle both have finish admission. E ordinary uses child ReaderTrialWindow and dynamic page style. Native style backups and Window color writes coexist; official Navigation explicitly warns against mixing them. E discards initial chrome=false event while entry pending, so TrialWindow desiredStatus stays default=true until late republish.",
-          "notEstablished": "Which native/style/visibility setter produces each one-frame icon reappearance; updated external engine source is reference, not emulator binary identity. No edit based solely on correspondence.",
-          "nextAction": "Review exact status-intent checkpoint diffs, commit applicable hosts on common5b9014cc, then one predeclared ordinaryE P3 early-Back whole interval. No geometry/timer/guard tuning; N area and uncached cancellation limits remain explicit.",
+          "established": "N ordinary root-owned Window visibility queue and native .systemBarStyle both have finish admission. E ordinary uses child ReaderTrialWindow and dynamic page style. Native style backups and Window color writes coexist; official Navigation explicitly warns against mixing them. E discards initial chrome=false event while entry pending, so TrialWindow desiredStatus stays default=true until late republish. N actual-area diagnostic proves setter-only preparation returns at top0; current scoped gate reads native TYPE_SYSTEM plus existing canonical inset and stable native clip.",
+          "notEstablished": "Whole proxy/body geometry equivalence, landscape/zero-system-area readiness, natural pending cancellation and non-owned Debug remain unaccepted; source/current portrait evidence is not full replacement.",
+          "nextAction": "Check the changed N embedded beforeShow zero-system-area/orientation branch against existing Window policy and emulator capability once; preserve portrait P38/data and do not force success or broaden into rotation/geometry redesign. Current portrait status gate is frozen after scoped checkpoint.",
           "platformSourceFindings": {
             "reference": "Official OpenHarmony master; emulator reports OpenHarmony-7.0.0.105, exact source revision unknown",
             "color": "SystemBarStyleOhos calls SetStatusBarColorForNavigation(content-only); it does not directly set enable. WindowSceneSessionImpl merges owner property flags, latest same flag wins except ABILITY_RUNTIME priority. Native color paths can affect resulting settingFlag, not proven emulator flash cause.",
@@ -495,7 +495,7 @@
             "falsifier": "If hidden entry still changes colors or transient white exists, candidate fails; do not tune a timer, force fullscreen, bypass geometry/cancel or remount. Missing actual show/hide/return or K evidence is unaccepted.",
             "consumerBuildFinding": "E first compile rejected Index.ets:1126 remaining four-argument Debug trial navigation call. Before correcting it, traced parent TrialWindow creation/retirement, onStatusBarVisible callback and child-owned ordinary path. Add required fifth argument from the existing parent window getter only; no optional default. Debug non-owned child initial notification still has entry admission and is not included in ordinary owned-entry acceptance; that branch remains unaccepted.",
             "currentResult": {
-              "updatedAt": "2026-10-07T04:31:31.306233+08:00",
+              "updatedAt": "2026-10-07T05:02:03.603725+08:00",
               "state": "OPEN",
               "device": "127.0.0.1:5555",
               "lease": "20261006-112816-bff2ab11",
@@ -503,12 +503,13 @@
               "scope": "Existing three-host source / entry / chrome reveal-hide / Back; independent K production held. No whole replacement or FPS acceptance.",
               "hosts": {
                 "NextN": {
-                  "hapSha256": "673ae263bdad4cf059ae3bb51149ddaf42b5d10a572707a2137ac9593e1f1442",
-                  "movieSha256": "d68984ab16affbb344cf96a3486ab74ada5db06ccda0427aa9f849c2cdd24488",
+                  "hapSha256": "16c1f40729819ef5db513b460b9a7f76933f444a255373d36e54c90ea69dda94",
+                  "movieSha256": "a258c8353d661af477df850e9c188ed30cf206984ee843ed329a2ed661a30dad",
                   "protocolExit": 0,
                   "recorderExit": 0,
-                  "reviewedOriginalFrames": "0–597",
-                  "observed": "FullPreview P38 LTR: flight99–113, image114+, hidden status from120. No transient white-before-hide. Toolbar visible193 before icon paint195; paint is not an actual-area readiness measurement. Hide281+. Reverse343–355; same FullPreview356+. Raw323/324/329/335/342 shows page label removal, not proof of pre-return image displacement. Proxy/body entry fit113→120 remains unaccepted."
+                  "reviewedOriginalFrames": "0–478/all14 contact sheets; prior cached0–1 excluded from current source claim; raw186/187/188/258/312/324 inspected",
+                  "observed": "Source2–102/rootflight103–113/body114+. White status icons appear186, toolbar188; hide258. Source dark status restored312 before reverse312–323; same FullPreview324–478. Image remained present in this complete interval. Terminal root220[0,117][1320,2232], current P38[643,1362][678,1397] matches baseline. Gate completion05.220 precedes chrome=true05.221 in 04:53 run.",
+                  "limits": "Current permanent diagnostic records only readiness boolean, not success-time native inset/clip values; no independent exact native-event timestamp inferred. Actual TYPE_SYSTEM read and stable inset/clip are source gate requirements, while original pixels prove their named presentation result. No FPS/whole geometry/all-orientation/stale failure/native uncached cancellation acceptance."
                 },
                 "NextE": {
                   "hapSha256": "e3f51352f966907f49d9a26214beee9c0ce4e39bf8928910e05911bf504dea19",
@@ -516,7 +517,7 @@
                   "protocolExit": 0,
                   "recorderExit": 0,
                   "reviewedOriginalFrames": "0–685",
-                  "observed": "Detail P3 LTR: flight140–150, body151+, no transient white-before-hide. Icons221 before toolbar226, hide317+. Back385–402, same Detail403+. Proxy/body entry fit150→156 changes; whole geometry remains unaccepted. Bound log also records id1 cancelled_from=moving03:44:30.470, not a normal-finished entry. This invalidates any normal-finish interpretation of that flight; exact caller remains unknown."
+                  "observed": "DetailP3 whole0–685 moving-cancel/root/body/Back sameDetail observed. No transient white-before-hide. Root flight distinct from child cancel. Exact caller and canonical metadata refinement established by bound diagnostic9f0648d3 and retained same-process logs; earlier frame150→156 instant-fit and normal-finish inferences withdrawn. Current clean earlyBack accepts only layout-stage/sourceP3 return."
                 },
                 "Koma": {
                   "hapSha256": "3a32ff76cca0295ae19b6560a2303467edadcbc4f754cf891460ae32d231ff3c",
@@ -529,14 +530,14 @@
               },
               "unaccepted": [
                 "Proxy/body geometry handoff N/E",
-                "Actual Window top-area readiness chronology N embedded preparation",
+                "Landscape/zero-system-area input of N embedded prepare gate",
                 "Natural pending same-request cancellation (unhit)",
                 "N later duplicate progress UI callback (unhit)",
                 "Mode-switch blank gap remains reproduced on Shared and Legacy",
                 "Non-owned Debug initial intent",
                 "All-layout/performance/full replacement"
               ],
-              "nextAction": "Review exact status-intent checkpoint diffs, commit applicable hosts on common5b9014cc, then one predeclared ordinaryE P3 early-Back whole interval. No geometry/timer/guard tuning; N area and uncached cancellation limits remain explicit."
+              "nextAction": "Check the changed N embedded beforeShow zero-system-area/orientation branch against existing Window policy and emulator capability once; preserve portrait P38/data and do not force success or broaden into rotation/geometry redesign. Current portrait status gate is frozen after scoped checkpoint."
             }
           },
           "geometryCancellationObservation": {
@@ -565,7 +566,94 @@
             "whyActionable": "Cancellation source has been mapped and clean package restored. Ordinary completed videos did not execute Back while root flight stillpending.",
             "actions": "Fresh ordinary Detail/root/P3 anchor decision; one whole movie clickP3→80ms→Back→1800ms source settling. Same source/root/P3 return and late status color/hide must be reviewed through last original frame. No second entry inside rejected chain.",
             "acceptance": "Reject immediate source status color/size jump before departure, direct fullscreen/internal zoom, blank proxy/image, late forward flight/hide after source return, changed progress or different terminal source. This path accepts only motion/route cancellation if actually hit; does not accept natural uncached loading cancellation unless actuallogs/frame prove that separate state.",
-            "stopBoundary": "One finite chain; if branch nothit retain unaccepted with exactobserved route, no artificial delay/cache reset/repetition sweep."
+            "stopBoundary": "One finite chain; if branch nothit retain unaccepted with exactobserved route, no artificial delay/cache reset/repetition sweep.",
+            "observation": {
+              "recordedAt": "2026-10-07T04:41:50.934785+08:00",
+              "state": "accepted named before-target entry cancellation only; moving/natural pending branches unhit",
+              "hapSha256": "e3f51352f966907f49d9a26214beee9c0ce4e39bf8928910e05911bf504dea19",
+              "movieSha256": "9e2e1ecb337e14b0b752fb79cbd5b2280db2dd0904e774c472100c52a2dd6b6a",
+              "movie": "host-recording/current-E-P3-early-back-window-return.mov",
+              "reviewedOriginalFrames": "0–288 whole; all9 sheets plus original48/56/174/288",
+              "observed": "Ordinary P3 click→80ms→Back→1800ms. Admission04:34:11.587; layout11.771; onShown11.970 gate geometry=false; Back12.041; source colors restored12.047; routefalse12.054; cancelled_from=layout12.075; teardown12.736. Source Detail remained visible with dark icons through288, terminal root217[0,117][1320,2232], P3 thumbnail[673,1479][947,1865], ContinueP3. No late forward/fullscreen frame observed.",
+              "limits": "Before geometry/target, not moving root flight and not natural uncached cancellation. No blank-image/loading-backdrop acceptance. Contact-sheet spacing suspicion of sideways Detail drift withdrawn; raw48/56/174/288 preserve whole source geometry. No guard/timer/geometry change or replay justified."
+            }
+          },
+          "nativeAreaObservationPlan": {
+            "recordedAt": "2026-10-07T04:43:43.738806+08:00",
+            "boundary": "N embedded production prepareSharedReaderChrome only. Existing E/K owned prepareStatusBarVisible + actual LayoutCommit retained.",
+            "existingBehavior": "Source system chrome until root entry handoff; hidden Reader; user center tap prepares status then shows existing toolbar; hide and Back same source and originalP38. No mode/menu/cache/progress change.",
+            "sourceMap": "ReaderSurface.prepareChromeShow→Lab.prepareChromeShow→Index.prepareSharedReaderChrome→serialized requestReaderStatusBar→shared applyReaderStatusBar→setSpecificSystemBarEnabled Promise<void>→return true. EntryAbility avoidAreaChange refresh reads actual TYPE_SYSTEM and publishes existing LayoutSafeArea. N currently does not await this readback/layout. This source difference alone does not prove visible regression.",
+            "diagnostic": "Two N host files only: bounded console observation at existing prepare start/return with current safeArea and native rkit-reading-surface rectangle; existing EntryAbility refresh records actual system-top inset and published values. No additional await/timer/state/layout mutation or common-source change. Exceptions contained.",
+            "proofDecision": "Existing ReaderSurface chrome=true timestamp correlated with actual system-area callback and current measured content rect. If chrome commits with actual area stillzero or later layout shift, map that transition before a repair. If alreadyready, do not infer regression from icon paint timing; retain bounded observation.",
+            "route": "One current ordinary FullPreviewP38 decision; one whole clickP38→center show→center hide→Back interval using retained current route once. No timing/data/cache manipulation or broad retest.",
+            "cleanup": "Byte-exact backup/remove both temporary host logs, reinstall current clean673ae263 without data/settings clearing, restore ordinary FullPreviewP38. Diagnostic HAP/video is observation-only, no FPS/clean acceptance.",
+            "observation": {
+              "diagnosticHapSha256": "2c4d8c7cd7971b5b9b1b0a5ad9af058202c356d4b6ef7bbcb48d4960d3925e65",
+              "movieSha256": "71d2fd7b8d4203d283136c08abe603fc1bea1a433f786e0182109cf5d9bf974f",
+              "reviewedOriginalFrames": "0–480/all14 sheets; foreign cachedE0–5 excluded fromN source claim",
+              "chronology": "04:46:24.169 actualsystemTop0/publishedcutout23.333; prepare25.357; returned25.362/chrome=true25.362 while actualsystemTop0; actualsystemTop39/published39 arrives25.418. Wrong successful preparation precedes actual system area by56ms.",
+              "visual": "N source6–85, rootfly86–99, body100+; firstvisible toolbar/systemicons176; hide249; reverse304–315 and sameFullPreview316–480. Pixels alone do not prove no native race or an early-show flash; actual event boundary proves current readiness release is wrong. Geometry/FPS/full replacement unaccepted.",
+              "cleanup": "Both temporary source sites removed byte-exact. Checked04:47:35.479–04:47:41.987 installed clean673ae263 successfully; ordinary Detail root219/P38 observed, not mislabelled FullPreview. Candidate later current ordinary route reaches FullPreviewP38 and terminal returns there. No data/settings/cache clear."
+            },
+            "repairPlan": {
+              "existingBehavior": "Only N embedded beforeShow gate is changed. Ordinary entry/source colors/rootfly/body/loading, shared toolbar content/menu/actions/hide, close status-before-reverse and savedP38 retain existing owners. E/K owned and NDebug/standalone retain their original gate; no shared source change.",
+              "theory": "Official current Window.setSpecificSystemBarEnabled Promise completion does not mean status display completed. N trace confirms return with native TYPE_SYSTEM.top=0; cutout can keep published top>0 and is not valid readiness. Read actual native top after existing setter, then reuse ReaderTrialLayoutCommit for current clip/inset stable actual layout.",
+              "officialReference": "https://developer.huawei.com/consumer/cn/doc/harmonyos-references/arkts-apis-window-window#setspecificsystembarenabled11",
+              "scope": "N Index.prepareSharedReaderChrome only; request queue/current/entry/root/color/hide/close remain unchanged. No new owner/state/timer/forced refresh/geometry mutation/API interface. Existing watchdog bounds failure; never grants success by elapsed time.",
+              "impact": [
+                {
+                  "row": "show/area",
+                  "relation": "direct",
+                  "expect": "Native TYPE_SYSTEM top>0 and canonical inset covers it; existing actual Reader clip valid/stable over2onIdle before successful return/chrome commit.",
+                  "reject": "Success with native top0/stale inset/invalid clip or indefinite wait."
+                },
+                {
+                  "row": "source/forward/body/backdrop",
+                  "relation": "unaffected source; full interval retained",
+                  "expect": "Same ordinary rootflight retains source system style until actualhandoff and bodyimage/backdrop stays present.",
+                  "reject": "Early style/fullscreen, direct fullscreen/internal zoom, blank body/proxy."
+                },
+                {
+                  "row": "hide/reverse/progress",
+                  "relation": "indirect through existing gate completion and chrome state",
+                  "expect": "Normal center hide then Back restores status before existingreverse; sameFullPreviewP38, DetailContinue38.",
+                  "reject": "Late show after hide/close, missing reverse or changed savedposition."
+                },
+                {
+                  "row": "menus/rail/variant/preload",
+                  "relation": "unaffected",
+                  "expect": "No source/API/policy/session/resource/key change; accepted frozen receipts reused only for unchanged dependency paths.",
+                  "reject": "Any diff outside declared method/common share or unexplained dependency."
+                },
+                {
+                  "row": "failure/stale/cancel",
+                  "relation": "indirect asynchronous lifecycle",
+                  "expect": "Current closure fences every await/onIdle; failure returns false and existing Surface keeps chrome hidden.",
+                  "reject": "Old route callback publishing successful readiness; native failure hidden by positive result."
+                }
+              ],
+              "validation": "N sole changed-consumer signed build0. One current ordinaryP38 show/hide/Back complete original interval; actual area is read by existing layout gate, permanent diagnostic records ready boolean only. Original movie status-before-toolbar/current source/body/hide/reverse/return reviewed. Shared/E/K bytes unchanged; no new UI contract or suite. Portrait receipt does not accept landscape/zero-system-area."
+            },
+            "repairResult": {
+              "recordedAt": "2026-10-07T05:02:03.603725+08:00",
+              "state": "accepted for named portrait ordinary P38 source/show/hide/Back; package OPEN",
+              "hapSha256": "16c1f40729819ef5db513b460b9a7f76933f444a255373d36e54c90ea69dda94",
+              "movieSha256": "a258c8353d661af477df850e9c188ed30cf206984ee843ed329a2ed661a30dad",
+              "movie": "host-recording/n-actual-area-P38-chrome-whole-return.mov",
+              "reviewedOriginalFrames": "0–478/all14 contact sheets; prior cached0–1 excluded from current source claim; raw186/187/188/258/312/324 inspected",
+              "protocolExit": 0,
+              "recorderExit": 0,
+              "observed": "Source2–102/rootflight103–113/body114+. White status icons appear186, toolbar188; hide258. Source dark status restored312 before reverse312–323; same FullPreview324–478. Image remained present in this complete interval. Terminal root220[0,117][1320,2232], current P38[643,1362][678,1397] matches baseline. Gate completion05.220 precedes chrome=true05.221 in 04:53 run.",
+              "evidenceLimit": "Current permanent diagnostic records only readiness boolean, not success-time native inset/clip values; no independent exact native-event timestamp inferred. Actual TYPE_SYSTEM read and stable inset/clip are source gate requirements, while original pixels prove their named presentation result. No FPS/whole geometry/all-orientation/stale failure/native uncached cancellation acceptance.",
+              "rows": {
+                "show/area": "named portrait accepted: actual native read + canonical inset/native clip stability before true; status pixel precedes toolbar",
+                "source/forward/body/backdrop": "named cached ordinary interval observed; loading/cancellation not generalized",
+                "hide/reverse/progress": "named hide/reverse and same P38 source observed; no cold persistence claim",
+                "menus/rail/variant/preload": "unchanged source/dependency path; frozen receipts retained, no retest",
+                "failure/stale/cancel": "source fences unchanged through current closure at every await/frame; not independently hit in this native interval"
+              },
+              "remainingInputBoundary": "Landscape/zero-system-area compatibility is not accepted by portrait positive-top sample; single bounded source/capability decision is next."
+            }
           }
         }
       }
