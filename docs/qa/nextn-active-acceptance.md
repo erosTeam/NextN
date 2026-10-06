@@ -10,13 +10,16 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
-> Current steering (2026-10-06): Reader entry/window/loading remains the
-> finite active capability. The independent behavior/impact/decision record
-> governs each conclusion. Current common Kit c0ad970 removes the source-proven
+> Current steering (2026-10-06): the finite Reader entry/window/loading
+> candidate is committed in all three hosts. The independent behavior/impact/
+> decision record governs each conclusion; this is not overall replacement. Current common Kit c0ad970 removes the source-proven
 > cancelled-motion/backdrop lifetime conflation; window/native-style admission
 > remains common entry/root/current. Three current signed packages were built
 > and positively installed15:21 with matching transferred SHA/bundle readback.
-> Koma WebDAV WIP remains separate until the finite Reader prerequisite closes.
+> Original N P38/E P3 and actual current K Library Catalogue1021/1 plus
+> 30000ms timeout were restored through checked normal paths. The finite
+> source/named-runtime candidate is delivered with explicit unaccepted branches
+> in the work order; existing Koma WebDAV continuation resumes separately.
 
 > Current physical boundary (2026-10-06): N HAP4e985d8c movie00ce727b
 > original0–626 reviewed: ordinary P20 root109–131; thumbnail/loading panel

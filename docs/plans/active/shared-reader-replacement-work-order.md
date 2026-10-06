@@ -3,20 +3,20 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T15:37:17.282939+08:00",
+  "updatedAt": "2026-10-06T15:52:59.772248+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 共同入口候选已运行，范围提交中",
+  "state": "有限候选已提交 · 命名窗口路径接受，残留分支OPEN",
   "title": "共享阅读器 · 入场系统栏与加载连续性",
   "outcome": "用户明确要求实施修复并验证。验证方式已重订，Reader 执行 hold 解除；只处理已报告入场/加载能力，Koma WebDAV 候选保持原边界。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "共享窗口实际 writer 统一 entry/root/current 准入；保留宿主导航、根动画、几何、菜单、缩略图、预载和 Legacy。",
   "activity": {
-    "title": "当前三宿主包已安装；N无缓存与K Release章节原始区间审阅完成",
-    "detail": "共同writer与原生HDS颜色使用同一entry/root/current准入；motion取消不再结束同初始request的加载背景。N P20原始0–626，K Release普通4–445/章节0–755已审阅。源缩略图短模糊与取消分支UI证明明确未接受，不宣称整体通过。",
+    "title": "共同生命周期修复已提交；原位置/超时已恢复",
+    "detail": "三宿主Kit同c0ad；实际writer/native颜色共用entry/root/current。当前原始区间和实际owner状态证据分别记录，不接受源短模糊/取消UI/全量替换。N P38/E P3/K本轮Catalogue1021/1与30000ms已实际恢复。",
     "startedAt": "2026-10-06T13:35:00+08:00"
   },
-  "nextAction": "审查/提交三宿主当前共同Kit绑定和K Release入口修正，再恢复原N P38/E P3/K Library及超时；不扩大菜单、性能和资源窗口。",
+  "nextAction": "Reader本轮已报告窗口/加载原因的有限候选已提交并恢复。按原用户成本/范围约束结束这轮专项投入，继续Koma现存WebDAV候选coldHistory/目录2页/恢复与范围提交；不把残留未接受分支改成通过。",
   "hosts": [
     {
       "name": "NextN",
@@ -28,7 +28,8 @@
       "verdict": "命名窗口/正常未缓存加载区间接受，源模糊未接受",
       "verdictKind": "open",
       "runtime": "当前P20movie00ce72原始0–626：root109–131；加载133–196保留缩略图/底板，197原图与撤提示，207/208Reader色、209隐藏；Back440先恢复源色、441–460根返回。实际新缓存129186/178806/146728/169112B。源81–89短模糊90恢复；成因未建立，不接受整体源图连续性。dd712d原C/A/B窗口依赖未改，沿原命名证据。",
-      "remaining": "取消motion但同初始请求加载的UI分支未实际命中，状态执行支持源码修复；不以普通等待路径接受该分支。"
+      "remaining": "取消motion但同初始请求加载的UI分支未实际命中，状态执行支持源码修复；不以普通等待路径接受该分支。",
+      "appHead": "1547385797b55fcf0b46eedf9b7b604b16b3df71"
     },
     {
       "name": "NextE",
@@ -40,7 +41,8 @@
       "verdict": "共同候选已安装；沿用未改变依赖的命名窗口区间",
       "verdictKind": "open",
       "runtime": "原3013movieebaedc1–683的Window/native-style/pending-route依赖与当前c0ad相同；保留其有限C/A/B窗口/返回结论。当前改动只影响既有两加载背景predicate，不改writer/导航/phase；当前新包构建/安装不是新视觉验收。",
-      "remaining": "E未挂载取消及motion取消背景UI仍未观察；实际共同状态执行单独记录，不作全量通过。"
+      "remaining": "E未挂载取消及motion取消背景UI仍未观察；实际共同状态执行单独记录，不作全量通过。",
+      "appHead": "1d17150cd297553bf040368a9e5e2fb46d964afb"
     },
     {
       "name": "Koma",
@@ -52,21 +54,34 @@
       "verdict": "当前非Debug普通入口/显栏/章节/返回重入命名区间接受",
       "verdictKind": "open",
       "runtime": "当前Release0c753e普通Terra上篇movie0a6cca4–445：系统push75–91、92Reader色、95–139准备/140原图、121隐藏；center261先显状态区262–264chrome。当前chaptermoviee77fa20–755：上下篇60↔71及显式准备130–148/366–370；原图149/371；源色454先于系统pop455–473，重入/最终返回至619，同Detail稳定至755。不宣称章节全程保图或FPS。",
-      "remaining": "K没有此缩略图入口，本次Window绑定普通无thumbnail/current章节。Kit资源窗口未改变，旧已接受序列冻结；WebDAV候选保留待前置有限收尾。"
+      "remaining": "K没有此缩略图入口，本次Window绑定普通无thumbnail/current章节。Kit资源窗口未改变，旧已接受序列冻结；WebDAV候选保留待前置有限收尾。",
+      "appHead": "67abfeb988fbd8e6a822f217aeb0195781e47f13"
     }
   ],
   "gaps": [
     {
       "id": "reader-validation-strategy",
       "title": "验证策略与完整行为基准",
-      "status": "已执行独立行为基准 · 候选范围提交中",
-      "kind": "open",
-      "detail": "源码坏转换已修，三个当前包已安装；现有原始区间按系统栏/背景/原图/正常导航/取消/章节分别判定。当前取消背景UI与源短模糊不被普通加载结果代偿。",
-      "action": "审查/提交三宿主当前共同Kit绑定和K Release入口修正，再恢复原N P38/E P3/K Library及超时；不扩大菜单、性能和资源窗口。",
+      "status": "本轮有限方案/共同候选已执行提交 · 非整体Reader验收",
+      "kind": "candidate",
+      "detail": "行为标准/影响分类先于产品候选，命名原始区间按每个输出分别判定。共同窗口与加载原因已实施，三宿主范围提交/真实恢复完成；取消motion底板UI、E未挂载取消、N源短模糊及全量替换/FPS未接受。",
+      "action": "保留未接受分支；只有实际普通路径触发或区分成因的新证据才重开，不穷举时机/重测冻结区域；继续Koma已有候选。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
-      "closedAt": null
+      "closedAt": null,
+      "disposition": {
+        "state": "finite-source-and-named-runtime-candidate-delivered",
+        "recordedAt": "2026-10-06T15:52:59.772248+08:00",
+        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only",
+        "unaccepted": [
+          "cancelled-motion same-request loading backdrop UI",
+          "E cancellation before child mount UI",
+          "N source-thumbnail blur cause and source-image continuity",
+          "all-mode/full-replacement/performance-superiority"
+        ],
+        "reason": "既有用户明确要求有限收尾、避免继续扩展；不通过缓存重置/强延迟/撞取消时机代替实际普通路径条件。共同真正owner状态证据只证明对应逻辑。"
+      }
     },
     {
       "title": "共同裁切改动的受影响路径",
@@ -518,20 +533,25 @@
   },
   "closure": {
     "closedAt": "2026-10-05T16:55:55+08:00",
-    "kind": "finite-handoff-with-retained-limitations",
+    "kind": "finite-candidate-with-explicit-unaccepted-branches",
     "authority": "用户最新要求尽快收尾、结束无止境延伸并释放各软件功能开发时间",
     "fullReplacementAchieved": false,
     "performanceSuperiorityProven": false,
-    "currentDelivery": "当前c0ad入场窗口/加载候选；10月5日有限交付是历史，当前能力并未全量接受",
+    "currentDelivery": "三宿主c0ad共同窗口/加载源码候选及命名运行证据已提交；未接受分支保留，不是全量替换结论",
     "deferredOutcomesRemainUnresolved": true,
-    "readerSpecificWorkActive": true,
+    "readerSpecificWorkActive": false,
     "bindingReceipt": "package5-finite-handoff-binding.json",
-    "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。"
+    "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
+    "latestFiniteCheckpointAt": "2026-10-06T15:52:59.772248+08:00",
+    "currentBindingReceipt": "reader-current-postcommit-binding.json",
+    "currentRestorationReceipt": "reader-current-physical-restoration.json"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
     "review": "reader-entry-loading-current-reviewed.json",
-    "binding": "loading-backdrop-c0ad-package-binding.json"
+    "binding": "loading-backdrop-c0ad-package-binding.json",
+    "postcommitBinding": "reader-current-postcommit-binding.json",
+    "restoration": "reader-current-physical-restoration.json"
   }
 }
 -->
