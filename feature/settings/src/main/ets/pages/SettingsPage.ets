@@ -35,6 +35,7 @@ import {
   NhReaderTapZoneLayout,
   NextNGroupedListSection,
   NextNListRow,
+  SettingsChoiceRow,
   NextNSectionHeader,
   NextNModalScaffold,
   SecondaryListScaffold,
@@ -863,13 +864,6 @@ export struct SettingsPage {
   private async loadAdvancedSettings(): Promise<void> {
     await NhClipboardLinkSettings.restore(this.context())
     this.refreshDiagnosticsState()
-  }
-
-  private readerBackendLabel(): string {
-    const legacy = connectReaderPresentation().readerImplementation === NhReaderImplementation.LEGACY
-    return legacy
-      ? AppStrings.get('settings_reader_backend_legacy')
-      : AppStrings.get('settings_reader_backend_shared')
   }
 
   private selectReaderBackend(backend: NextNReaderBackend): void {
@@ -3910,45 +3904,25 @@ export struct SettingsPage {
   }
 
   @Builder
-  private ReaderBackendMenu(select: (action: () => void) => void) {
-    Menu() {
-      MenuItem({
-        content: AppStrings.get('settings_reader_backend_legacy'),
-        symbolEndIcon: this.readerBackendSelection.current() === NextNReaderBackend.LEGACY
-          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-          : undefined,
-      }).onClick((): void => {
-        select((): void => this.selectReaderBackend(NextNReaderBackend.LEGACY))
-      })
-      MenuItem({
-        content: AppStrings.get('settings_reader_backend_shared'),
-        symbolEndIcon: this.readerBackendSelection.current() === NextNReaderBackend.SHARED
-          ? new SymbolGlyphModifier($r('sys.symbol.checkmark'))
-          : undefined,
-      }).onClick((): void => {
-        select((): void => this.selectReaderBackend(NextNReaderBackend.SHARED))
-      })
-    }
-  }
-
-  @Builder
   private ReaderImplementationGroup() {
     Column({ space: ThemeTokens.SPACE_XS }) {
       NextNSectionHeader({ title: AppStrings.get('settings_reader_group_implementation') })
       NextNGroupedListSection({ accessibilityId: 'nextn-reader-implementation-group' }) {
-        NextNListRow({
+        SettingsChoiceRow({
           title: AppStrings.get('settings_reader_backend'),
-          trailingText: this.readerBackendLabel(),
-          trailingDropdown: true,
-          dropdownMenuEnabled: true,
-          dropdownMenuBuilder: (select: (action: () => void) => void): void => {
-            this.ReaderBackendMenu(select)
+          value: this.readerPresentation.readerImplementation,
+          options: [
+            { value: NhReaderImplementation.LEGACY, label: AppStrings.get('settings_reader_backend_legacy') },
+            { value: NhReaderImplementation.SHARED, label: AppStrings.get('settings_reader_backend_shared') },
+          ],
+          selectAction: (value: string): void => {
+            if (value === NhReaderImplementation.LEGACY) {
+              this.selectReaderBackend(NextNReaderBackend.LEGACY)
+            } else if (value === NhReaderImplementation.SHARED) {
+              this.selectReaderBackend(NextNReaderBackend.SHARED)
+            }
           },
           accessibilityId: 'nextn-reader-implementation-row',
-          accessibilityLabel: AppStrings.format('settings_row_a11y', [
-            AppStrings.get('settings_reader_backend'),
-            this.readerBackendLabel(),
-          ]),
         })
       }
     }
