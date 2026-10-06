@@ -1,4 +1,4 @@
-import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTapPolicy, ReaderRuntimePolicyIntent,
+import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTapPolicy, ReaderTapZonePreviewRegion, ReaderRuntimePolicyIntent,
   ReaderCloseContext, ReaderModeControlParams } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
@@ -91,8 +91,8 @@ export struct NextNReaderLabPage {
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPhase: string = 'finished'
   @Param entryPreview: ReaderEntryPreviewSource | null = null
-  /** The root proxy uses this capture only to authorize its live departure. */
-  @Param entryDeparturePreview: ReaderEntryPreviewSource | null = null
+  /** Production root departure is authorized by the host's current live claim. */
+  @Param entryDepartureGuard: ((entryId: number) => boolean) | null = null
   /** Production root proxy lands on reader-kit's actual selected image part. */
   @Param rootOwnedEntryTarget: boolean = false
   @Param managesTrialWindow: boolean = true
@@ -121,6 +121,7 @@ export struct NextNReaderLabPage {
   @Local private readerPresentation: ReaderPresentationState = connectReaderPresentation()
   @Local private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local private chromeRepublishToken: number = 0
+  @Local private tapZonePreviewRevision: number = 0
   @Local private themeDisplay: ThemeDisplayState = connectThemeDisplay()
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
@@ -432,6 +433,23 @@ export struct NextNReaderLabPage {
       x, y, 1, 1)
   }
 
+  private tapZonePreviewRegions(): ReaderTapZonePreviewRegion[] {
+    const continuous = this.session?.snapshot().policy.layout === 'continuous'
+    return NhReaderTapZoneResolver.regions(
+      continuous ? this.readerPresentation.tapZoneLayoutContinuous : this.readerPresentation.tapZoneLayoutPaged,
+      continuous ? this.readerPresentation.tapZoneInvertContinuous : this.readerPresentation.tapZoneInvertPaged,
+    ).map((region): ReaderTapZonePreviewRegion => new ReaderTapZonePreviewRegion(
+      region.action, region.left, region.top, region.right, region.bottom))
+  }
+
+  @Monitor('readerPresentation.tapZoneLayoutPaged', 'readerPresentation.tapZoneInvertPaged',
+    'readerPresentation.tapZoneLayoutContinuous', 'readerPresentation.tapZoneInvertContinuous')
+  private onTapZoneSettingsChanged(): void {
+    if (this.volumeDisposed || this.closeRequested || this.hostClosing ||
+      this.session?.snapshot().phase !== 'ready') return
+    this.tapZonePreviewRevision += 1
+  }
+
   @Monitor('entryPhase')
   private notifyEntrySettled(): void {
     if (this.entrySettledNotified || (this.entryPhase !== 'finished' && this.entryPhase !== 'cancelled')) return
@@ -455,8 +473,8 @@ export struct NextNReaderLabPage {
   private get rootEntryPhase(): ReaderEntryPhase { return this.entryTransition?.phase ?? 'finished' }
 
   private rootEntryHandoffHost(): ReaderRootEntryHandoffHost {
-    return new NextNRootEntryHandoffHost((entry: ReaderEntryTransition): boolean => this.entryDeparturePreview !== null &&
-        this.entryDeparturePreview.authorizeDeparture(entry.entryId),
+    return new NextNRootEntryHandoffHost((entry: ReaderEntryTransition): boolean => this.entryDepartureGuard !== null &&
+        this.entryDepartureGuard(entry.entryId),
       (target: ReaderEntryTarget): boolean => ReaderThumbnailTransitionCoordinator.setOpeningTarget(
         this.getUIContext(), this.request.work, target.contentRect.x, target.contentRect.y,
         target.contentRect.width, target.contentRect.height,
@@ -1123,7 +1141,8 @@ export struct NextNReaderLabPage {
               bodyOpacity: this.readerThumbnailTransition.readerBodyOpacity(),
               input: this.input, mediaActions: this.mediaActions,
               tapPolicy: new ReaderTapPolicy(
-                (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout)),
+                (x: number, y: number, layout: ReaderLayout): ReaderTapAction => this.resolveTapZone(x, y, layout),
+                this.tapZonePreviewRegions(), this.tapZonePreviewRevision),
               // Legacy waits for target readiness, then starts a fresh full dwell before turning. Reader-kit owns that gate.
               autoReadPolicy: new ReaderAutoReadPolicy(true, this.readerPresentation.autoPageSeconds, 'source'),
               // Every reader experience entry opens chrome-hidden exactly like the

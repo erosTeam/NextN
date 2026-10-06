@@ -578,7 +578,6 @@ struct Index {
   // The production overlay owns a separate entry lifecycle from the debug Lab.
   // Neither Gallery nor reader-kit can select a backend or navigate the app.
   @Local private productionReaderEntryTransition: ReaderEntryTransition | null = null
-  @Local private productionReaderEntryPreview: ReaderEntryPreviewSource | null = null
   private productionReaderEntryEpoch: number = 0
   @Local private productionReaderEntryClaim: ReaderEntryClaim | null = null
   private productionReaderEntryPendingGalleryId: number = 0
@@ -608,8 +607,6 @@ struct Index {
     this.productionReaderEntryClaim = null
     this.productionReaderEntryPendingGalleryId = 0
     this.productionReaderEntryPendingPageIndex = -1
-    this.productionReaderEntryPreview?.release()
-    this.productionReaderEntryPreview = null
     this.productionReaderEntryTransition = null
     this.productionReaderEntryGalleryId = 0
     this.productionReaderEntryPageIndex = -1
@@ -677,7 +674,7 @@ struct Index {
 
   private productionReaderEntryActive(): boolean {
     return this.productionReaderEntryPendingGalleryId > 0 || this.productionReaderEntryClaim !== null ||
-      this.productionReaderEntryTransition !== null || this.productionReaderEntryPreview !== null
+      this.productionReaderEntryTransition !== null
   }
 
   private retireProductionReaderEntry(): void {
@@ -688,9 +685,7 @@ struct Index {
     this.productionReaderEntryGalleryId = 0
     this.productionReaderEntryPageIndex = -1
     this.productionReaderEntryTransition?.cancel()
-    this.productionReaderEntryPreview?.release()
     this.productionReaderEntryTransition = null
-    this.productionReaderEntryPreview = null
   }
 
   private authorizeProductionReaderEntryDeparture(claim: ReaderEntryClaim, entryId: number): boolean {
@@ -730,15 +725,15 @@ struct Index {
         `detail=${detailSeed.id} source=${source.galleryId}:${source.pageIndex} pages=${detailSeed.pages.length}`)
       return false
     }
-    // Consume subsequent taps while the first live source is being captured.
+    // Consume subsequent taps until this live source has handed off to the root.
     if (this.productionReaderEntryActive()) return true
     this.productionReaderEntryPendingGalleryId = source.galleryId
     this.productionReaderEntryPendingPageIndex = source.pageIndex
-    void this.openProductionThumbnail(detailSeed.copy(), source)
+    this.openProductionThumbnail(detailSeed.copy(), source)
     return true
   }
 
-  private async openProductionThumbnail(detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource): Promise<void> {
+  private openProductionThumbnail(detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource): void {
     const epoch = ++this.productionReaderEntryEpoch
     const navigation = this.rootNavigationEpoch
     if (!source.isCurrent()) { this.retireProductionReaderEntry(); return }
@@ -749,38 +744,28 @@ struct Index {
       viewport = this.readerEntryRect('nextn-reader-entry-host')
     } catch (_) {}
     if (!sourceRect.valid() || !viewport.valid()) {
-      this.presentProductionThumbnail(detailSeed, source, null, epoch)
+      this.presentProductionThumbnail(detailSeed, source, epoch)
       return
     }
     const claim = new ReaderEntryClaim(epoch, navigation, source, sourceRect, viewport)
     this.productionReaderEntryClaim = claim
-    const preview = await NextNReaderEntryPreviewCapture.capture(this.getUIContext(), source.snapshotComponentId,
-      (entryId: number): boolean => this.authorizeProductionReaderEntryDeparture(claim, entryId))
-    if (epoch !== this.productionReaderEntryEpoch || navigation !== this.rootNavigationEpoch ||
-      !this.readerEntryVisibility.foreground || this.readerOverlay.visible || this.safeMode.restricted() ||
-      !source.isCurrent()) {
-      preview?.release()
-      if (this.productionReaderEntryClaim === claim) this.retireProductionReaderEntry()
-      return
-    }
-    this.presentProductionThumbnail(detailSeed, source, preview, epoch)
+    // The root proxy captures the displayed source. Its live claim is the
+    // departure authority; a second PixelMap must never delay production entry.
+    this.presentProductionThumbnail(detailSeed, source, epoch)
   }
 
   private presentProductionThumbnail(detailSeed: NhGalleryDetail, source: ReaderTrialEntrySource,
-    preview: ReaderEntryPreviewSource | null, epoch: number): void {
+    epoch: number): void {
     if (epoch !== this.productionReaderEntryEpoch || !source.isCurrent() || this.readerOverlay.visible ||
       this.safeMode.restricted()) {
-      preview?.release()
       this.retireProductionReaderEntry()
       return
     }
     this.productionReaderEntryGalleryId = source.galleryId
     this.productionReaderEntryPageIndex = source.pageIndex
-    this.productionReaderEntryPreview = preview
-    this.productionReaderEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,
+    this.productionReaderEntryTransition = this.productionReaderEntryClaim === null ? null : new ReaderEntryTransition(epoch,
       new ReaderDisplayPart(new ReaderUnitKey('nh', source.galleryId.toString(), source.galleryId.toString()), null,
         source.pageIndex))
-    if (preview === null) this.productionReaderEntryClaim = null
     this.productionReaderEntryPendingGalleryId = 0
     this.productionReaderEntryPendingPageIndex = -1
     ReaderThumbnailTransitionCoordinator.open(
@@ -803,6 +788,9 @@ struct Index {
         }
       },
     )
+    // A disabled or failed root snapshot uses the existing system push. It
+    // must not leave a thumbnail-entry claim blocking that ordinary route.
+    if (!this.readerThumbnailTransition.waitingReader()) this.retireProductionReaderEntry()
   }
 
   private openReaderOverlay(params: ReaderRouteParams, animated: boolean = true): void {
@@ -3383,11 +3371,12 @@ struct Index {
         managesTrialWindow: false,
         entryTransition: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryTransition : null,
-        // Root proxy owns the source pixels. Retain the capture only as the
-        // live departure guard; mounting it again would create a second flight.
+        // Root proxy owns the sole source snapshot. Authorize against the live
+        // claim directly, without capturing a second image or mounting a flight.
         entryPreview: null,
-        entryDeparturePreview: this.productionReaderEntryMatches(params) ?
-          this.productionReaderEntryPreview : null,
+        entryDepartureGuard: this.productionReaderEntryMatches(params) ?
+          (entryId: number): boolean => this.productionReaderEntryClaim !== null &&
+            this.authorizeProductionReaderEntryDeparture(this.productionReaderEntryClaim, entryId) : null,
         rootOwnedEntryTarget: this.productionReaderEntryMatches(params),
         entryPhase: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryTransition?.phase ?? 'finished' : 'finished',
