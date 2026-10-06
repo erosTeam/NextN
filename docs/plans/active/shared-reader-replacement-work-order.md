@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T18:52:14.524899+08:00",
+  "updatedAt": "2026-10-06T20:30:59+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "ACTIVE · 三应用既有阅读行为一致性复核",
@@ -12,11 +12,11 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "N/E既有选择与指示接入检查点已提交，继续K按书覆盖基线",
-    "detail": "N/E SettingsChoiceRow仅提供canonical value/options/selectAction；当前两个签名包已安装，普通Legacy/Shared即时菜单、冷启菜单与真实route已逐端观察，原P38/P3及Shared恢复。既有TapPolicy预览命名区间可按未变依赖保留。K按书覆盖遗漏仍未改，独立源评审已确认。",
-    "startedAt": "2026-10-06T17:42:20.819259+08:00"
+    "title": "K本书设置已限定提交；恢复既有N源缩略图连续性调查",
+    "detail": "K58a2e303复用原按书Store/原菜单及同一会话，当前c168144c命名own-sheet/底栏写入、普通/冷重入、Legacy互读、global/另一书隔离、Reset和原Library恢复已审阅。独立bottom连续区间0–255/0–831与root核对；root对214图标误判经放大原图撤回。单图不接受双图排版/FPS。",
+    "startedAt": "2026-10-06T20:30:59+08:00"
   },
-  "nextAction": "固化当前有限证据文档检查点，读取K已确认的按书mode/direction接入及当前普通基线；复用现有loadForComic/saveForComic/reset队列，不增加Kit接口或功能。其他未接受入场分支保持独立。",
+  "nextAction": "限定调查N已记录的源缩略图短暂模糊：对照旧00ce727b与当前179696f原PTS点击前至根飞行区间、对应snapshot/capture/source-tree owner和日志；先区分现存差异与旧包现象，原因/影响未确立不编辑产品、不重跑已接受设置。",
   "hosts": [
     {
       "name": "NextN",
@@ -48,14 +48,14 @@
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
       "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
-      "hap": "0c753eeb9890094e3c15d634887b0066a264c4889fc12bc469bb1ebf94fb9061",
-      "build": "当前c0ad共同源码签名构建成功；实际非Debug Release",
-      "install": "15:21当前bm install正文明确成功；传入HAP SHA及bundle读回匹配，未清数据",
-      "verdict": "当前非Debug普通入口/显栏/章节/返回重入命名区间接受",
+      "hap": "c168144caa39a4bd377cb130688b76501eb3f357f788c22912fb3bcf6db3d7f9",
+      "build": "r2签名Release构建成功；本地HAP debug=false；6个source SHA和提交blob逐字节匹配原构建，不重复构建未变字节",
+      "install": "19:32 checked bm install正文成功且传入SHA匹配；bm读回Release0.1.0/code1，无debug字段，未清数据",
+      "verdict": "本书设置命名即时/底栏/重入/Reset/隔离路径接受；总体Reader替换仍OPEN",
       "verdictKind": "open",
-      "runtime": "当前Release0c753e普通Terra上篇movie0a6cca4–445：系统push75–91、92Reader色、95–139准备/140原图、121隐藏；center261先显状态区262–264chrome。当前chaptermoviee77fa20–755：上下篇60↔71及显式准备130–148/366–370；原图149/371；源色454先于系统pop455–473，重入/最终返回至619，同Detail稳定至755。不宣称章节全程保图或FPS。",
-      "remaining": "K没有此缩略图入口，本次Window绑定普通无thumbnail/current章节。Kit资源窗口未改变，旧已接受序列冻结；WebDAV候选保留待前置有限收尾。",
-      "appHead": "af437984b9d127a4dd4d8f6facfafc2b5471e3e6"
+      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。",
+      "remaining": "单图Catalogue102不证明双图spread/RTL页序；Debug强制布局/队列竞争为真实逻辑内存协作者证据，非native视觉或立即kill持久化。共享Reader其他既有未接受分支保持OPEN。",
+      "appHead": "58a2e303626f60e8321ac2a85b45574e653fa77e"
     }
   ],
   "gaps": [
@@ -64,8 +64,8 @@
       "title": "验证策略与完整行为基准",
       "status": "ACTIVE · 尚未完成要求的核验",
       "kind": "active",
-      "detail": "N/E SettingsChoiceRow仅提供canonical value/options/selectAction；当前两个签名包已安装，普通Legacy/Shared即时菜单、冷启菜单与真实route已逐端观察，原P38/P3及Shared恢复。既有TapPolicy预览命名区间可按未变依赖保留。K按书覆盖遗漏仍未改，独立源评审已确认。",
-      "action": "固化当前有限证据文档检查点，读取K已确认的按书mode/direction接入及当前普通基线；复用现有loadForComic/saveForComic/reset队列，不增加Kit接口或功能。其他未接受入场分支保持独立。",
+      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。",
+      "action": "限定调查N已记录的源缩略图短暂模糊：对照旧00ce727b与当前179696f原PTS点击前至根飞行区间、对应snapshot/capture/source-tree owner和日志；先区分现存差异与旧包现象，原因/影响未确立不编辑产品、不重跑已接受设置。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -73,7 +73,7 @@
       "disposition": {
         "state": "reopened-by-user-unfinished-entry-verification",
         "recordedAt": "2026-10-06T17:42:20.819259+08:00",
-        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only; named N/E implementation choice + cold actual route and paged tap-preview roundtrip",
+        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only; named N/E implementation choice + cold actual route and paged tap-preview roundtrip; K existing per-book Store named own-sheet/bottom write/ordinary+cold reentry/global+other-book isolation/Legacy read/reset restoration",
         "unaccepted": [
           "cancelled-motion same-request loading backdrop UI",
           "E cancellation before child mount UI",
@@ -112,10 +112,29 @@
         {
           "behavior": "Koma 宿主能力 / 书籍模式与方向覆盖",
           "finding": "Legacy ReaderPage initialize loadForComic, persistPreferences saveForComic and ReaderSettingsContent passes seriesOverrideActive/onResetSeriesOverride. Shared KomaReaderLabPage initialize load global, preference queue save global, sheet omits override/reset inputs. Existing per-book override is ignored and Shared mode changes affect global defaults. Current owned store APIs already implement narrow override.",
-          "change": "NOT EDITED; independent source review and same-book current baseline before minimal host wiring. No new Kit API or preference schema.",
+          "change": "Implemented in existing KomaReaderLabPage + KomaReaderPreferenceBridge only: embedded load/save/reset uses existing per-book Store; same queue rebases typed fields; same effective result avoids equal preference publication and duplicate eight-field policy update. Existing sheet badge/reset passed. Standalone global path retained; no Kit/schema/UI assembly change.",
           "impact": "K production Shared initialization, bottom mode action, own settings mode/direction, restore-default and return/cold reentry; global defaults/other books and Debug isolation are dependent behavior.",
           "disproof": "Book choice changes another book/global defaults; existing override ignored; reset leaves override or reopens wrong policy; new writer publishes after close or creates Debug per-book data.",
-          "implementationState": "independent source review confirmed omission; current per-book baseline pending, product unmodified"
+          "implementationState": "Committed K58a2e303; source/HAPc168144c/6 hashes/commit blobs match. Own settings and actual bottom writer named same-session/reentry/reset/global/other-book/Legacy/cold paths accepted on emulator, independent original-PTS review and root reconciled. No spread/FPS/full-Reader acceptance.",
+          "candidatePlan": {
+            "recordedAt": "2026-10-06T19:01:28.109476+08:00",
+            "existingBehavior": "Ordinary Legacy reads loadForComic(config.comicId), writes saveForComic and supplies existing seriesOverrideActive/reset controls. Only mode and direction are book-specific; other preferences remain global, column/progress remain chapter-owned. Standalone Debug uses global preferences.",
+            "ownerAndOrdering": "Stable book id is request.work. Existing preferenceWrites serializes Shared writes; initialize cancellation is checked after awaited reads. Store already owns override persistence, normalization and backup/restore writer protection. Close does not cancel queued writes; no new process-kill durability promise.",
+            "change": "Embedded initialization uses existing loadForComic and seriesModeOverride; embedded writes call saveForComic, standalone calls save. Existing KomaReaderPreferenceBridge gains only a pure typed delta rebase using its existing copy/normalize. Pass existing badge/reset. Reset clears in the same queue and applies returned defaults on the retained session without saving them as a new override.",
+            "asyncBoundary": "Use existing preferenceWrites Promise chain as latest effective snapshot owner, with field deltas relative to the prior visible snapshot rebased onto the previous operation result. Reset supplies its returned global defaults to the same chain. Only the currently last queued Promise may publish to the still-live matching host/session/book; persisted writes still finish after close. No new epoch/timer/persistence owner. Preserve the preceding queue-effective columnMode through reset; do not import global column or claim in-session chapter column restoration.",
+            "impact": "Direct: ordinary K Shared mode/direction initialization, bottom mode write, settings choice, badge/reset. Exposed: other-book/global defaults, in-book chapter navigation, crop/tap/other global preference writes sharing the queue, close and ordinary cold reentry. Unaffected by source reason: Kit/surface identity, image providers/preload, windows/status/chrome, entry route, menus/resources/geometry, N/E and Legacy are not edited.",
+            "acceptance": "Before edit, ordinary current same-book Legacy/Shared settings baseline and restoration. After one coherent build, ordinary same-book mode/direction immediate policy and menu, return/reentry/cold, other-book/global default, existing reset and original-state restoration. Review original menu/row geometry and retained Reader/Detail on current package. Reuse unchanged entry/chapter movie only within its identical source dependencies; do not treat old preference baselines as new-package acceptance.",
+            "disproof": "Ignored override; global/other-book mode or direction changed by book choice; reset fails, stale queued result replaces newer local choice, source-close/system-bar behavior changes, Debug writes book data, or menu/geometry changed. Any observed exposed-row failure rejects the candidate.",
+            "baselineState": "CURRENT ordinary Release0c753e baseline: same Long Catalogue / Catalogue102 P1, both own sheets Single/LTR at same 1320x2232 viewport; Legacy mode menu has no conditional Reset, no pre-existing override evidenced. Original Shared backend restored via ordinary settings and Library Continue Catalogue102 P1/100% restored. Existing raw screenshots reviewed independently and by root. No preferences or progress mutation. Does not establish whole Reader parity.",
+            "independentReview": "implementation-review-result.json r2: Reset uses known false badge without extra read; ordinary save badge read failure isolated from core result publication; only five host policy input changes can compare live eight fields. No new concrete reviewed source blocker; no UI acceptance inferred. Ancillary badge failure can retain prior flag temporarily, not declared runtime-proven.",
+            "retainedPolicyBoundary": "ReaderPagedSession.setPolicy unconditionally cancels preparations and rebuilds. The host result applicator must compare the eight existing policy fields with the live session before calling setPolicy, so save acknowledgements do not replay a layout change already applied by the native control. Reuse the same session/surface, no Kit edit. Visible local preferences/tap revision/keep-screen/volume projection remains at the existing host boundary.",
+            "unchangedGeometry": "Existing ReaderSettingsContent/KomaModalScaffold/scroll owner, rows, ordering, control sizes, menu options and ReaderSurface retained. Only existing per-book badge and conditional restore-default become reachable when a book override exists, matching Legacy; no new UI leaf.",
+            "baselineEvidence": "/private/tmp/koma-production-20261005/.hermes-artifacts/20261006-reader-per-book-review/{legacy-own-settings-baseline,legacy-mode-menu-baseline,shared-own-settings-baseline,baseline-final-restoration}",
+            "neighborObservation": "Current same-book Legacy chrome shows book/chapter title; Shared chrome shows only 1/1. Retain as actual source-map candidate, not whole-page parity or cause claim, and do not expand the current preference edit.",
+            "acceptanceGap": "Resolved before commit: actual bottom HostModeControl -> onPolicyChanged -> preference queue was executed on the same installed Release, immediate own-sheet readback/reentry/reset/Library restored. Independent consecutive original intervals0–255/0–831 plus root review retained; no new product edit/build. Root whole-image frame214 icons inference was corrected by exact raw crop; no unsupported all-state statement."
+          },
+          "historyEvidence": "Shared global load/save was introduced by f4a17aa0e (2026-09-13). Existing narrow per-book store and Legacy sheet/reset were introduced by 4e9e16b0 (2026-09-22), whose seven changed files omit KomaReaderLabPage. Current blame still assigns Shared load/save to Sept13. This proves missed host integration, not author motive or a historical runtime acceptance.",
+          "runtimeEvidence": "koma-per-book-current-acceptance-receipt.json; K QA build/install/original native captures, ui-review-result/notes and exact production logic evidence, all with explicit layer limits."
         }
       ]
     },
@@ -371,6 +390,11 @@
   ],
   "evidence": [
     {
+      "id": "koma-per-book-current",
+      "label": "K本书设置接入：命名即时/重入/隔离/Reset与提交绑定",
+      "path": "koma-per-book-current-acceptance-receipt.json"
+    },
+    {
       "id": "finite-handoff-binding",
       "label": "本轮收尾：三宿主提交/Kit/签名包最终绑定",
       "path": "package5-finite-handoff-binding.json"
@@ -578,8 +602,8 @@
     "readerSpecificWorkActive": true,
     "bindingReceipt": "package5-finite-handoff-binding.json",
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
-    "latestFiniteCheckpointAt": "2026-10-06T15:52:59.772248+08:00",
-    "currentBindingReceipt": "settings-choice-current-acceptance-receipt.json",
+    "latestFiniteCheckpointAt": "2026-10-06T20:30:59+08:00",
+    "currentBindingReceipt": "koma-per-book-current-acceptance-receipt.json",
     "currentRestorationReceipt": "reader-current-physical-restoration.json",
     "reopenedAt": "2026-10-06T17:42:20.819259+08:00"
   },
@@ -594,7 +618,8 @@
     "tapPreviewReviews": [
       "nextn-tap-zone-current-review.json",
       "nexte-tap-zone-current-review.json"
-    ]
+    ],
+    "komaPerBook": "koma-per-book-current-acceptance-receipt.json"
   },
   "activeId": "reader-validation-strategy"
 }
@@ -674,7 +699,7 @@ data.
 | 加载及图片连续性 | 等待原图时有真实反馈及保留缩略图/已有图，背景不在进度中消失；已显示的当前请求不残留旧加载层；正常切换不丢图 | 已缓存、本地下载/归档、真实未缓存在线；初次获取和保图重载分开。不得清缓存/强延迟来制造方便结果，无法证明未缓存时不冒称未缓存 |共同两hasLoadingBackdrop predicate绑定请求而非motion；ReaderSession保留displayed URI。旧命名片保留；取消motion同请求UI仍未命中。 |
 | 翻页与滚动预载 | 持续翻过初始窗口后仍滚动准备邻页；当前页/方向正确；不能仅初始五页可用、之后每页黑帧/重复加载 | 序列跨过配置预载窗口并继续，再反向；使用快速滑动，约每秒三次，不能连点。日志绑定真实 source/request；本地与网络取得、解码/显示分开归因 |ReaderPagedSession.reconcile每次更新调schedulePreload，签名含unit/topology/navigation/depth/indexes。三host远端预载复用自身缓存，本地skip网络；源准备不等于解码/视觉连续。 |
 | 缩略图栏与状态更新 | 页码选择更新既有栏的局部状态；滚动不中断，圆角和页码表达保留宿主约定；不能用重挂整页/整栏达到结果 | 同一版本/内容/视口下连续正反滑；审阅栏的实际运动和当前选择，追原有节点身份/状态 owner。没有可用帧指标时不宣称满帧/超越旧版 |共同Rail保留Scroller、索引与列表owner；页码不进入Surface/unit key。三host半径/数值文字命名修改证据冻结；源身份不作为FPS。 |
-| 菜单与实时设置 | 阅读方向、翻页模式、双页、原图各自保持原按钮语义；设置选中值/勾选/底栏/实际行为同步，不要求退出重进 | 对照宿主旧菜单及完整选项；分别从底栏/原设置入口改变并返回操作。Koma 的四布局选项不能被方向菜单替代 |N/E原ReaderModeControl保持四模式；monitor把半模态canonical变更送原session。K四布局/WEBTOON映射。N/E原点按区域提示已补接，分页Kindle↔RIGHT_LEFT命名显示/关闭/首次tap消费/返回区间已审阅；实现选择改用单value公用行，两端即时/重开/冷启与真实route接受。未推广到所有设置组合。 |
+| 菜单与实时设置 | 阅读方向、翻页模式、双页、原图各自保持原按钮语义；设置选中值/勾选/底栏/实际行为同步，不要求退出重进 | 对照宿主旧菜单及完整选项；分别从底栏/原设置入口改变并返回操作。Koma 的四布局选项不能被方向菜单替代 |N/E原ReaderModeControl保持四模式；monitor把半模态canonical变更送原session。K四布局/WEBTOON映射。N/E原点按区域提示已补接，分页Kindle↔RIGHT_LEFT命名显示/关闭/首次tap消费/返回区间已审阅；实现选择改用单value公用行，两端即时/重开/冷启与真实route接受。K58a2e303复用原按书Store/原四布局菜单；own-sheet和底栏写入、普通/冷重入、Legacy互读、全局/另一书隔离和Reset命名链接受。单图不证明spread/RTL页序，未推广到所有设置组合。 |
 | 原图及处理结果切换 | 原图→普通→原图保持可读，反馈正确，旧回调不能覆盖新请求；处理失败不冒充成功 | 原图开关往返、同 URI 重载、保留图与失败分支；系统超分仍沿用户跳过指令，不做模型/模拟器服务试错 |E remote-original provider与默认variant分离；N无EH远端原图，原按钮是当前可见页临时停增强，Kit同可见unit覆盖且导航/关闭清理。K无此处理按钮。系统超分继续跳过。 |
 | 进度、历史、快速重开与回退 | 选中页和保存页一致；返回原详情，重开/冷启恢复正确；Shared/Legacy 选择和值/菜单一致，旧版功能不被共用 provider 破坏 | 原有数据不清；按已知普通入口操作并核对持久结果/当前版本绑定。Debug Want 不作为生产默认选择持久化证明 |N两端HistoryRepository即时发布/排队；共享epoch gate seal/flush。E两端GalleryReadProgressSettings即时coalescing，退出flush。K观察位置由catalogHost/host持久化。N/E当前实现切换与cold普通重开恢复原P38/P3已接受；其他进度模式按既有命名证据。 |
 | Koma 宿主能力、媒体动作 | 章节、自动阅读、源/本地下载、保存/分享保持宿主语义；不能因共用把菜单/数据职责迁入 Kit | 受影响时核对对应普通动作；原面板取消证据不接受实际保存/发送。未受影响的当前已接受命名路径不重跑 |K章节prepare有身份/取消/当前会话校验，四模式从宿主Preferences映射；三host自备share/save provider，Kit取消/目标锁定。面板/取消旧证据不能推为真实保存或发送。 |

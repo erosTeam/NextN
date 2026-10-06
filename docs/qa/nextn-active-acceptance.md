@@ -18,9 +18,20 @@
 > only for this choice path; original N P38/E P3 and Shared restored. Evidence:
 > ignored settings-choice-current-acceptance-receipt.json. Previous N/E paged
 > tap-zone round trips retain only identical source dependencies and named frames.
-> K per-book mode/direction wiring omission is independently source-confirmed;
-> current baseline/product repair pending. Canonical eight behavior rows remain
-> the scope. Entry/loading unobserved branches and N source blur remain unaccepted;
+> K per-book mode/direction omission source-confirmed; same-book Legacy/Shared
+> default baseline and original Library restoration observed. Two host files
+> now use existing per-book Store/queue, independently reviewed; current Release
+> c168144c install digest/body/metadata and ordinary cold Library observed.
+> K58a2e303 commits only those two host files. Current c168144c named own-sheet
+> and actual bottom mode writer, ordinary/cold reentry, global/other-book isolation,
+> Legacy readback, Reset and original Library restoration accepted; receipt is
+> ignored koma-per-book-current-acceptance-receipt.json. Independent original-PTS
+> bottom intervals0–255/0–831 and root review reconciled; root frame214 icon-hide
+> inference is withdrawn after raw-pixel zoom (icons present). One-image chapter
+> does not prove two-image spread or RTL order; no FPS/all-Reader claim. Next safe
+> action is finite old/current N source-thumbnail blur ownership analysis, without
+> product edits until cause/impact are established. Canonical eight behavior rows
+> remain the scope. Entry/loading unobserved branches and N source blur remain unaccepted;
 > independent K features held. No full replacement/performance/all-product claim.
 
 
