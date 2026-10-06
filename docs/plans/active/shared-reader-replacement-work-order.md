@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T20:30:59+08:00",
+  "updatedAt": "2026-10-06T21:18:52.775891+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "ACTIVE · 三应用既有阅读行为一致性复核",
@@ -12,23 +12,23 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "K本书设置已限定提交；恢复既有N源缩略图连续性调查",
-    "detail": "K58a2e303复用原按书Store/原菜单及同一会话，当前c168144c命名own-sheet/底栏写入、普通/冷重入、Legacy互读、global/另一书隔离、Reset和原Library恢复已审阅。独立bottom连续区间0–255/0–831与root核对；root对214图标误判经放大原图撤回。单图不接受双图排版/FPS。",
-    "startedAt": "2026-10-06T20:30:59+08:00"
+    "title": "N生产等待残留已清理，当前网格入场/返回与原进度已读回",
+    "detail": "Index2+/19-，当前HAPd08f874c；P1原片890a34ad源1–97/根飞行98/Reader/同Grid返回510已按行为审阅。原始系统像素与全windowwriter时序分开，不作whole-status通过。正确index37普通Reader38/40及Detail继续P38已恢复；错误index38曾进39明确撤回。",
+    "startedAt": "2026-10-06T20:41:57+08:00"
   },
-  "nextAction": "限定调查N已记录的源缩略图短暂模糊：对照旧00ce727b与当前179696f原PTS点击前至根飞行区间、对应snapshot/capture/source-tree owner和日志；先区分现存差异与旧包现象，原因/影响未确立不编辑产品、不重跑已接受设置。",
+  "nextAction": "限定提交N这份源证明清理及当前行为记录；随后仅处置已记录K普通Reader标题/章节metadata与Legacy差异，先查既有chrome/adapter所有权与显示条件决定真缺口或合法差异，不开展整产品重测。未命中取消/延迟加载保持未接受，不撞时长。",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
       "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
-      "hap": "9e29172a9ef0236db9b65dbac012aed90ea36d8bf4fc47192182c12dfa48822e",
-      "build": "签名构建成功；构建时HEAD/HAP/source/diff绑定；对应所有源字节现已按独立提交保存，内容未变；不以提交作为新增运行证据",
-      "install": "本次checked install正文成功；传入HAP SHA及bundle version读回匹配，无数据清理命令",
+      "hap": "d08f874c9e3b2da197099fbaebec659de55ff085d236b76673fce45734ce56a1",
+      "build": "一次签名Debug构建成功；10个源SHA/currentdiff与HAP绑定；只删除N obsoleteproductionwaitfields/overlay，无Kit/其他host源码变更",
+      "install": "checked正向install正文、传入SHA和bundle1.0.5/code7匹配；installedentry.hap digest读取permissiondenied，不声称已读回digest",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions.",
-      "remaining": "取消motion但同初始请求加载的UI分支未实际命中，状态执行支持源码修复；不以普通等待路径接受该分支。",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route.",
+      "remaining": "Whole-entryWindow visibility/colorwriter时序不由MOV像素接受；真实取消motion同请求等待UI/失败fallback未命中；不宣称uncachedness/FPS。",
       "appHead": "2058c714138de5ef2f2d5ea5778484f2911bb2a1"
     },
     {
@@ -64,21 +64,21 @@
       "title": "验证策略与完整行为基准",
       "status": "ACTIVE · 尚未完成要求的核验",
       "kind": "active",
-      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。",
-      "action": "限定调查N已记录的源缩略图短暂模糊：对照旧00ce727b与当前179696f原PTS点击前至根飞行区间、对应snapshot/capture/source-tree owner和日志；先区分现存差异与旧包现象，原因/影响未确立不编辑产品、不重跑已接受设置。",
+      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。 N旧blur/spinner根因已由原帧和旧Index分支建立；当前残留清理的warmFullGrid/原38恢复已观察，源连续性仅命名路径。",
+      "action": "限定提交N这份源证明清理及当前行为记录；随后仅处置已记录K普通Reader标题/章节metadata与Legacy差异，先查既有chrome/adapter所有权与显示条件决定真缺口或合法差异，不开展整产品重测。未命中取消/延迟加载保持未接受，不撞时长。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
       "closedAt": null,
       "disposition": {
         "state": "reopened-by-user-unfinished-entry-verification",
-        "recordedAt": "2026-10-06T17:42:20.819259+08:00",
+        "recordedAt": "2026-10-06T21:18:52.775891+08:00",
         "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only; named N/E implementation choice + cold actual route and paged tap-preview roundtrip; K existing per-book Store named own-sheet/bottom write/ordinary+cold reentry/global+other-book isolation/Legacy read/reset restoration",
         "unaccepted": [
           "cancelled-motion same-request loading backdrop UI",
           "E cancellation before child mount UI",
-          "N source-thumbnail blur cause and source-image continuity",
-          "all-mode/full-replacement/performance-superiority"
+          "all-mode/full-replacement/performance-superiority",
+          "N whole-entry platformwindow writer chronology and unhit delayedloading/cancel/fallback"
         ],
         "reason": "最新用户要求完整既有阅读行为与三应用接入一致性复核；两个入场反例否定宽泛验收可信度，不是只关心两个问题。不得缩成入场专项。"
       },
@@ -135,6 +135,26 @@
           },
           "historyEvidence": "Shared global load/save was introduced by f4a17aa0e (2026-09-13). Existing narrow per-book store and Legacy sheet/reset were introduced by 4e9e16b0 (2026-09-22), whose seven changed files omit KomaReaderLabPage. Current blame still assigns Shared load/save to Sept13. This proves missed host integration, not author motive or a historical runtime acceptance.",
           "runtimeEvidence": "koma-per-book-current-acceptance-receipt.json; K QA build/install/original native captures, ui-review-result/notes and exact production logic evidence, all with explicit layer limits."
+        },
+        {
+          "behavior": "普通/缩略图入场 / 源图连续性",
+          "finding": "Old N154738 binding/HAP4e985: production claim is published, then await capture, while root build renders IndexReaderEntryPendingOverlay for claim != null && transition == null. That overlay explicitly blurs the source rectangle and paints LoadingProgress. Original movie00ce727b crops show clear80/81, blurred+spinner82–88, clear89/90. This establishes old placeholder owner rather than a thumbnail reload.",
+          "currentState": "N2058c714已去除productionawait；这份后续delta去掉obsoleteproductionfields/overlayarm，真实claim/transition/root snapshot/Debug await保留。旧P20与当前P1不是matched latency/pixelpair。",
+          "candidatePlan": {
+            "recordedAt": "2026-10-06T20:36:55+08:00",
+            "existingBehavior": "Valid current source keeps ordinary root thumbnail flight; invalid/disabled/root snapshot failure keeps existing system push fallback. Claim/epoch/navigation/geometry and source readiness are departure authority; source Back/retirement/close must not reopen late. Debug rehearsal still awaits its independently owned captured preview and retains its existing pending overlay. Legacy uses original coordinator.",
+            "ownerAndOrdering": "Production open is synchronous with no await/Promise scheduling before present; main owner remains productionReaderEntryClaim/Transition+source identity and existing ReaderOverlay. Pending gallery/page fields are assigned and cleared within this synchronous call and therefore duplicate claim identity without owning work. Debug readerEntryClaim has a genuine awaited capture, distinct owner.",
+            "change": "Remove only the two unused production pending fields, their synchronous assignments/clears, duplicate pending-gallery cancellation predicate, and production arm of IndexReaderEntryPendingOverlay. Keep Debug arm and helper, production claim/transition, source/root snapshot, root presentation/window gates, cancellation, entry/return geometry and native navigation unchanged.",
+            "impact": "Direct: N root production source-pending representation only. Exposed ordinary full-grid and compact thumbnail entry/fallback/cancel/return. Source no changes to Gallery data/thumbnail leaf, shared Kit, Legacy, native menus/preferences/progress, E/K. Debug genuine awaited capture and pending overlay remain source-identical outside predicate simplification.",
+            "acceptance": "Compare existing ordinary compact movie only within identical source dependencies; one current ordinary full Grid named entry->Reader->Back with original frames/source/window identity, no blurred loading overlay before root flight, actual root flight and same Preview return, original progress restore. No cache clear, uncachedness inference, timing sweep or new UI framework. Source/runtime cancellation gaps remain separately unaccepted if not actually hit.",
+            "disproof": "Production loses valid root flight/opens immediate fullscreen, changes source/system style before flight, wrong selected target/return, retained source overlay appears, or Debug pending behavior removed. Any observed dependent counterexample rejects candidate.",
+            "unchangedGeometry": "Full source page/Grid, tile aspect/spacing/radius/labels, root proxy target/crop/radius/flight/reveal, ReaderSurface/loading panel/chrome unchanged.",
+            "evidence": ".hvigor/outputs/reader-entry-statusbar-20261006/host-recording/nextn-c0ad-uncached-thumbnail-page20-frames/source-p20-original-80-90-review-panel.png"
+          },
+          "implementationState": "Index仅2+/19-清理；一次签名HAPd08f874c/positiveinstall；命名warmP1FullGrid入场返回及原P38恢复已审阅；scopedcheckpoint见localbinding，不宣称overallReader通过",
+          "sourceReview": "nextn-source-pending-cleanup-plan-review-notes.md / review.json: no concrete source or exact diff blocker; no build/runtime acceptance by review.",
+          "buildBinding": "nextn-production-pending-residue-cleanup-binding.json",
+          "runtimeEvidence": "nextn-production-pending-residue-cleanup-acceptance-receipt.json;originalP1movie890a34ad,source1–97/root98/return510;root原像素与独立notes纠正130/131图标可见→132不可辨识、500仍缩回；actual38movie4113268d原444及DetailContinueP38。frame0外来Library排除，HDC/media时钟不混用。"
         }
       ]
     },

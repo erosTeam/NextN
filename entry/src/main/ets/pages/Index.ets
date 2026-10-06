@@ -580,8 +580,6 @@ struct Index {
   @Local private productionReaderEntryTransition: ReaderEntryTransition | null = null
   private productionReaderEntryEpoch: number = 0
   @Local private productionReaderEntryClaim: ReaderEntryClaim | null = null
-  private productionReaderEntryPendingGalleryId: number = 0
-  private productionReaderEntryPendingPageIndex: number = -1
   private productionReaderEntryGalleryId: number = 0
   private productionReaderEntryPageIndex: number = -1
   private readerTrialEntryGuardToken: number = 0
@@ -605,8 +603,6 @@ struct Index {
     const transition = this.productionReaderEntryTransition
     if (transition === null || (transition.phase !== 'finished' && transition.phase !== 'cancelled')) return
     this.productionReaderEntryClaim = null
-    this.productionReaderEntryPendingGalleryId = 0
-    this.productionReaderEntryPendingPageIndex = -1
     this.productionReaderEntryTransition = null
     this.productionReaderEntryGalleryId = 0
     this.productionReaderEntryPageIndex = -1
@@ -641,8 +637,7 @@ struct Index {
   }
 
   private cancelSourceEntryPending(galleryId: number): boolean {
-    if (this.productionReaderEntryPendingGalleryId === galleryId ||
-      this.productionReaderEntryClaim?.source.galleryId === galleryId) {
+    if (this.productionReaderEntryClaim?.source.galleryId === galleryId) {
       if (!this.cancelPendingReaderPresentation()) this.retireProductionReaderEntry()
       return true
     }
@@ -673,15 +668,12 @@ struct Index {
   }
 
   private productionReaderEntryActive(): boolean {
-    return this.productionReaderEntryPendingGalleryId > 0 || this.productionReaderEntryClaim !== null ||
-      this.productionReaderEntryTransition !== null
+    return this.productionReaderEntryClaim !== null || this.productionReaderEntryTransition !== null
   }
 
   private retireProductionReaderEntry(): void {
     this.productionReaderEntryEpoch += 1
     this.productionReaderEntryClaim = null
-    this.productionReaderEntryPendingGalleryId = 0
-    this.productionReaderEntryPendingPageIndex = -1
     this.productionReaderEntryGalleryId = 0
     this.productionReaderEntryPageIndex = -1
     this.productionReaderEntryTransition?.cancel()
@@ -727,8 +719,6 @@ struct Index {
     }
     // Consume subsequent taps until this live source has handed off to the root.
     if (this.productionReaderEntryActive()) return true
-    this.productionReaderEntryPendingGalleryId = source.galleryId
-    this.productionReaderEntryPendingPageIndex = source.pageIndex
     this.openProductionThumbnail(detailSeed.copy(), source)
     return true
   }
@@ -766,8 +756,6 @@ struct Index {
     this.productionReaderEntryTransition = this.productionReaderEntryClaim === null ? null : new ReaderEntryTransition(epoch,
       new ReaderDisplayPart(new ReaderUnitKey('nh', source.galleryId.toString(), source.galleryId.toString()), null,
         source.pageIndex))
-    this.productionReaderEntryPendingGalleryId = 0
-    this.productionReaderEntryPendingPageIndex = -1
     ReaderThumbnailTransitionCoordinator.open(
       this.getUIContext(),
       source.sourceScope(),
@@ -5014,11 +5002,6 @@ struct Index {
       if (this.readerEntryClaim !== null) {
         IndexReaderEntryPendingOverlay({ sourceRect: this.readerEntryClaim.sourceRect,
           onViewportChanged: (): void => { if (this.readerEntryClaim !== null) this.closeReaderTrial() } })
-      } else if (this.productionReaderEntryClaim !== null && this.productionReaderEntryTransition === null) {
-        IndexReaderEntryPendingOverlay({ sourceRect: this.productionReaderEntryClaim.sourceRect,
-          onViewportChanged: (): void => {
-            if (this.productionReaderEntryClaim !== null) this.retireProductionReaderEntry()
-          } })
       }
     }
     .width('100%')

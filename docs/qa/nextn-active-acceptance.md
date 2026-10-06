@@ -28,14 +28,30 @@
 > ignored koma-per-book-current-acceptance-receipt.json. Independent original-PTS
 > bottom intervals0–255/0–831 and root review reconciled; root frame214 icon-hide
 > inference is withdrawn after raw-pixel zoom (icons present). One-image chapter
-> does not prove two-image spread or RTL order; no FPS/all-Reader claim. Next safe
-> action is finite old/current N source-thumbnail blur ownership analysis, without
-> product edits until cause/impact are established. Canonical eight behavior rows
-> remain the scope. Entry/loading unobserved branches and N source blur remain unaccepted;
+> does not prove two-image spread or RTL order; no FPS/all-Reader claim. Old N
+> source blur is now source-mapped: claim awaited a second capture while the root
+> production pending overlay painted blur/spinner (original82–88). N2058 removed
+> that await; current Index cleanup deletes only its obsolete production fields
+> and overlay arm, with independent source/diff review. Signed HAPd08f874c transfer
+> digest and positive install body observed; installed entry.hap digest read was
+> denied. Current ordinary launch is NextN/root[0,117][1320,2232], AWAKE/86400000.
+> Current d08f874c warm FullGrid P1 source1–97/rootflight98/Reader1/40/Back
+> to same tile510 observed in original890a34ad; root and independent review
+> corrected system-icon intervals and oversized-return frame500. Whole-entry
+> native visibility/color-writer timing is not accepted by these pixels. Foreign
+> frame0 excluded, HDC and media clocks separate. Original38 restored by normal
+> index37 entry: movie4113268d original444 shows38/40, actual Detail continuesP38.
+> Earlier index38 route selected39 and its restoration claim is rejected. Receipt
+> nextn-production-pending-residue-cleanup-acceptance-receipt.json is authoritative
+> for this named slice. Next action: scoped source checkpoint, then disposition of
+> the recorded K Reader title/chapter metadata discrepancy from native Legacy
+> and existing adapter ownership; no broad retest or K feature restart. Canonical
+> eight rows remain the scope; unhit delayed-loading/cancel/fallback unaccepted;
 > independent K features held. No full replacement/performance/all-product claim.
 
 
-> Current physical boundary (2026-10-06): N HAP4e985d8c movie00ce727b
+> Earlier physical boundary (2026-10-06; later source finding above supersedes
+> its unresolved blur-cause statement): N HAP4e985d8c movie00ce727b
 > original0–626 reviewed: ordinary P20 root109–131; thumbnail/loading panel
 > retained133–196, original197, Reader icons207/208 and hide209; source status
 > restored440 before reverse441–460. Real cache writes distinguish uncached
