@@ -1,7 +1,8 @@
 import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
-import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow } from '@reader-kit/ui'
+import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow,
+  readerEntryWindowReady, readerEntryStatusBarStyle, applyReaderStatusBar } from '@reader-kit/ui'
 import { ReaderEntryTransition, ReaderEntryPhase, ReaderEntryPreviewSource, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility, ReaderCloseContext } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
@@ -612,6 +613,7 @@ struct Index {
     this.productionReaderEntryTransition = null
     this.productionReaderEntryGalleryId = 0
     this.productionReaderEntryPageIndex = -1
+    this.applyRecordedReaderPresentation()
   }
 
   @Monitor('readerEntryPhase')
@@ -634,10 +636,17 @@ struct Index {
     ReaderTrialEntryRelay.releasePending(token)
   }
 
+  private cancelPendingReaderPresentation(): boolean {
+    if (!this.readerOverlay.cancelPendingReader()) return false
+    this.readerRouteWillHide()
+    this.retireProductionReaderEntry()
+    return true
+  }
+
   private cancelSourceEntryPending(galleryId: number): boolean {
     if (this.productionReaderEntryPendingGalleryId === galleryId ||
       this.productionReaderEntryClaim?.source.galleryId === galleryId) {
-      this.retireProductionReaderEntry()
+      if (!this.cancelPendingReaderPresentation()) this.retireProductionReaderEntry()
       return true
     }
     if (this.readerEntryClaim === null || this.readerEntryClaim.source.galleryId !== galleryId) return false
@@ -810,7 +819,7 @@ struct Index {
     this.readerOverlayMountEpoch = mountEpoch
   }
 
-  @Monitor('readerEntryPhase', 'readerEntryVisibility.foreground')
+  @Monitor('readerEntryPhase', 'readerEntryVisibility.foreground', 'readerThumbnailTransition.presentationEpoch')
   private syncReaderTrialWindow(): void {
     const phase = this.readerEntryPhase
     const claim = this.readerEntryClaim
@@ -819,7 +828,8 @@ struct Index {
     const lease = this.readerTrialWindow
     if (lease === null || this.readerTrialWindowOpened || this.readerTrialWindowEpoch !== this.readerTrialEpoch ||
       this.readerTrialRequest === null || !this.readerTrialRequest.readingChrome ||
-      !this.readerEntryVisibility.foreground || phase === 'layout') return
+      !this.readerEntryVisibility.foreground ||
+      !readerEntryWindowReady(this.readerEntryTransition, this.readerTrialRootPresentationSettled())) return
     if (!this.readerTrialRequest.thumbnailEntry && !this.readerTrialDestinationShown) return
     const context = this.context()
     if (!context.applicationInfo.debug) return
@@ -836,12 +846,22 @@ struct Index {
     return lease === null ? null : lease.close(beforeRestoreColors)
   }
 
+  private readerTrialRootPresentationSettled(): boolean {
+    const root = this.readerThumbnailTransition
+    const galleryId = this.readerTrialRequest?.work ?? ''
+    return root.galleryId !== galleryId || !root.active() || root.presentationSettledFor(galleryId)
+  }
+
   private prepareReaderTrialWindow(): void {
     this.readerTrialCloseRequested = false
-    this.readerTrialWindow = new ReaderTrialWindow(null, true)
+    this.readerTrialWindow = new ReaderTrialWindow(null, true,
+      (): ReaderEntryTransition | null => this.readerEntryTransition,
+      (): boolean => this.readerTrialRootPresentationSettled())
     this.readerTrialWindowEpoch = this.readerTrialEpoch
     this.readerTrialWindowOpened = false
     this.readerTrialDestinationShown = false
+    // A pending entry captures colors only; presentation is fenced inside the lease.
+    this.readerTrialWindow.open(this.context())
     this.syncReaderTrialWindow()
   }
 
@@ -891,7 +911,7 @@ struct Index {
       this.readerTrialHostAlive && this.readerTrialWindow === lease && this.readerTrialRequest === request &&
       this.readerTrialEpoch === epoch && this.readerEntryVisibility.foreground
     if (lease === null || request === null || !current()) return false
-    if (!await lease.prepareStatusBarVisible() || !current()) return false
+    if (!await lease.prepareStatusBarVisible(current) || !current()) return false
     return ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
       this.layoutSafeArea.topAvoidHeight > 0 ?
         `${this.layoutSafeArea.topAvoidHeight}:${this.layoutSafeArea.bottomAvoidHeight}` : '', current)
@@ -975,7 +995,9 @@ struct Index {
         },
         hostClosing: this.readerTrialCloseRequested,
         prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareReaderTrialChrome(isCurrent),
-        onStatusBarVisible: (visible: boolean): void => { this.readerTrialWindow?.setStatusBarVisible(visible) },
+        onStatusBarVisible: (visible: boolean): void => { this.readerTrialWindow?.setStatusBarVisible(visible, (): boolean =>
+          this.readerTrialRequest === _param && this.readerTrialHostAlive &&
+          !this.readerTrialCloseRequested && this.readerEntryVisibility.foreground) },
         entryTransition: this.readerEntryTransition, entryPreview: this.readerEntryPreview,
         entryPhase: this.readerEntryTransition?.phase ?? 'finished',
         onClose: (): void => { this.closeReaderTrial() } })
@@ -2087,6 +2109,49 @@ struct Index {
     return !this.themeDisplay.effectiveDark
   }
 
+  private currentWindowEntry(): ReaderEntryTransition | null {
+    if (!this.readerDestinationVisible || this.readerDestinationClosing) return null
+    const params = this.readerOverlay.activeReader
+    return params !== null && params.backend === NextNReaderBackend.SHARED && this.productionReaderEntryMatches(params)
+      ? this.productionReaderEntryTransition : null
+  }
+
+  private readerWindowRootSettled(visible: boolean): boolean {
+    if (!this.readerDestinationVisible || this.readerDestinationClosing) return visible
+    const params = this.readerOverlay.activeReader
+    if (params === null || params.backend !== NextNReaderBackend.SHARED) return true
+    const galleryId = params.galleryId.toString()
+    // The source owns system chrome until the root proxy has handed off.
+    // Reader cancellation alone can still start a fallback root flight.
+    if (this.readerThumbnailTransition.galleryId === galleryId && this.readerThumbnailTransition.active() &&
+      !this.readerThumbnailTransition.presentationSettledFor(galleryId)) return false
+    return true
+  }
+
+  private readerWindowWriteAllowed(visible: boolean): boolean {
+    return readerEntryWindowReady(this.currentWindowEntry(), this.readerWindowRootSettled(visible))
+  }
+
+  private readerNavigationSystemBarStyle(): window.SystemBarStyle | undefined {
+    if (this.readerOverlay.activeReader === null) return undefined // Preserve Legacy native defaults.
+    return readerEntryStatusBarStyle(this.currentWindowEntry(),
+      this.readerDestinationVisible && !this.readerDestinationClosing && this.readerWindowRootSettled(false),
+      this.appUsesDarkIcons() ? STATUS_BAR_DARK_CONTENT : STATUS_BAR_LIGHT_CONTENT,
+      this.readerPresentationChromeVisible || this.readerPresentationCanvasDark
+        ? STATUS_BAR_LIGHT_CONTENT : STATUS_BAR_DARK_CONTENT)
+  }
+
+  private readerTrialNavigationSystemBarStyle(): window.SystemBarStyle {
+    return readerEntryStatusBarStyle(this.readerEntryTransition,
+      this.readerTrialHostAlive && !this.readerTrialCloseRequested && this.readerTrialRootPresentationSettled(),
+      this.appUsesDarkIcons() ? STATUS_BAR_DARK_CONTENT : STATUS_BAR_LIGHT_CONTENT, STATUS_BAR_LIGHT_CONTENT)
+  }
+
+  @Monitor('readerThumbnailTransition.presentationEpoch')
+  private replayReaderEntryPresentation(): void {
+    this.applyRecordedReaderPresentation()
+  }
+
   /**
    * Serializing the Window calls prevents a late hide from winning over a
    * later chrome reveal or route close. This is the lifecycle boundary the
@@ -2099,23 +2164,15 @@ struct Index {
     const work: Promise<void> = this.readerSystemBarWork
       .catch((): void => {})
       .then(async (): Promise<void> => {
-        if (generation !== this.readerSystemBarGeneration) {
+        if (generation !== this.readerSystemBarGeneration || !this.readerWindowWriteAllowed(visible)) {
           return
         }
-        const appWindow: window.Window = await window.getLastWindow(this.context())
-        if (generation !== this.readerSystemBarGeneration) {
-          return
-        }
-        if (visible) {
-          await appWindow.setWindowSystemBarProperties({
+        await applyReaderStatusBar(this.context(), visible, {
             statusBarContentColor: contentColor,
             isStatusBarLightIcon: lightIcons,
-          })
-        }
-        if (generation !== this.readerSystemBarGeneration) {
-          return
-        }
-        await appWindow.setSpecificSystemBarEnabled('status', visible, false)
+          }, (): ReaderEntryTransition | null => this.currentWindowEntry(),
+          (): boolean => this.readerWindowRootSettled(visible),
+          (): boolean => generation === this.readerSystemBarGeneration)
       })
       .catch((error: Error): void => {
         if (generation === this.readerSystemBarGeneration) {
@@ -2166,6 +2223,7 @@ struct Index {
     }
     this.clearPendingReaderStatusBarHide()
     const visible: boolean = !this.readerPresentationFullscreen || this.readerPresentationChromeVisible
+    if (!this.readerWindowWriteAllowed(visible)) return
     const lightIcons: boolean = this.readerPresentationChromeVisible || this.readerPresentationCanvasDark
     if (visible) {
       this.requestReaderStatusBar(true, lightIcons)
@@ -2759,6 +2817,7 @@ struct Index {
   }
 
   onBackPress(): boolean {
+    if (this.cancelPendingReaderPresentation()) return true
     // Both backends own a real HDS destination, and that destination's own
     // onBackPressed already forwards to the same controller. This shell guard
     // is the same owner, not a second one: it keeps a Back delivered to the
@@ -3301,6 +3360,8 @@ struct Index {
         .backgroundColor(Color.Transparent)
     }
     .hideTitleBar(true)
+    .systemBarStyle(this.readerNavigationSystemBarStyle(), this.readerNavigationSystemBarStyle())
+    .onBackPressed((): boolean => this.cancelPendingReaderPresentation())
     .backgroundColor(Color.Transparent)
   }
 
@@ -3319,6 +3380,7 @@ struct Index {
           params.routeEpoch,
         ),
         embedded: true,
+        managesTrialWindow: false,
         entryTransition: this.productionReaderEntryMatches(params) ?
           this.productionReaderEntryTransition : null,
         // Root proxy owns the source pixels. Retain the capture only as the
@@ -3432,6 +3494,10 @@ struct Index {
       }
     }
     .hideTitleBar(true)
+    .systemBarStyle(this.readerParams(param).backend === NextNReaderBackend.SHARED
+      ? this.readerNavigationSystemBarStyle() : undefined,
+      this.readerParams(param).backend === NextNReaderBackend.SHARED
+        ? this.readerNavigationSystemBarStyle() : undefined)
     .onBackPressed((): boolean => {
       if (this.readerBackRequest !== null) {
         return this.readerBackRequest()
@@ -4923,6 +4989,7 @@ struct Index {
           Column() {}
         }
         .navDestination(this.readerOverlayRouterMap)
+        .systemBarStyle(this.readerNavigationSystemBarStyle(), this.readerNavigationSystemBarStyle())
         .hideNavBar(true)
         .width('100%')
         .height('100%')
@@ -4946,6 +5013,7 @@ struct Index {
         ForEach([this.readerTrialEpoch], (_epoch: number) => {
           HdsNavigation(this.readerTrialStack) { Column() {} }
             .navDestination(this.readerTrialRouter).hideNavBar(true)
+            .systemBarStyle(this.readerTrialNavigationSystemBarStyle(), this.readerTrialNavigationSystemBarStyle())
             .width('100%').height('100%').backgroundColor(Color.Black)
             .opacity(this.readerEntryTransition?.phase === 'layout' ? 0 : 1)
             .animation({ duration: this.readerEntryTransition === null ? 0 : 140, curve: Curve.Linear })

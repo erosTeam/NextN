@@ -349,6 +349,58 @@ not a chronological accumulation of probes and checkpoints.
   counts, commit counts, elapsed runs, and document volume are diagnostics, not
   progress metrics.
 
+### 7.1.1 Acceptance is derived from the existing behavior, not the patch
+
+The implementation target and the acceptance boundary are different. Fixing A
+does not accept changes to B, C, or D. This section operationalizes Sections
+3, 4, and 7.1; it does not create another red-line register or test framework.
+
+Before a product edit, update the current package record in place with:
+
+1. **Existing behavior.** Recover the applicable Legacy/reference contract and
+   prior user decisions independently of the proposed fix. Name the ordinary
+   entry, visible intermediate states, actions, return, and persistent outcome.
+   Required behavior may not be omitted because the current patch does not
+   intend to address it.
+2. **Impact trace.** Follow the actual changed owner through its callers,
+   writers, asynchronous callbacks, parent/sibling state, applicable consumers,
+   and retained Legacy path. For each existing behavior, classify it as directly
+   changed, indirectly exposed, or unaffected with a concrete source reason.
+   File proximity, a small diff, shared code, and author intent do not establish
+   that a behavior is unaffected. An unresolved ownership/write path blocks
+   product editing; it is not permission for trial-and-error implementation.
+3. **Acceptance decision.** Before the first validation run, state the expected
+   observable behavior and a concrete failure condition for every exposed
+   behavior. Reuse an existing valid receipt only when its version, ordinary
+   route, environment and dependency relationship remain applicable. Otherwise
+   the row is unaccepted. Never derive the standard from what the candidate
+   happened to do, or repeatedly tune code until a chosen test looks green.
+
+Review one complete declared user action interval, including the source state
+before the first input and the terminal return, against all exposed behavior
+rows at once. An image-continuity inspection does not accept system chrome;
+endpoint bounds do not accept the intervening motion; a visible control does
+not accept its action; one initial preload does not accept its rolling window.
+Use the observable evidence appropriate to the claim. Do not change menu,
+geometry, preload, state ownership, or rendering identity to make a harness
+easier to pass.
+
+Before a package acceptance or handoff statement, reconcile the exact diff
+against that same record. Every exposed row needs a current accepted receipt
+or an explicit unaccepted/deferred disposition. A failing required row rejects
+the package; missing evidence cannot be silently dropped or compensated for
+by other passes. Report the package's allowed conclusion, not its check count.
+Unchanged, evidenced behaviors remain frozen; this rule does not authorize a
+whole-product retest, speculative redesign, or a new implementation queue.
+
+A user counterexample reopens the affected capability and its dependent
+conclusions, not just the reported visual leaf. Preserve true raw observations;
+withdraw unsupported acceptance claims in the work order, dashboard, and
+retrieved memory. First audit the omitted impact/acceptance relationship before
+resuming a patch. Independent review must use the predeclared behavior record
+and original artifacts; a reviewer repeating the author's target-only question
+is not a second acceptance boundary.
+
 ## 8. Conditional preemption — account persistence P0
 
 Account-persistence P0 is **OPEN whenever current native Account or Favorites

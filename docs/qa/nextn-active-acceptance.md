@@ -10,6 +10,33 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
+> Current steering (2026-10-06): the entry/system-bar and loading-backdrop
+> counterexamples reopen Reader entry and dependent handoff conclusions. The
+> independent behavior/impact/decision standard is now recorded in the work
+> order. The user explicitly directed implementation and testing; Reader
+> execution hold is lifted. E/N window writes are the source-proven repair,
+> loading-backdrop causality remains OPEN. Historical receipts keep their
+> exact observation scope. Koma WebDAV candidate and pending cold-history/
+> folder/restoration path remain preserved on hold in its CURRENT_STATUS.
+
+
+> Current physical boundary (2026-10-06 15:09): current N ec6c/Kit571
+> install body explicitly succeeded; transferred SHA and version7/1.0.5
+> readback agree. Movie dd712d original0–647 covers pending layout Back
+> cancelling the route before any late onAppear, new click root flight,
+> source color until handoff, chrome, reverse return and ordinary Read/pop.
+> E3013 movieebaedc original1–683 covers mounted-layout cancellation,
+> thumbnail reentry/chrome/reverse and ordinary Read/pop; E unmounted
+> pending cancellation is state-execution proof only. K nonDebug21fb
+> ordinary shared local1/3, gestures1→3→1 and return/reentry reviewed0–575;
+> chapter/current-caller and chrome remain unproven. Previous N exit0/
+> downgrade receipts are rejected current-code bindings; 9b8b Cb9bc is a
+> true route-cancellation counterexample. All conclusions stay limited to
+> named intervals; uncached thumbnail loading backdrop remains OPEN.
+
+
+
+
 - Koma production work (2026-10-05): overall OPEN; finite reader handoff stays
   closed. PRI-001 complete Komga catalog accepted on named normal emulator
   browse/favorite/read/update/cold-reopen paths (App082c8132, HAP30327034).

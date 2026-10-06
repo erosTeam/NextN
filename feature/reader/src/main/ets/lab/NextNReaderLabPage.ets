@@ -6,7 +6,7 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
   ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase, ReaderEntryPreviewSource,
   ReaderRootEntryHandoff, ReaderRootEntryHandoffHost } from '@reader-kit/ui'
-import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderLabVisibilityState, connectReaderLabVisibility,
+import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
   ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
   ReaderHostSettings, ReaderExternalOpen, ReaderHostActions, ReaderVariantPolicy, ReaderCropPolicy,
@@ -125,7 +125,9 @@ export struct NextNReaderLabPage {
   @Local private routeActive: boolean = false
   @Local private safeArea: LayoutSafeAreaState = connectLayoutSafeArea()
   private unitKey: ReaderUnitKey = new ReaderUnitKey('', '', '')
-  private trialWindow: ReaderTrialWindow = new ReaderTrialWindow(null, true)
+  private trialWindow: ReaderTrialWindow = new ReaderTrialWindow(null, true,
+    (): ReaderEntryTransition | null => this.entryTransition,
+    (): boolean => this.ownsTrialWindow() && this.rootWindowPresentationSettled())
   private keepScreenOn: ReaderKeepScreenOn | null = null
   @Local private closeRequested: boolean = false
   @Local private readerSettingsSheetShown: boolean = false
@@ -184,7 +186,7 @@ export struct NextNReaderLabPage {
     this.rootEntryHandoff.reset()
     if (!this.request.readingChrome) void this.restorePresentation(context)
     this.keepScreenOn = new ReaderKeepScreenOn(context)
-    if (this.request.readingChrome && this.managesTrialWindow) this.trialWindow.open(context)
+    if (this.request.readingChrome && this.ownsTrialWindow()) this.trialWindow.open(context)
     const adapter = this.request.productionSources === true
       ? new NextNReaderLabAdapter(context, new NextNProductionReaderDataSource(
         context,
@@ -500,7 +502,23 @@ export struct NextNReaderLabPage {
     this.originalProbe?.close()
     if (this.originalProbeEpoch !== 0) ReaderTrialOriginalProbe.detachFacts(this.originalProbeEpoch)
     this.volumeKeys.close()
-    if (this.managesTrialWindow) this.trialWindow.close()
+    if (this.ownsTrialWindow()) this.trialWindow.close()
+  }
+
+  private ownsTrialWindow(): boolean { return this.managesTrialWindow && !this.embedded }
+
+  private rootWindowPresentationSettled(): boolean {
+    if (this.volumeDisposed || this.closeRequested || this.hostClosing) return false
+    const root = this.readerThumbnailTransition
+    return root.galleryId !== this.request.work || !root.active() || root.presentationSettledFor(this.request.work)
+  }
+
+  @Monitor('entryPhase', 'readerThumbnailTransition.presentationEpoch', 'externalRouteActive', 'routeActive')
+  private replayEntryWindowPresentation(): void {
+    if (!this.ownsTrialWindow() || !this.request.readingChrome || !this.hostRouteActive() ||
+      !readerEntryWindowReady(this.entryTransition, this.rootWindowPresentationSettled())) return
+    this.trialWindow.open(this.getUIContext().getHostContext() as common.UIAbilityContext)
+    this.chromeRepublishToken += 1
   }
 
   private syncChromeVisible(visible: boolean): void {
@@ -510,7 +528,8 @@ export struct NextNReaderLabPage {
     }
     if (visible) return // The before-show gate already applied host visibility.
     const statusVisible = !connectReaderPresentation().fullscreen || visible
-    if (this.managesTrialWindow) this.trialWindow.setStatusBarVisible(statusVisible)
+    if (this.ownsTrialWindow()) this.trialWindow.setStatusBarVisible(statusVisible, (): boolean =>
+      !this.volumeDisposed && !this.closeRequested && !this.hostClosing && this.hostRouteActive() && this.labVisibility.foreground)
     else this.onStatusBarVisible(statusVisible)
   }
 
@@ -518,8 +537,8 @@ export struct NextNReaderLabPage {
     const current = (): boolean => isCurrent() && !this.closeRequested && !this.hostClosing &&
       this.hostRouteActive() && this.labVisibility.foreground
     if (!current()) return false
-    if (!this.managesTrialWindow) return this.prepareChrome === null ? false : this.prepareChrome(current)
-    if (!await this.trialWindow.prepareStatusBarVisible() || !current()) return false
+    if (!this.ownsTrialWindow()) return this.prepareChrome === null ? false : this.prepareChrome(current)
+    if (!await this.trialWindow.prepareStatusBarVisible(current) || !current()) return false
     return ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
       this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '', current)
   }
@@ -542,7 +561,7 @@ export struct NextNReaderLabPage {
       })
       return
     }
-    if (this.managesTrialWindow) this.trialWindow.close(async (): Promise<boolean> => {
+    if (this.ownsTrialWindow()) this.trialWindow.close(async (): Promise<boolean> => {
       if (this.trialWindow.getCloseSystemAvoidAreaResult() === 'ready') {
         const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
           this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '',
@@ -1207,6 +1226,10 @@ export struct NextNReaderLabPage {
       HdsNavDestination() {
         this.readerContent()
       }.titleBar(nextNHdsTitle($r('app.string.rkit_lab_title')))
+      .systemBarStyle(readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
+        this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF'),
+        readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
+          this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF'))
       .hideTitleBar(this.request.readingChrome)
       .onBackPressed((): boolean => {
         if (!this.request.readingChrome) return false

@@ -93,6 +93,21 @@ const overlay = compile(overlaySource, {
   pop() { this.paths.pop() }
 } }).ReaderOverlayNavigationState
 
+const cancelledNavigation = new overlay()
+const cancelledEpoch = cancelledNavigation.open(shared, false)
+assert.equal(cancelledNavigation.cancelPendingReader(), true)
+assert.equal(cancelledNavigation.visible, false)
+assert.equal(cancelledNavigation.activeReader, null)
+assert.equal(cancelledNavigation.presentPendingReader(cancelledEpoch), false,
+  'a late onAppear must not present a cancelled pending route')
+const reopenedEpoch = cancelledNavigation.open(shared, false)
+assert.equal(cancelledNavigation.presentPendingReader(cancelledEpoch), false,
+  'the cancelled route epoch must not present the new pending route')
+assert.equal(cancelledNavigation.presentPendingReader(reopenedEpoch), true)
+assert.equal(cancelledNavigation.cancelPendingReader(), false,
+  'pending-route cancellation cannot reset an already presented Reader')
+assert.equal(cancelledNavigation.visible, true)
+
 const navigation = new overlay()
 const sharedEpoch = navigation.open(shared, false)
 assert.equal(navigation.mountEpoch, sharedEpoch)
