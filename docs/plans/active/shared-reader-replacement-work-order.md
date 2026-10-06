@@ -3,66 +3,66 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T15:09:00+08:00",
+  "updatedAt": "2026-10-06T15:37:17.282939+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 入场窗口写入修复",
+  "state": "OPEN · 共同入口候选已运行，范围提交中",
   "title": "共享阅读器 · 入场系统栏与加载连续性",
   "outcome": "用户明确要求实施修复并验证。验证方式已重订，Reader 执行 hold 解除；只处理已报告入场/加载能力，Koma WebDAV 候选保持原边界。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "共享窗口实际 writer 统一 entry/root/current 准入；保留宿主导航、根动画、几何、菜单、缩略图、预载和 Legacy。",
   "activity": {
-    "title": "E/N入场与返回窗口区间已审阅 · 加载背景仍OPEN",
-    "detail": "当前N ec6c未挂载取消及重入、A/B受影响窗口区间已审阅；E3013当前C/A/B原始1–683已审阅，E首次Back发生在Reader已挂载layout阶段，未实际覆盖未挂载pending取消。K Release跨章/current-caller与chrome仍待命名证据。",
+    "title": "当前三宿主包已安装；N无缓存与K Release章节原始区间审阅完成",
+    "detail": "共同writer与原生HDS颜色使用同一entry/root/current准入；motion取消不再结束同初始request的加载背景。N P20原始0–626，K Release普通4–445/章节0–755已审阅。源缩略图短模糊与取消分支UI证明明确未接受，不宣称整体通过。",
     "startedAt": "2026-10-06T13:35:00+08:00"
   },
-  "nextAction": "完成E/N窗口与pending路由修复的限定提交；定位真实未缓存缩略图背景交接，补K Release章节窗口证据，不扩展菜单/源/性能任务。",
+  "nextAction": "审查/提交三宿主当前共同Kit绑定和K Release入口修正，再恢复原N P38/E P3/K Library及超时；不扩大菜单、性能和资源窗口。",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
-      "kit": "571063d94308773c39b84e1693c109ae21cd3cc4",
-      "hap": "ec6c08cfd7388dbb20b7a62ddbb7bd095718cc3a46afbc989d036f4f384c0b4d",
-      "build": "当前原生导航与共同writer候选构建 exit0",
-      "install": "当前ec6c bm-r-d正文install bundle successfully；传入HAP SHA一致，version7/1.0.5已读回；安装目录摘要无权限",
-      "verdict": "窗口/路由 C/A/B命名区间接受",
+      "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
+      "hap": "4e985d8ce28eb5225386f9453702d8c441c885d531c2e39ca02177a02de7f21c",
+      "build": "当前c0ad共同源码签名构建成功",
+      "install": "15:21当前bm install正文明确成功；传入HAP SHA及bundle读回匹配，未清数据",
+      "verdict": "命名窗口/正常未缓存加载区间接受，源模糊未接受",
       "verdictKind": "open",
-      "runtime": "普通首入102→103、重入500→501：提示与图片同帧交接；Reload300保图/提示、420提示撤下；当前原生Detail继续P38。原始2–640已审阅且PTS一致。 新非H682531真实无缓存ReadP1：189→190同帧交接，HTTP200/新缓存95338B，原始2–639及PTS一致。 当前571正确安装A原始4–539：首入根飞行127开始/143到位/166才变色，重入337开始/352到位/375才变色；两次Back恢复源栏后原根返回。0–3是录屏缓存旧E画面，已排除。 待路由反例b9bc保留：14:48 Back只取消entry而仍onAppear推Reader，包拒绝。现已在pending路由owner同步reset；当前ec6c录像dd712d原始0–647审阅，C74–81源预览pending/82恢复，至166没有打开Reader；新点击166–185根飛行，202才颜色变化，274chrome，320源颜色先于返回飛行、338源稳定；普通Read382–397系统push、chrome503，Back540–554系统pop，至647无晚打开/隐藏。未审阅648–888剩余idle。",
-      "remaining": "当前命名C/A/B窗口与pending路由已接受；全部uncached背景/性能和其他设备不由此关闭。"
+      "runtime": "当前P20movie00ce72原始0–626：root109–131；加载133–196保留缩略图/底板，197原图与撤提示，207/208Reader色、209隐藏；Back440先恢复源色、441–460根返回。实际新缓存129186/178806/146728/169112B。源81–89短模糊90恢复；成因未建立，不接受整体源图连续性。dd712d原C/A/B窗口依赖未改，沿原命名证据。",
+      "remaining": "取消motion但同初始请求加载的UI分支未实际命中，状态执行支持源码修复；不以普通等待路径接受该分支。"
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
-      "kit": "571063d94308773c39b84e1693c109ae21cd3cc4",
-      "hap": "3013cd1dc5d1d35d1a53a7065fe554368d26ee2fc0e4f8cdbf5aca606d71ce03",
-      "build": "当前原生导航与共同writer候选构建 exit0",
-      "install": "当前3013 bm-r正文install bundle successfully；传入SHA一致，实际com.erosteam.nexte bundle读回已保留",
-      "verdict": "当前3013命名入场/返回窗口区间接受",
+      "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
+      "hap": "a87b85705f4f935ba143f680ce13d69dc59396034fe788bad585624baef8485d",
+      "build": "当前c0ad共同源码签名构建成功",
+      "install": "15:21当前bm install正文明确成功；传入HAP SHA及bundle读回匹配，未清数据",
+      "verdict": "共同候选已安装；沿用未改变依赖的命名窗口区间",
       "verdictKind": "open",
-      "runtime": "候选6ce27298：分页首入131→132、重入711→712，连续首入509→510同帧交接；保图重载和根飞行/返回仍在，原LTR/cropfalse/P3恢复。 当前571原始1–503：两次缩略图根飞行及返回/显栏均保留；第二次311–336根飞行后337/338才变色。疑似放大381–389图片区域与稳定360原始像素完全相同，未出现实际缩放。 当前3013录像ebaedc原始1–683已审阅：首次Back在已挂载Reader的layout阶段取消，无Root飞行/全屏/变色；重入184–203根飞行，210才Reader颜色，297–300chrome；Back340源色、342根返回至360源；普通Read411–426系统push，530chrome，564–576系统pop，之后至683保持同Detail P3。0为旧N缓存画面排除。",
-      "remaining": "未挂载pending取消只由实际状态执行证明，E此次原生C未命中该阶段；真实未缓存背景仍OPEN。"
+      "runtime": "原3013movieebaedc1–683的Window/native-style/pending-route依赖与当前c0ad相同；保留其有限C/A/B窗口/返回结论。当前改动只影响既有两加载背景predicate，不改writer/导航/phase；当前新包构建/安装不是新视觉验收。",
+      "remaining": "E未挂载取消及motion取消背景UI仍未观察；实际共同状态执行单独记录，不作全量通过。"
     },
     {
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
-      "kit": "571063d94308773c39b84e1693c109ae21cd3cc4",
-      "hap": "21fb6e64477ca498139ff15fa4cdca159785f719d8de3645e718c6a09204cb8b",
-      "build": "当前原生导航与共同writer候选构建 exit0；实际非Debug Release",
-      "install": "实际非Debug Release21fb正文bm install bundle successfully；传入文件sha256一致",
-      "verdict": "命名Release共享首入/返回重入已观察",
+      "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
+      "hap": "0c753eeb9890094e3c15d634887b0066a264c4889fc12bc469bb1ebf94fb9061",
+      "build": "当前c0ad共同源码签名构建成功；实际非Debug Release",
+      "install": "15:21当前bm install正文明确成功；传入HAP SHA及bundle读回匹配，未清数据",
+      "verdict": "当前非Debug普通入口/显栏/章节/返回重入命名区间接受",
       "verdictKind": "open",
-      "runtime": "普通首入96→97、重入423→424同帧交接；Reload245/246保图与准备提示、247提示撤下；原始3–639已审阅且PTS一致，原生Library恢复NemoP1/9%。 当前safe真实源精英干员：启程上/下篇：普通183→184、菜单185→186、快速P1→P7→P1无空白/准备提示，Swiper1929保留，新增缓存页7–12；原菜单切回上篇567→568并系统返回同Detail。原始1–660/1–520/1–700与全部PTS已核对。 当前实际Release普通标题验证本地3页：rkit-native-pager/entry-image真实存在，1→2→3→2→1日志与原帧0–575一致，返回普通Detail再重入1/3；center动作未显示chrome，故不宣称chrome通过。",
-      "remaining": "本地3页不能证明超过5页滚动预载；本次窗口API未改资源窗口。原库/资料保持，WebDAV独立待验收仍hold。"
+      "runtime": "当前Release0c753e普通Terra上篇movie0a6cca4–445：系统push75–91、92Reader色、95–139准备/140原图、121隐藏；center261先显状态区262–264chrome。当前chaptermoviee77fa20–755：上下篇60↔71及显式准备130–148/366–370；原图149/371；源色454先于系统pop455–473，重入/最终返回至619，同Detail稳定至755。不宣称章节全程保图或FPS。",
+      "remaining": "K没有此缩略图入口，本次Window绑定普通无thumbnail/current章节。Kit资源窗口未改变，旧已接受序列冻结；WebDAV候选保留待前置有限收尾。"
     }
   ],
   "gaps": [
     {
       "id": "reader-validation-strategy",
       "title": "验证策略与完整行为基准",
-      "status": "行为标准已重订 · 执行中",
+      "status": "已执行独立行为基准 · 候选范围提交中",
       "kind": "open",
-      "detail": "完整事前标准及影响链已记录；实际共同writer已实施，当前执行命名路径，不退回文字hold或全量重测。",
-      "action": "按当前能力包完成必需的普通路径原始证据与精确diff评审。",
+      "detail": "源码坏转换已修，三个当前包已安装；现有原始区间按系统栏/背景/原图/正常导航/取消/章节分别判定。当前取消背景UI与源短模糊不被普通加载结果代偿。",
+      "action": "审查/提交三宿主当前共同Kit绑定和K Release入口修正，再恢复原N P38/E P3/K Library及超时；不扩大菜单、性能和资源窗口。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -506,7 +506,7 @@
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "按用户最新要求结束本轮阅读器专门投入。已接受命名场景冻结；不再为了布局共同短黑、模拟器增强或目录选择扩大本轮任务，不新增复用改造、测试矩阵或性能追平任务。",
+  "stopRule": "只完成当前已报告入场窗口/加载能力的有限修复和命名证据；不扩展菜单/性能/资源窗口/全产品重测。未接受分支明确保留，不能以构建、提交或已缓存图像结果代偿。",
   "excluded": "保留现有宿主菜单、设置、数据、导航、根转场、默认选择与旧版回退；未切换默认、未推送、未操作实机。已知限制没有被标为通过。",
   "costNote": "不显示虚构完成百分比或费用。每项工时为已记录下界、历史覆盖不完整。本次剩余两项联合源码可行性核对另记录7分钟，未精确拆分，未伪分摊到单项工时。",
   "jointAssessmentHandling": {
@@ -522,11 +522,16 @@
     "authority": "用户最新要求尽快收尾、结束无止境延伸并释放各软件功能开发时间",
     "fullReplacementAchieved": false,
     "performanceSuperiorityProven": false,
-    "currentDelivery": "共同Kitcb4f2f5与对应三消费者提交/签名HAP、原命名场景证据",
+    "currentDelivery": "当前c0ad入场窗口/加载候选；10月5日有限交付是历史，当前能力并未全量接受",
     "deferredOutcomesRemainUnresolved": true,
-    "readerSpecificWorkActive": false,
+    "readerSpecificWorkActive": true,
     "bindingReceipt": "package5-finite-handoff-binding.json",
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。"
+  },
+  "currentEntryReceipts": {
+    "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
+    "review": "reader-entry-loading-current-reviewed.json",
+    "binding": "loading-backdrop-c0ad-package-binding.json"
   }
 }
 -->
@@ -569,7 +574,7 @@ data.
 
 ### 当前能力包：入场窗口写入与加载连续性（2026-10-06，OPEN）
 
-用户的新反例重开 Reader 入场能力；验证策略前置已形成下面的完整行为标准与有限执行方案，用户明确要求修改并测试，Reader 执行 hold 解除。当前只修复源码已证明的 E/N 入场窗口写入，加载底板成因未建立前不追加 Kit 补丁。Koma 首版 Goal 当前工具读回为 PAUSED；本轮 Reader 按用户直接授权推进，WebDAV 两文件候选及原待验收路径保留、不追加修改。下方 10 月 5 日收尾是历史有限交付记录。
+用户的新反例重开 Reader 入场能力；验证策略前置已形成下面的完整行为标准与有限执行方案，用户明确要求修改并测试，Reader 执行 hold 解除。当前共同writer及E/N原生颜色/取消路径已修；加载底板motion/request生命周期混用已有源码依据，共同Kitc0ad已有有限修复，UI取消分支仍未命中。Koma 首版 Goal 当前工具读回为 PAUSED；本轮 Reader 按用户直接授权推进，WebDAV 两文件候选及原待验收路径保留、不追加修改。下方 10 月 5 日收尾是历史有限交付记录。
 
 #### 原方案的问题及可核实依据
 
@@ -597,7 +602,7 @@ data.
 
 #### Reader 原有行为基准表（验收对象，不是新开发队列）
 
-下表是所有 Reader 包的基准；每包必须明确哪些行受影响。未受影响且证据仍适用的行沿用，不反复测试；缺少影响理由的行不能略过。当前没有新的运行通过结论。
+下表是所有 Reader 包的基准；每包必须明确哪些行受影响。未受影响且证据仍适用的行沿用，不反复测试；缺少影响理由的行不能略过。当前命名运行结论与未接受分支只取顶部当前包行，不由这张基准表默认通过。
 
 | 行为 | 要判定的用户效果 / 失败标准 | 必要场景与证据 |
 | --- | --- | --- |
@@ -612,7 +617,7 @@ data.
 
 #### 必要时采用的操作链与停止条件
 
-这是事前方案。N 基线 A 的源到入场/显隐/返回已录制，尚在全过程原帧审阅；它没有重入或未缓存证明。实际产品包先完成影响分类，再选对应链，不能因为链已列出就全部重跑。
+这是事前方案；当前执行与原帧审阅结果已更新到顶部唯一包行。实际产品包先完成影响分类，再选对应链，不能因为链已列出就全部重跑。
 
 | 链 | 固定普通操作 | 同场判定（不能只看其中一项） |
 | --- | --- | --- |

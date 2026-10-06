@@ -10,32 +10,31 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
-> Current steering (2026-10-06): the entry/system-bar and loading-backdrop
-> counterexamples reopen Reader entry and dependent handoff conclusions. The
-> independent behavior/impact/decision standard is now recorded in the work
-> order. The user explicitly directed implementation and testing; Reader
-> execution hold is lifted. E/N window writes are the source-proven repair,
-> loading-backdrop causality remains OPEN. Historical receipts keep their
-> exact observation scope. Koma WebDAV candidate and pending cold-history/
-> folder/restoration path remain preserved on hold in its CURRENT_STATUS.
+> Current steering (2026-10-06): Reader entry/window/loading remains the
+> finite active capability. The independent behavior/impact/decision record
+> governs each conclusion. Current common Kit c0ad970 removes the source-proven
+> cancelled-motion/backdrop lifetime conflation; window/native-style admission
+> remains common entry/root/current. Three current signed packages were built
+> and positively installed15:21 with matching transferred SHA/bundle readback.
+> Koma WebDAV WIP remains separate until the finite Reader prerequisite closes.
 
-
-> Current physical boundary (2026-10-06 15:09): current N ec6c/Kit571
-> install body explicitly succeeded; transferred SHA and version7/1.0.5
-> readback agree. Movie dd712d original0–647 covers pending layout Back
-> cancelling the route before any late onAppear, new click root flight,
-> source color until handoff, chrome, reverse return and ordinary Read/pop.
-> E3013 movieebaedc original1–683 covers mounted-layout cancellation,
-> thumbnail reentry/chrome/reverse and ordinary Read/pop; E unmounted
-> pending cancellation is state-execution proof only. K nonDebug21fb
-> ordinary shared local1/3, gestures1→3→1 and return/reentry reviewed0–575;
-> chapter/current-caller and chrome remain unproven. Previous N exit0/
-> downgrade receipts are rejected current-code bindings; 9b8b Cb9bc is a
-> true route-cancellation counterexample. All conclusions stay limited to
-> named intervals; uncached thumbnail loading backdrop remains OPEN.
-
-
-
+> Current physical boundary (2026-10-06): N HAP4e985d8c movie00ce727b
+> original0–626 reviewed: ordinary P20 root109–131; thumbnail/loading panel
+> retained133–196, original197, Reader icons207/208 and hide209; source status
+> restored440 before reverse441–460. Real cache writes distinguish uncached
+> acquisition. Source thumbnail81–89 blur clears90; cause not established, so
+> source-image continuity is not accepted. K nonDebug HAP0c753eeb normal Terra
+> entrymovie0a6cca4–445 and chaptermoviee77fa20–755 reviewed: default system
+> entry, preparing/image handoff, status-before-chrome,60↔71 chapters, system
+> return/reentry and same Detail. Chapter switches include explicit preparing
+> stages, not image-continuous/FPS acceptance. E HAPa87b8570 is installed;
+> ebaedc1–683 retains only Window/native-style/pending-route evidence because
+> those dependencies did not change from571 to c0ad. N dd712d0–647 similarly
+> retains its actual pending-cancel/window evidence. UI cancelled-motion
+> same-request backdrop and E cancellation before mount remain unobserved;
+> common actual-owner state checks support only their logic layer. Downgrade/
+> stale-build receipts stay rejected. Exact current bindings/review are in
+> ignored reader-entry-statusbar-20261006/reader-entry-loading-current-reviewed.json.
 
 - Koma production work (2026-10-05): overall OPEN; finite reader handoff stays
   closed. PRI-001 complete Komga catalog accepted on named normal emulator
