@@ -10,16 +10,19 @@
 > `docs/plans/active/shared-reader-replacement-work-order.md`; add detail here
 > only for a durable counterexample or a final package conclusion.
 
-> Current steering (2026-10-06): the finite Reader entry/window/loading
-> candidate is committed in all three hosts. The independent behavior/impact/
-> decision record governs each conclusion; this is not overall replacement. Current common Kit c0ad970 removes the source-proven
-> cancelled-motion/backdrop lifetime conflation; window/native-style admission
-> remains common entry/root/current. Three current signed packages were built
-> and positively installed15:21 with matching transferred SHA/bundle readback.
-> Original N P38/E P3 and actual current K Library Catalogue1021/1 plus
-> 30000ms timeout were restored through checked normal paths. The finite
-> source/named-runtime candidate is delivered with explicit unaccepted branches
-> in the work order; existing Koma WebDAV continuation resumes separately.
+> Current steering (2026-10-06): three-host existing Reader behavior consistency
+> review remains ACTIVE. N/E host-public SettingsChoiceRow now derives row label
+> and menu checks from one canonical value; independent per-page label/check
+> builders are removed. Current N9e29172a/Ef1c50cc3 checked installs and ordinary
+> Legacy/Shared immediate/reopened/cold menus and actual backend routes accepted
+> only for this choice path; original N P38/E P3 and Shared restored. Evidence:
+> ignored settings-choice-current-acceptance-receipt.json. Previous N/E paged
+> tap-zone round trips retain only identical source dependencies and named frames.
+> K per-book mode/direction wiring omission is independently source-confirmed;
+> current baseline/product repair pending. Canonical eight behavior rows remain
+> the scope. Entry/loading unobserved branches and N source blur remain unaccepted;
+> independent K features held. No full replacement/performance/all-product claim.
+
 
 > Current physical boundary (2026-10-06): N HAP4e985d8c movie00ce727b
 > original0–626 reviewed: ordinary P20 root109–131; thumbnail/loading panel

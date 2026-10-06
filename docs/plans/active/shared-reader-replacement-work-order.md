@@ -3,46 +3,46 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T15:52:59.772248+08:00",
+  "updatedAt": "2026-10-06T18:52:14.524899+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "有限候选已提交 · 命名窗口路径接受，残留分支OPEN",
-  "title": "共享阅读器 · 入场系统栏与加载连续性",
-  "outcome": "用户明确要求实施修复并验证。验证方式已重订，Reader 执行 hold 解除；只处理已报告入场/加载能力，Koma WebDAV 候选保持原边界。",
+  "state": "ACTIVE · 三应用既有阅读行为一致性复核",
+  "title": "共享阅读器 · 三应用既有行为一致性复核",
+  "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
-  "scope": "共享窗口实际 writer 统一 entry/root/current 准入；保留宿主导航、根动画、几何、菜单、缩略图、预载和 Legacy。",
+  "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "共同生命周期修复已提交；原位置/超时已恢复",
-    "detail": "三宿主Kit同c0ad；实际writer/native颜色共用entry/root/current。当前原始区间和实际owner状态证据分别记录，不接受源短模糊/取消UI/全量替换。N P38/E P3/K本轮Catalogue1021/1与30000ms已实际恢复。",
-    "startedAt": "2026-10-06T13:35:00+08:00"
+    "title": "N/E既有选择与指示接入检查点已提交，继续K按书覆盖基线",
+    "detail": "N/E SettingsChoiceRow仅提供canonical value/options/selectAction；当前两个签名包已安装，普通Legacy/Shared即时菜单、冷启菜单与真实route已逐端观察，原P38/P3及Shared恢复。既有TapPolicy预览命名区间可按未变依赖保留。K按书覆盖遗漏仍未改，独立源评审已确认。",
+    "startedAt": "2026-10-06T17:42:20.819259+08:00"
   },
-  "nextAction": "Reader本轮已报告窗口/加载原因的有限候选已提交并恢复。按原用户成本/范围约束结束这轮专项投入，继续Koma现存WebDAV候选coldHistory/目录2页/恢复与范围提交；不把残留未接受分支改成通过。",
+  "nextAction": "固化当前有限证据文档检查点，读取K已确认的按书mode/direction接入及当前普通基线；复用现有loadForComic/saveForComic/reset队列，不增加Kit接口或功能。其他未接受入场分支保持独立。",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
       "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
-      "hap": "4e985d8ce28eb5225386f9453702d8c441c885d531c2e39ca02177a02de7f21c",
-      "build": "当前c0ad共同源码签名构建成功",
-      "install": "15:21当前bm install正文明确成功；传入HAP SHA及bundle读回匹配，未清数据",
-      "verdict": "命名窗口/正常未缓存加载区间接受，源模糊未接受",
+      "hap": "9e29172a9ef0236db9b65dbac012aed90ea36d8bf4fc47192182c12dfa48822e",
+      "build": "签名构建成功；构建时HEAD/HAP/source/diff绑定；对应所有源字节现已按独立提交保存，内容未变；不以提交作为新增运行证据",
+      "install": "本次checked install正文成功；传入HAP SHA及bundle version读回匹配，无数据清理命令",
+      "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "当前P20movie00ce72原始0–626：root109–131；加载133–196保留缩略图/底板，197原图与撤提示，207/208Reader色、209隐藏；Back440先恢复源色、441–460根返回。实际新缓存129186/178806/146728/169112B。源81–89短模糊90恢复；成因未建立，不接受整体源图连续性。dd712d原C/A/B窗口依赖未改，沿原命名证据。",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions.",
       "remaining": "取消motion但同初始请求加载的UI分支未实际命中，状态执行支持源码修复；不以普通等待路径接受该分支。",
-      "appHead": "1547385797b55fcf0b46eedf9b7b604b16b3df71"
+      "appHead": "2058c714138de5ef2f2d5ea5778484f2911bb2a1"
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
       "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
-      "hap": "a87b85705f4f935ba143f680ce13d69dc59396034fe788bad585624baef8485d",
-      "build": "当前c0ad共同源码签名构建成功",
-      "install": "15:21当前bm install正文明确成功；传入HAP SHA及bundle读回匹配，未清数据",
-      "verdict": "共同候选已安装；沿用未改变依赖的命名窗口区间",
+      "hap": "f1c50cc311e3fce384b3cfa79effbe2ed719899058cfd48e1f80d638a853e7d3",
+      "build": "签名构建成功；构建时HEAD/HAP/source/diff绑定；对应所有源字节现已按独立提交保存，内容未变；不以提交作为新增运行证据",
+      "install": "本次checked install正文成功；传入HAP SHA及bundle version读回匹配，无数据清理命令",
+      "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "原3013movieebaedc1–683的Window/native-style/pending-route依赖与当前c0ad相同；保留其有限C/A/B窗口/返回结论。当前改动只影响既有两加载背景predicate，不改writer/导航/phase；当前新包构建/安装不是新视觉验收。",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions.",
       "remaining": "E未挂载取消及motion取消背景UI仍未观察；实际共同状态执行单独记录，不作全量通过。",
-      "appHead": "1d17150cd297553bf040368a9e5e2fb46d964afb"
+      "appHead": "58f55e57e8aac9e5ae77fa631634d2fe1b1a0c32"
     },
     {
       "name": "Koma",
@@ -55,33 +55,69 @@
       "verdictKind": "open",
       "runtime": "当前Release0c753e普通Terra上篇movie0a6cca4–445：系统push75–91、92Reader色、95–139准备/140原图、121隐藏；center261先显状态区262–264chrome。当前chaptermoviee77fa20–755：上下篇60↔71及显式准备130–148/366–370；原图149/371；源色454先于系统pop455–473，重入/最终返回至619，同Detail稳定至755。不宣称章节全程保图或FPS。",
       "remaining": "K没有此缩略图入口，本次Window绑定普通无thumbnail/current章节。Kit资源窗口未改变，旧已接受序列冻结；WebDAV候选保留待前置有限收尾。",
-      "appHead": "67abfeb988fbd8e6a822f217aeb0195781e47f13"
+      "appHead": "af437984b9d127a4dd4d8f6facfafc2b5471e3e6"
     }
   ],
   "gaps": [
     {
       "id": "reader-validation-strategy",
       "title": "验证策略与完整行为基准",
-      "status": "本轮有限方案/共同候选已执行提交 · 非整体Reader验收",
-      "kind": "candidate",
-      "detail": "行为标准/影响分类先于产品候选，命名原始区间按每个输出分别判定。共同窗口与加载原因已实施，三宿主范围提交/真实恢复完成；取消motion底板UI、E未挂载取消、N源短模糊及全量替换/FPS未接受。",
-      "action": "保留未接受分支；只有实际普通路径触发或区分成因的新证据才重开，不穷举时机/重测冻结区域；继续Koma已有候选。",
+      "status": "ACTIVE · 尚未完成要求的核验",
+      "kind": "active",
+      "detail": "N/E SettingsChoiceRow仅提供canonical value/options/selectAction；当前两个签名包已安装，普通Legacy/Shared即时菜单、冷启菜单与真实route已逐端观察，原P38/P3及Shared恢复。既有TapPolicy预览命名区间可按未变依赖保留。K按书覆盖遗漏仍未改，独立源评审已确认。",
+      "action": "固化当前有限证据文档检查点，读取K已确认的按书mode/direction接入及当前普通基线；复用现有loadForComic/saveForComic/reset队列，不增加Kit接口或功能。其他未接受入场分支保持独立。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
       "closedAt": null,
       "disposition": {
-        "state": "finite-source-and-named-runtime-candidate-delivered",
-        "recordedAt": "2026-10-06T15:52:59.772248+08:00",
-        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only",
+        "state": "reopened-by-user-unfinished-entry-verification",
+        "recordedAt": "2026-10-06T17:42:20.819259+08:00",
+        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only; named N/E implementation choice + cold actual route and paged tap-preview roundtrip",
         "unaccepted": [
           "cancelled-motion same-request loading backdrop UI",
           "E cancellation before child mount UI",
           "N source-thumbnail blur cause and source-image continuity",
           "all-mode/full-replacement/performance-superiority"
         ],
-        "reason": "既有用户明确要求有限收尾、避免继续扩展；不通过缓存重置/强延迟/撞取消时机代替实际普通路径条件。共同真正owner状态证据只证明对应逻辑。"
-      }
+        "reason": "最新用户要求完整既有阅读行为与三应用接入一致性复核；两个入场反例否定宽泛验收可信度，不是只关心两个问题。不得缩成入场专项。"
+      },
+      "candidatePlan": {
+        "recordedAt": "2026-10-06T17:42:20.819259+08:00",
+        "cause": "Index.openProductionThumbnail awaits NextNReaderEntryPreviewCapture.capture before presentProductionThumbnail; entryDeparturePreview uses pixels only as authorization carrier while entryPreview is null and root owns a separate sourceSnapshot.",
+        "reference": "NextE Index.openProductionThumbnail and NextEReaderLabPage.entryDepartureGuard/rootEntryHandoffHost retain exact live claim without a second captured preview.",
+        "change": "Remove productionReaderEntryPreview and async production capture; replace child entryDeparturePreview with callback to existing current claim/epoch/geometry authorization. Root snapshot disabled/failure retires the thumbnail claim as in current NextE, preserving the system push fallback.",
+        "impact": "NextN ordinary detail compact and full grid Shared entry, pending cancellation, selected-part landing/loading/return. Kit, NextE/Koma, Legacy, menus, geometry and resource windows unchanged.",
+        "disproof": "root flight becomes system push despite live thumbnail, wrong spread landing, source/status changes before flight, load background lost, or Back/reentry revives stale flight; any observation rejects candidate.",
+        "validation": "Existing full behavior table: cross-host common lifecycle and each Shared-vs-Legacy production call chain first; current package normal/interrupted entry movies plus runtime gaps determined from actual source differences."
+      },
+      "sourceFindings": [
+        {
+          "behavior": "菜单与实时设置",
+          "finding": "改前NextN SettingsPage.readerBackendLabel与NextE ReaderSettingsPage.readerBackendLabel读取canonical readerImplementation，ReaderBackendMenu却读取process-local backendSelection.current；process默认Shared且restore不写该state，冷启保存Legacy可产生文字/勾选不一致。 通用行独立接收trailingText和dropdownMenuBuilder，菜单又接收独立selected；无法约束两者同源。NextN 9f0780465e (2026-09-22) 把label/persistence迁入canonical但保留Debug menu check，实际引入双源。此前2026-09-25 ledger已提出单选组件收口，本次编辑前源码仍无SettingsChoiceRow，不以旧文档承诺视作实现。",
+          "change": "Implemented native-backed host SettingsChoiceRow: current value/options/selectAction only; internal label/check projection. ReaderBackendMenu/readerBackendLabel removed from both settings pages. Native rows/menu, canonical persistence and Debug rehearsal writers unchanged.",
+          "impact": "N/E reader implementation row/menu projection only. Existing native geometry, order, close scheduling, persisted write and debug writer stay unchanged. Recheck both immediate/reopened menus, persisted cold start and actual ordinary backend route; other dropdowns are unchanged.",
+          "disproof": "文字/勾选不一致、选择不保存、普通入口选错实现或现有Debug override改变均否决。",
+          "implementationState": "accepted for named ordinary N/E choice/reopen/cold actual route; committed N2322a0c7/Ece238ccd (choice files only); no push",
+          "runtimeEvidence": "settings-choice-current-acceptance-receipt.json; N9e29172a/Ef1c50cc3, checked install transfer SHA/body; N Legacy cold rkit absent/P38, Shared cold rkit present38/40; E Legacy cold absent/P3, restoredShared present3/124. Bound whole screens visually reviewed; other settings not generalized."
+        },
+        {
+          "behavior": "菜单与实时设置 / 点按区域指示",
+          "finding": "N/E ReaderTapPolicy仅resolver，preview=[]与revision=0使ReaderSurface.onTapZonePreviewChanged不能显示。各自Legacy已有四字段Monitor与同一resolver.regions；Koma已有共享preview/revision接入。",
+          "change": "N/E补传自身同一resolver生成的规范化区域，在已就绪设置变更时增加既有预览信号；复用Kit现有显示/关闭/自动阅读暂停。",
+          "impact": "直接改变设置后区域指示；间接暴露chrome、自动阅读/翻页阻断及关闭指示后的动作。保留同一session/ReaderSurface/rail identity，无窗口writer/entry/URI/preload/menu option/geometry改动。",
+          "disproof": "开局无设置变化就弹指示、区域与点击动作不符、重复弹出、关闭后不能翻页、设置恢复失败、页树重挂或入场退化均否决。",
+          "implementationState": "N ordinary recovery movie42502f frames0-767 and E roundtrip af56f0 frames0-671 reviewed; changed preview appears, stays after sheet close, consumes first tap without action, next menu tap/Back restores P38/P3. Other layouts/inversion/auto-read not generalized. Committed N2058c714 (with separate direct departure candidate) / E58f55e57; all bound source bytes unchanged."
+        },
+        {
+          "behavior": "Koma 宿主能力 / 书籍模式与方向覆盖",
+          "finding": "Legacy ReaderPage initialize loadForComic, persistPreferences saveForComic and ReaderSettingsContent passes seriesOverrideActive/onResetSeriesOverride. Shared KomaReaderLabPage initialize load global, preference queue save global, sheet omits override/reset inputs. Existing per-book override is ignored and Shared mode changes affect global defaults. Current owned store APIs already implement narrow override.",
+          "change": "NOT EDITED; independent source review and same-book current baseline before minimal host wiring. No new Kit API or preference schema.",
+          "impact": "K production Shared initialization, bottom mode action, own settings mode/direction, restore-default and return/cold reentry; global defaults/other books and Debug isolation are dependent behavior.",
+          "disproof": "Book choice changes another book/global defaults; existing override ignored; reset leaves override or reopens wrong policy; new writer publishes after close or creates Debug per-book data.",
+          "implementationState": "independent source review confirmed omission; current per-book baseline pending, product unmodified"
+        }
+      ]
     },
     {
       "title": "共同裁切改动的受影响路径",
@@ -533,26 +569,34 @@
   },
   "closure": {
     "closedAt": "2026-10-05T16:55:55+08:00",
-    "kind": "finite-candidate-with-explicit-unaccepted-branches",
-    "authority": "用户最新要求尽快收尾、结束无止境延伸并释放各软件功能开发时间",
+    "kind": "reopened-entry-verification",
+    "authority": "2026-10-06用户要求继续核验全部已报告问题，禁止未完成即结束",
     "fullReplacementAchieved": false,
     "performanceSuperiorityProven": false,
-    "currentDelivery": "三宿主c0ad共同窗口/加载源码候选及命名运行证据已提交；未接受分支保留，不是全量替换结论",
+    "currentDelivery": "既有c0ad源码与命名证据保留；当前源等待链反例重开相关入口结论。",
     "deferredOutcomesRemainUnresolved": true,
-    "readerSpecificWorkActive": false,
+    "readerSpecificWorkActive": true,
     "bindingReceipt": "package5-finite-handoff-binding.json",
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
     "latestFiniteCheckpointAt": "2026-10-06T15:52:59.772248+08:00",
-    "currentBindingReceipt": "reader-current-postcommit-binding.json",
-    "currentRestorationReceipt": "reader-current-physical-restoration.json"
+    "currentBindingReceipt": "settings-choice-current-acceptance-receipt.json",
+    "currentRestorationReceipt": "reader-current-physical-restoration.json",
+    "reopenedAt": "2026-10-06T17:42:20.819259+08:00"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
     "review": "reader-entry-loading-current-reviewed.json",
     "binding": "loading-backdrop-c0ad-package-binding.json",
     "postcommitBinding": "reader-current-postcommit-binding.json",
-    "restoration": "reader-current-physical-restoration.json"
-  }
+    "restoration": "reader-current-physical-restoration.json",
+    "settingsChoice": "settings-choice-current-acceptance-receipt.json",
+    "directDepartureMovieReview": "nextn-thumb-rail-rolling-return-current-review.json",
+    "tapPreviewReviews": [
+      "nextn-tap-zone-current-review.json",
+      "nexte-tap-zone-current-review.json"
+    ]
+  },
+  "activeId": "reader-validation-strategy"
 }
 -->
 
@@ -624,16 +668,16 @@ data.
 
 下表是所有 Reader 包的基准；每包必须明确哪些行受影响。未受影响且证据仍适用的行沿用，不反复测试；缺少影响理由的行不能略过。当前命名运行结论与未接受分支只取顶部当前包行，不由这张基准表默认通过。
 
-| 行为 | 要判定的用户效果 / 失败标准 | 必要场景与证据 |
-| --- | --- | --- |
-| 普通入场、缩略图入场、返回 | 有有效缩略图走源到目标的根转场；无参数保留系统入场；禁止先全屏再在 Reader 内缩放。入场期间源系统栏与背景不能提前跳变；退出先准备当前源，再返回 | 缩略图单页/双页对应槽位与伴页渐显；无缩略图普通入口；同源返回。原帧要覆盖第一次点击、第一次系统栏变化及交接，不只看最终 bounds |
-| 加载及图片连续性 | 等待原图时有真实反馈及保留缩略图/已有图，背景不在进度中消失；已显示的当前请求不残留旧加载层；正常切换不丢图 | 已缓存、本地下载/归档、真实未缓存在线；初次获取和保图重载分开。不得清缓存/强延迟来制造方便结果，无法证明未缓存时不冒称未缓存 |
-| 翻页与滚动预载 | 持续翻过初始窗口后仍滚动准备邻页；当前页/方向正确；不能仅初始五页可用、之后每页黑帧/重复加载 | 序列跨过配置预载窗口并继续，再反向；使用快速滑动，约每秒三次，不能连点。日志绑定真实 source/request；本地与网络取得、解码/显示分开归因 |
-| 缩略图栏与状态更新 | 页码选择更新既有栏的局部状态；滚动不中断，圆角和页码表达保留宿主约定；不能用重挂整页/整栏达到结果 | 同一版本/内容/视口下连续正反滑；审阅栏的实际运动和当前选择，追原有节点身份/状态 owner。没有可用帧指标时不宣称满帧/超越旧版 |
-| 菜单与实时设置 | 阅读方向、翻页模式、双页、原图各自保持原按钮语义；设置选中值/勾选/底栏/实际行为同步，不要求退出重进 | 对照宿主旧菜单及完整选项；分别从底栏/原设置入口改变并返回操作。Koma 的四布局选项不能被方向菜单替代 |
-| 原图及处理结果切换 | 原图→普通→原图保持可读，反馈正确，旧回调不能覆盖新请求；处理失败不冒充成功 | 原图开关往返、同 URI 重载、保留图与失败分支；系统超分仍沿用户跳过指令，不做模型/模拟器服务试错 |
-| 进度、历史、快速重开与回退 | 选中页和保存页一致；返回原详情，重开/冷启恢复正确；Shared/Legacy 选择和值/菜单一致，旧版功能不被共用 provider 破坏 | 原有数据不清；按已知普通入口操作并核对持久结果/当前版本绑定。Debug Want 不作为生产默认选择持久化证明 |
-| Koma 宿主能力、媒体动作 | 章节、自动阅读、源/本地下载、保存/分享保持宿主语义；不能因共用把菜单/数据职责迁入 Kit | 受影响时核对对应普通动作；原面板取消证据不接受实际保存/发送。未受影响的当前已接受命名路径不重跑 |
+| 行为 | 要判定的用户效果 / 失败标准 | 必要场景与证据 | 当前源码对照与有限结论 |
+| --- | --- | --- | --- |
+| 普通入场、缩略图入场、返回 | 有有效缩略图走源到目标的根转场；无参数保留系统入场；禁止先全屏再在 Reader 内缩放。入场期间源系统栏与背景不能提前跳变；退出先准备当前源，再返回 | 缩略图单页/双页对应槽位与伴页渐显；无缩略图普通入口；同源返回。原帧要覆盖第一次点击、第一次系统栏变化及交接，不只看最终 bounds |共同ReaderTrialWindow/root-ready与native style门；N原重复截图等待删除、E已有live claim、K无thumbnail走系统入口。当前N179696f0–1631已审阅：根飞行102–119、原帧131–138无状态图标、显栏194、返回1498P37，另普通手势恢复P38；不证明全量系统写入顺序、源blur原因或FPS。 |
+| 加载及图片连续性 | 等待原图时有真实反馈及保留缩略图/已有图，背景不在进度中消失；已显示的当前请求不残留旧加载层；正常切换不丢图 | 已缓存、本地下载/归档、真实未缓存在线；初次获取和保图重载分开。不得清缓存/强延迟来制造方便结果，无法证明未缓存时不冒称未缓存 |共同两hasLoadingBackdrop predicate绑定请求而非motion；ReaderSession保留displayed URI。旧命名片保留；取消motion同请求UI仍未命中。 |
+| 翻页与滚动预载 | 持续翻过初始窗口后仍滚动准备邻页；当前页/方向正确；不能仅初始五页可用、之后每页黑帧/重复加载 | 序列跨过配置预载窗口并继续，再反向；使用快速滑动，约每秒三次，不能连点。日志绑定真实 source/request；本地与网络取得、解码/显示分开归因 |ReaderPagedSession.reconcile每次更新调schedulePreload，签名含unit/topology/navigation/depth/indexes。三host远端预载复用自身缓存，本地skip网络；源准备不等于解码/视觉连续。 |
+| 缩略图栏与状态更新 | 页码选择更新既有栏的局部状态；滚动不中断，圆角和页码表达保留宿主约定；不能用重挂整页/整栏达到结果 | 同一版本/内容/视口下连续正反滑；审阅栏的实际运动和当前选择，追原有节点身份/状态 owner。没有可用帧指标时不宣称满帧/超越旧版 |共同Rail保留Scroller、索引与列表owner；页码不进入Surface/unit key。三host半径/数值文字命名修改证据冻结；源身份不作为FPS。 |
+| 菜单与实时设置 | 阅读方向、翻页模式、双页、原图各自保持原按钮语义；设置选中值/勾选/底栏/实际行为同步，不要求退出重进 | 对照宿主旧菜单及完整选项；分别从底栏/原设置入口改变并返回操作。Koma 的四布局选项不能被方向菜单替代 |N/E原ReaderModeControl保持四模式；monitor把半模态canonical变更送原session。K四布局/WEBTOON映射。N/E原点按区域提示已补接，分页Kindle↔RIGHT_LEFT命名显示/关闭/首次tap消费/返回区间已审阅；实现选择改用单value公用行，两端即时/重开/冷启与真实route接受。未推广到所有设置组合。 |
+| 原图及处理结果切换 | 原图→普通→原图保持可读，反馈正确，旧回调不能覆盖新请求；处理失败不冒充成功 | 原图开关往返、同 URI 重载、保留图与失败分支；系统超分仍沿用户跳过指令，不做模型/模拟器服务试错 |E remote-original provider与默认variant分离；N无EH远端原图，原按钮是当前可见页临时停增强，Kit同可见unit覆盖且导航/关闭清理。K无此处理按钮。系统超分继续跳过。 |
+| 进度、历史、快速重开与回退 | 选中页和保存页一致；返回原详情，重开/冷启恢复正确；Shared/Legacy 选择和值/菜单一致，旧版功能不被共用 provider 破坏 | 原有数据不清；按已知普通入口操作并核对持久结果/当前版本绑定。Debug Want 不作为生产默认选择持久化证明 |N两端HistoryRepository即时发布/排队；共享epoch gate seal/flush。E两端GalleryReadProgressSettings即时coalescing，退出flush。K观察位置由catalogHost/host持久化。N/E当前实现切换与cold普通重开恢复原P38/P3已接受；其他进度模式按既有命名证据。 |
+| Koma 宿主能力、媒体动作 | 章节、自动阅读、源/本地下载、保存/分享保持宿主语义；不能因共用把菜单/数据职责迁入 Kit | 受影响时核对对应普通动作；原面板取消证据不接受实际保存/发送。未受影响的当前已接受命名路径不重跑 |K章节prepare有身份/取消/当前会话校验，四模式从宿主Preferences映射；三host自备share/save provider，Kit取消/目标锁定。面板/取消旧证据不能推为真实保存或发送。 |
 
 #### 必要时采用的操作链与停止条件
 
