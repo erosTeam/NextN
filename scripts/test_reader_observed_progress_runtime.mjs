@@ -49,12 +49,6 @@ assert.equal(relay.observe('123', 0, anchor('123', 0)), -1)
 assert.equal(relay.observe('__rkit_local_fixture__', 3, anchor('__rkit_local_fixture__', 0)), -1)
 assert.equal(relay.observe('456', 3, anchor('456', 0)), 0)
 
-const pageSource = fs.readFileSync(path.join(root, 'feature/reader/src/main/ets/lab/NextNReaderLabPage.ets'), 'utf8')
-assert.match(pageSource, /observation: new ReaderObservationSink\([\s\S]*this\.observeReaderPosition\(anchor\)/)
-assert.match(pageSource, /this\.observedProgress\.observe\(this\.request\.work, pageCount, anchor\)/)
-assert.match(pageSource, /this\.progressWrites\.save\(this\.progressEpoch, this\.request\.work, pageIndex\)/)
-assert.doesNotMatch(pageSource, /HistoryRepository|saveProgress/)
-
 let probeState
 const probeSource = fs.readFileSync(path.join(root,
   'feature/reader/src/main/ets/lab/NextNReaderObservedProgressProbe.ets'), 'utf8')

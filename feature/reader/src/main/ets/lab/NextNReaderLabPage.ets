@@ -3,7 +3,7 @@ import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTap
 import { common } from '@kit.AbilityKit'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
-  ReaderReadingAnchor, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
+  ReaderObservedPosition, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase, ReaderEntryPreviewSource,
   ReaderRootEntryHandoff, ReaderRootEntryHandoffHost } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
@@ -500,7 +500,7 @@ export struct NextNReaderLabPage {
       return
     }
     this.rootEntryHandoff.sync(entry, this.hostRouteActive() && !this.closeRequested && !this.hostClosing,
-      this.readerThumbnailTransition.waitingReaderContent(), this.rootEntryHandoffHost())
+      this.readerThumbnailTransition.waitingReaderContent(), this.rootEntryHandoffHost(), this.session?.snapshot() ?? null)
   }
 
   aboutToDisappear(): void {
@@ -973,9 +973,13 @@ export struct NextNReaderLabPage {
     }, 420)
   }
 
-  private observeReaderPosition(anchor: ReaderReadingAnchor): void {
-    const pageCount = this.session?.snapshot().unit?.pageCount ?? 0
-    const pageIndex = this.observedProgress.observe(this.request.work, pageCount, anchor)
+  private observeReaderPosition(position: ReaderObservedPosition): void {
+    // Content handoff is independent of whether this page's progress was saved.
+    if (!this.rootOwnedEntryTarget || this.entryTransition === null || !this.entryTransition.pending()) {
+      ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
+        this.getUIContext(), this.request.work, position.anchor.sourceIndexHint + 1)
+    }
+    const pageIndex = this.observedProgress.observe(this.request.work, position.pageCount, position.anchor)
     if (pageIndex < 0) return
     if (this.currentSourceIndex !== pageIndex) {
       this.currentSourceIndex = pageIndex
@@ -988,13 +992,6 @@ export struct NextNReaderLabPage {
       this.translationPreferenceRevision += 1
     }
     this.progressWrites.save(this.progressEpoch, this.request.work, pageIndex)
-    if (!this.rootOwnedEntryTarget || this.entryTransition === null || !this.entryTransition.pending()) {
-      ReaderThumbnailTransitionCoordinator.notifyReaderImageReady(
-        this.getUIContext(),
-        this.request.work,
-        pageIndex + 1,
-      )
-    }
     console.info(`[NextNReaderLab] observed_progress gallery=${this.request.work} page=${pageIndex}`)
   }
 
@@ -1205,8 +1202,8 @@ export struct NextNReaderLabPage {
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND,
               onClose: (context: ReaderCloseContext | null): void => this.closeTrial(false, context),
-              observation: new ReaderObservationSink(
-                (anchor: ReaderReadingAnchor): void => this.observeReaderPosition(anchor)),
+              observation: new ReaderObservationSink(null,
+                (position: ReaderObservedPosition): void => this.observeReaderPosition(position)),
               activitySink: new ReaderActivitySink(
                 (visible: boolean): void => this.syncChromeVisible(visible),
                 (busy: boolean): void => { this.setEnhancementInteractionBusy(busy) }) })

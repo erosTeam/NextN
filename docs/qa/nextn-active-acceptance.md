@@ -53,11 +53,26 @@
 > remain rejected. Kitb118406/K8acd8756/E5f632e72 scoped source checkpoints match
 > built bytes; this N commit syncs the same Kit. N/E build hashes e7d7b4d/71ef5efe
 > are not installed, compile-only. Current original Shared/Library102P1 restored.
-> Receipt koma-title-current-acceptance-receipt.json. Next safe action: only
-> existing unresolved entry-writer/motion-cancel evidence
-> conditions and one feasible ordinary chain; frozen valid boundaries not rerun.
-> Canonical eight rows remain scope; unhit delayed-loading/cancel/fallback
-> unaccepted; independent K features held. No full replacement/performance claim.
+> Receipt koma-title-current-acceptance-receipt.json. Current cancelled-entry
+> source checkpoint: strict common same-initial-request displayed-content
+> consumption, N terminal entry identity retained through existing route lifetime,
+> and N canonical observedPosition/readiness before unchanged progress dedupe.
+> Current signed N0c011a3c/E24a8a30 installed with positive bodies/native identity;
+> identical common bytes compiled by K (no install/host change). N cached continuous
+> P28 actual observation00:12:49.437/cancel49.515 releases the root into body;
+> N normal singleLTR moving/waiting/revealing/finished once00:10:50. E ordinary P3
+> cancelled during moving57.279 then body/Back sameDetail: not a normal-finished
+> sample. Original N P38/LTR and E P3 restored. Every exposed row is reconciled
+> in ignored cancelled-readiness-current-acceptance-receipt.json. N reverse
+> oversized proxy changes and native mode-switch black frame247 remain OPEN;
+> clipped-source side-slide is not valid full-tile geometry comparison. Pending
+> same-request cancellation and N later duplicate-progress native paths unhit;
+> whole native Window chronology/full replacement/FPS unaccepted. Independent
+> source reviews found no concrete blocker; prior independent movie review failed
+> with429 and gives no visual result. All temporary proof logs removed. Next safe
+> action: scoped same-byte source checkpoint, then current pending-load evidence
+> and one bounded ordinary cancellation opportunity; no cache clear/delay/sweep.
+> Frozen settings/title/rail remain frozen; independent K product work held.
 
 
 > Earlier physical boundary (2026-10-06; later source finding above supersedes

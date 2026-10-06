@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T22:45:13.523679+08:00",
+  "updatedAt": "2026-10-07T00:29:14.791276+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "ACTIVE · 三应用既有阅读行为一致性复核",
@@ -12,11 +12,11 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "K标题能力已接受并提交；核清剩余入场证据条件",
-    "detail": "原五行已具当前证据：实际1→2→3→2→1、章节101→102后同Shared直接返回重入、Legacy同状态基线不变；三消费者一致Kit编译。只接受这些边界，不等于全Reader。",
-    "startedAt": "2026-10-06T21:30:18.761185+08:00"
+    "title": "修正入场取消后丢失的真实内容交接",
+    "detail": "共享取消交接、N终态对象寿命与同页通知/保存去重分离已完成源码和三消费者构建；当前普通录屏已逐项归档。N缓存取消后的实际交接可见，反向尺寸/Window全程和未命中加载取消仍OPEN，不扩大结论。",
+    "startedAt": "2026-10-06T23:10:00.397131+08:00"
   },
-  "nextAction": "只检查未接受入场writer/真实motion取消的现有日志、源码条件和证据缺口，确定一个可执行普通操作链；无新前提不重复已冻结路径、不调时长穷举。",
+  "nextAction": "Commit the reviewed same-byte Kit and N/E/K host/dependency source checkpoint, preserving unrelated WIP; then inspect the existing pending-load entry evidence and current ordinary source route for one bounded same-request cancellation opportunity. No new timing sweep, cache clear, provider delay, frozen tests or broad validation claim.",
   "hosts": [
     {
       "name": "NextN",
@@ -81,7 +81,7 @@
       "status": "ACTIVE · 尚未完成要求的核验",
       "kind": "active",
       "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。 N旧blur/spinner根因已由原帧和旧Index分支建立；当前残留清理的warmFullGrid/原38恢复已观察，源连续性仅命名路径。 K title leaf同页/同章/实际翻页/Legacy提取与同Shared直接返回重入现有命名路径接受。",
-      "action": "只检查未接受入场writer/真实motion取消的现有日志、源码条件和证据缺口，确定一个可执行普通操作链；无新前提不重复已冻结路径、不调时长穷举。",
+      "action": "完成当前取消入场交接包；按现有行为记录核对正常入场、真实内容、反向返回。独立K生产功能保持暂停。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -230,7 +230,72 @@
           "buildBinding": "nextn-production-pending-residue-cleanup-binding.json",
           "runtimeEvidence": "nextn-production-pending-residue-cleanup-acceptance-receipt.json;originalP1movie890a34ad,source1–97/root98/return510;root原像素与独立notes纠正130/131图标可见→132不可辨识、500仍缩回；actual38movie4113268d原444及DetailContinueP38。frame0外来Library排除，HDC/media时钟不混用。"
         }
-      ]
+      ],
+      "entryRemainingEvidencePlan": {
+        "recordedAt": "2026-10-06T22:53:20.344090+08:00",
+        "boundary": "OPEN cancelled entry loses existing native displayed-content acknowledgement",
+        "newlyActionable": "Installed N d08f874c ordinary continuous P28 logs native observed_progress at22:59:53.895, layout cancellation at53.995, and root still waitingReaderContent at23:00:00.551; cache hits mean this is not uncached-loading acceptance.",
+        "existingBehavior": "Root thumbnail flight finishes before content handoff. Actual already-visible original content releases the retained opening proxy, including after motion cancellation. Cancellation without visible original content retains the initial same-request loading backdrop. Source Window/color admission and reverse return retain current owners. Normal verified geometry uses one flight and one140ms reveal.",
+        "owners": "ReaderSurface canonical observedPosition requires native displayed assets/current visible range. Host pending-entry gate suppresses first notification; observation dedupe does not replay after cancellation. ReaderRootEntryHandoff currently handles waiting decode only. EntryTransition already captures navigation/selection/topology/slot/load/asset identity.",
+        "impact": "Direct: common canonical cancelled-readiness predicate/RootEntryHandoff and N/E snapshot argument; N Index terminal cleanup now reuses E route lifetime. Indirect: N normal/cancelled image content IDs ReaderPagedViewport726/730 use entryId, so clearing causes identity replacement; keeping existing object prevents remount. N currentWindowEntry sees terminal transition rather than null: readerEntryWindowReady pending=false remains equivalent, and independent root-settled admission unchanged. Source claim still released at settle; close/disappear/background/safe-mode/navigation retire existing transition. E already retains object; K no RootEntryHandoff caller/compile dependency. N observation callback directly exposed: same-page delivered original acknowledgement no longer depends on progress-save dedupe; progress mapper/store/write queue unchanged. Existing Surface canonical position requires current selection/visible original; no metadata/commanded-anchor notification. No menu/rail/provider/preload/Legacy change.",
+        "reject": "No actual motion cancellation or no pending same request does not accept the row; backdrop loss during loading or premature window presentation rejects the route.",
+        "limits": "Rotation capability sample rejected because actual viewport unchanged. Cached continuous sample is a current lost-readiness counterexample, not delayed-loading backdrop proof. Whole Window writer chronology/full replacement/FPS remain unaccepted.",
+        "nextAction": "Commit the reviewed same-byte Kit and N/E/K host/dependency source checkpoint, preserving unrelated WIP; then inspect the existing pending-load entry evidence and current ordinary source route for one bounded same-request cancellation opportunity. No new timing sweep, cache clear, provider delay, frozen tests or broad validation claim.",
+        "capabilityObservation": "Checked rotation command returned no size change; N root remained1320x2232; not an accepted cancellation sample. Native CUA unavailable but scoped host-window capture independently works and contains current native Library.",
+        "selectedAlternative": "Existing continuous List onDidScroll cancels entry while pendingPosition=false and positionInFlight=false, with no provider/session mutation. Use native continuous mode temporarily, ordinary current Gallery thumbnail, one fast within-image swipe during loading, Back and exact original LTR/P38 restoration. No forced delay/cache clear or timing sweep.",
+        "declaredRun": {
+          "name": "nextn-current-continuous-entry-motion-cancel-root",
+          "sourceIndex": 27,
+          "expected": "one real cancellation while same initial request remains loading; backdrop retains through decode; normal Back reaches same source",
+          "notAcceptance": "command exit, absent cancel marker, already displayed asset, or endpoint-only screenshots",
+          "restoration": "same gallery P38 and pagedLTR plus originalportrait"
+        },
+        "sourceCause": "Native observation occurred while entry.pending; host suppressed readiness. Layout then cancelled entry, RootEntryHandoff ignored cancelled phase and unchanged anchor was deduplicated. No later actual notification reached root waiting state.",
+        "implementation": "Shared strict current native displayed predicate and once-only handoff; N/E pass same snapshot; N Index retains terminal entry exactly as E current precedent until existing route retirement. Additionally N reuses E existing observePosition callback/readiness-before-progress ordering; persistence still uses unchanged NextNReaderObservedProgress on position.anchor. No new monitor, timer, copied state, force refresh, geometry or Window writer. All temporary proof logs removed.",
+        "acceptanceRows": [
+          {
+            "behavior": "Already observed cancelled entry",
+            "expected": "Native displayed observation then cancellation, root progresses out of waiting without second flight/reveal",
+            "reject": "root still waiting after current original visible, proxy persists, second flight or synthetic ready"
+          },
+          {
+            "behavior": "Same-request pending cancellation",
+            "expected": "No ready until canonical native original visible; initial loading backdrop remains",
+            "reject": "metadata/commanded anchor/cancel/retry/wrong slot/unit/navigation/topology releases proxy; unhit row remains unaccepted"
+          },
+          {
+            "behavior": "Normal decoded entry",
+            "expected": "Normal verified-geometry one rootflight/140ms reveal; terminal entryId retained so selected native bitmap does not remount; source bar visibility/colors retained until existing root-settled admission. No new image-acquisition or duplicate Stage from removing entry identity.",
+            "reject": "pre-flight fullscreen/color jump/internal zoom/black frame/early proxy removal/menu or geometry regression"
+          },
+          {
+            "behavior": "Reverse and restoration",
+            "expected": "Back fences late forward callbacks, root reverse reaches same source, original N P38/LTR and E P3 restored",
+            "reject": "late forward readiness during reverse, blank/incorrect return or preference/progress loss"
+          },
+          {
+            "behavior": "Later current native observation after motion cancellation",
+            "expected": "Current actual displayed original position may release the existing root waiting state even when its page index was previously persisted; same-page progress writes remain deduplicated. Anchor-only/metadata/obsolete requests do not become readiness.",
+            "reject": "Persisted page equality suppresses current displayed readiness, or non-displayed anchor releases it. Source disposition alone is not native-path acceptance."
+          }
+        ],
+        "validation": "Review exact diff; execute changed real-owner state suites (not UI contracts); compile E/N/K with identical Kit bytes; install N/E current signed builds and one declared ordinary normal/cancel/return route per applicable host using original recordings. No timing sweep/cache clear/artificial provider delay; never accept whole Reader from named routes.",
+        "implementationState": "CurrentcleanN0c011a3c installed positivebody/nativecom.erosteam.nextn after canonical observedPosition bridge; normal initialsingleLTR and moving/waiting/revealing/finished once at00:10:50, cachedcontinuousP28 actualobserved49.437/cancel49.515 at00:12, Back sameGrid. OriginalP38 restored00:13:49 Detail ContinueP38; originalLTR native menu readback in original240/247/250. Native mode-change black frame247 retained as existing OPEN layout-switch issue, not entry acceptance. E24a8a30 currentordinaryP3 entry cancelled_from=moving at00:17:57.279; actualbody andBacksameDetailP3 observed, not relabelled normal-finished row. K common dependency compile-only; no reinstall. All3 commoncleanbytes match. Whole Window, uncached same-request cancellation and returngeometry not broadly accepted.",
+        "causeStatus": "Established additional host cause: fb2ed diagnostic N cancelled_sync23:44:29.558/.562 waiting=false; no later sync before rootwait close36.161. Index.finishProductionReaderEntry602-609 clears transition/gallery/index on cancellation; Lab loses entry/rootOwnedEntryTarget so subsequent root-phase monitor cannot reach RootEntryHandoff. E752-762 already releases source claim/guard but retains terminal transition through route disappearance. Further call-chain disposition: N observeReaderPosition uses observeAnchor, and NextNReaderObservedProgress.observe returns -1 for same sourceIndex before readiness; Surface anchor signature includes observedSelectionId so a fresh same-page native observation can be emitted while host persistence dedupe suppresses it. E uses existing observePosition (current native displayed original frames) and notifies before persistence. Existing N root phase monitor does not monitor snapshot; it only recovers the already-observed arrival race.",
+        "diagnosticImpact": "Observation only in existing cancelled sync/predicate; no new traced state, subscriptions, refresh, proxy geometry, lifecycle phase, readiness predicate or host admission change. E/K unchanged by temporary diagnostics. Native event evidence, not UI acceptance; same required rows remain unaccepted.",
+        "lateObservationPlan": {
+          "recordedAt": "2026-10-07T00:08:32.810868+08:00",
+          "reference": "E Lab689–707 and ReaderSurface238–254/current snapshot.observedPosition134–153",
+          "cause": "N same-page persistence return precedes readiness and N registers anchor-only callback; readiness and persistence are different outcomes. CurrentSelection native observation can change with same source index.",
+          "edit": "Use existing ReaderObservedPosition import/sink second callback, notify before unchanged progress mapper/save; no mapper/schema/core change.",
+          "disproof": "Wrong unit/selection/non-visible frame notifies, progress duplicate writes, original entry/reverse/window behavior changes.",
+          "testDisposition": "Existing real mapper/probe and write-gate/persistence logic retained. Four obsolete page-source regex assertions that locked anchor callback spelling retired, not rewritten to fit candidate; no UI contracts or new tests."
+        },
+        "temporaryDiagnosticDisposition": "8fffa161 IDs demonstrated captured=current initial native request and rootwaiting sync; all temporary ReaderEntryProof logs removed. Formal0c011a3c compiled from currenthashboundsource. Reviewer429 finite originalmovie review failed without result; primary reviews actual original intervals, no independentUI acceptance asserted.",
+        "receipt": "ignored reader-entry-statusbar-20261006/cancelled-readiness-current-acceptance-receipt.json",
+        "acceptanceDisposition": "Five predeclared rows reconciled: N cached continuousP28 actual handoff accepted narrowly; pending same-request and N late duplicate-progress native paths unhit. N normal flight/reveal observed, whole Window row unaccepted. N reverse has oversized proxy changes; clipped-source side-slide invalid as full-source geometry comparison. N originalP38/LTR and E originalP3 restored. E ordinaryP3 actually cancelled during moving, not normal-finished. K compile dependency only. No package closure or full replacement.",
+        "sourceReviewDisposition": "Independent terminal lifetime and late canonical observation reviews find no concrete source blocker; coordinator only completes WAITING_READER_CONTENT, reverse cannot complete forward handoff. Malformed/debug work-scope edge has no production path. Prior independent movie review429 has no result; primary original PTS review retained."
+      }
     },
     {
       "title": "共同裁切改动的受影响路径",

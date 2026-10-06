@@ -603,9 +603,9 @@ struct Index {
     const transition = this.productionReaderEntryTransition
     if (transition === null || (transition.phase !== 'finished' && transition.phase !== 'cancelled')) return
     this.productionReaderEntryClaim = null
-    this.productionReaderEntryTransition = null
-    this.productionReaderEntryGalleryId = 0
-    this.productionReaderEntryPageIndex = -1
+    // Motion settling does not retire content handoff or native image identity.
+    // As in NextE, retain the terminal entry through this route; the existing
+    // route/disappearance cleanup retires it with the Reader.
     this.applyRecordedReaderPresentation()
   }
 
