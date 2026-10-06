@@ -43,11 +43,21 @@
 > index37 entry: movie4113268d original444 shows38/40, actual Detail continuesP38.
 > Earlier index38 route selected39 and its restoration claim is rejected. Receipt
 > nextn-production-pending-residue-cleanup-acceptance-receipt.json is authoritative
-> for this named slice. Next action: scoped source checkpoint, then disposition of
-> the recorded K Reader title/chapter metadata discrepancy from native Legacy
-> and existing adapter ownership; no broad retest or K feature restart. Canonical
-> eight rows remain the scope; unhit delayed-loading/cancel/fallback unaccepted;
-> independent K features held. No full replacement/performance/all-product claim.
+> for this named slice; N83048 scoped checkpoint is committed. K title omission
+> now reuses its Legacy leaf via one optional read-only Binding slot. Current
+> r4 Releaseed1c7e7d transfer/positive install and native identity bound; actual
+> body1→2→3→2→1, current picker101→102, direct sameShared BackLibrary/Continue102P1/
+> reveal/BackLibrary and same-state Legacy extraction accepted for original five
+> title rows. Root and independent original reviews agree; r3 stale body title,
+> slider-only inference, failed Library restore and backend-switch substitute
+> remain rejected. Kitb118406/K8acd8756/E5f632e72 scoped source checkpoints match
+> built bytes; this N commit syncs the same Kit. N/E build hashes e7d7b4d/71ef5efe
+> are not installed, compile-only. Current original Shared/Library102P1 restored.
+> Receipt koma-title-current-acceptance-receipt.json. Next safe action: only
+> existing unresolved entry-writer/motion-cancel evidence
+> conditions and one feasible ordinary chain; frozen valid boundaries not rerun.
+> Canonical eight rows remain scope; unhit delayed-loading/cancel/fallback
+> unaccepted; independent K features held. No full replacement/performance claim.
 
 
 > Earlier physical boundary (2026-10-06; later source finding above supersedes

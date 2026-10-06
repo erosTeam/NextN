@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06T21:18:52.775891+08:00",
+  "updatedAt": "2026-10-06T22:45:13.523679+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "ACTIVE · 三应用既有阅读行为一致性复核",
@@ -12,16 +12,16 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "N生产等待残留已清理，当前网格入场/返回与原进度已读回",
-    "detail": "Index2+/19-，当前HAPd08f874c；P1原片890a34ad源1–97/根飞行98/Reader/同Grid返回510已按行为审阅。原始系统像素与全windowwriter时序分开，不作whole-status通过。正确index37普通Reader38/40及Detail继续P38已恢复；错误index38曾进39明确撤回。",
-    "startedAt": "2026-10-06T20:41:57+08:00"
+    "title": "K标题能力已接受并提交；核清剩余入场证据条件",
+    "detail": "原五行已具当前证据：实际1→2→3→2→1、章节101→102后同Shared直接返回重入、Legacy同状态基线不变；三消费者一致Kit编译。只接受这些边界，不等于全Reader。",
+    "startedAt": "2026-10-06T21:30:18.761185+08:00"
   },
-  "nextAction": "限定提交N这份源证明清理及当前行为记录；随后仅处置已记录K普通Reader标题/章节metadata与Legacy差异，先查既有chrome/adapter所有权与显示条件决定真缺口或合法差异，不开展整产品重测。未命中取消/延迟加载保持未接受，不撞时长。",
+  "nextAction": "只检查未接受入场writer/真实motion取消的现有日志、源码条件和证据缺口，确定一个可执行普通操作链；无新前提不重复已冻结路径、不调时长穷举。",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
-      "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
+      "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
       "hap": "d08f874c9e3b2da197099fbaebec659de55ff085d236b76673fce45734ce56a1",
       "build": "一次签名Debug构建成功；10个源SHA/currentdiff与HAP绑定；只删除N obsoleteproductionwaitfields/overlay，无Kit/其他host源码变更",
       "install": "checked正向install正文、传入SHA和bundle1.0.5/code7匹配；installedentry.hap digest读取permissiondenied，不声称已读回digest",
@@ -29,12 +29,20 @@
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route.",
       "remaining": "Whole-entryWindow visibility/colorwriter时序不由MOV像素接受；真实取消motion同请求等待UI/失败fallback未命中；不宣称uncachedness/FPS。",
-      "appHead": "2058c714138de5ef2f2d5ea5778484f2911bb2a1"
+      "appHead": "83048c1a7e42938b0bbb72b5e8ecdb14afcb20ce",
+      "titleConsumerBuild": {
+        "hapSha256": "e7d7b4d9d58973000224edb9fe8605bf5c25f415a5dde1b4f2bc77955a0716b8",
+        "buildExit": 0,
+        "scope": "Source and three-consumer compilation only; no N/E install or new native acceptance",
+        "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nextn-koma-title-r4-consumer-signed.binding.json"
+      },
+      "installedKit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
+      "appHeadLayer": "source build base before this title-only gitlink/docs sync; new commit does not imply new installed runtime"
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
-      "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
+      "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
       "hap": "f1c50cc311e3fce384b3cfa79effbe2ed719899058cfd48e1f80d638a853e7d3",
       "build": "签名构建成功；构建时HEAD/HAP/source/diff绑定；对应所有源字节现已按独立提交保存，内容未变；不以提交作为新增运行证据",
       "install": "本次checked install正文成功；传入HAP SHA及bundle version读回匹配，无数据清理命令",
@@ -42,20 +50,28 @@
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions.",
       "remaining": "E未挂载取消及motion取消背景UI仍未观察；实际共同状态执行单独记录，不作全量通过。",
-      "appHead": "58f55e57e8aac9e5ae77fa631634d2fe1b1a0c32"
+      "appHead": "5f632e720a0f7ed38293700631833e5031cedce2",
+      "titleConsumerBuild": {
+        "hapSha256": "71ef5efe5e64d1d79abb484c74f95f73159ce8f9d3ad8149e5bff693ec79a2d2",
+        "buildExit": 0,
+        "scope": "Source and three-consumer compilation only; no N/E install or new native acceptance",
+        "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nexte-koma-title-r4-consumer-signed.binding.json"
+      },
+      "installedKit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877"
     },
     {
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
-      "kit": "c0ad970acfee2a98b65f1b163f3fb1f9f976c877",
-      "hap": "c168144caa39a4bd377cb130688b76501eb3f357f788c22912fb3bcf6db3d7f9",
-      "build": "r2签名Release构建成功；本地HAP debug=false；6个source SHA和提交blob逐字节匹配原构建，不重复构建未变字节",
-      "install": "19:32 checked bm install正文成功且传入SHA匹配；bm读回Release0.1.0/code1，无debug字段，未清数据",
-      "verdict": "本书设置命名即时/底栏/重入/Reset/隔离路径接受；总体Reader替换仍OPEN",
+      "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
+      "hap": "ed1c7e7dba5b3966a4db11bc7b6cd7364a319493efc41266fb4b7f87477848b2",
+      "build": "当前签名Release r4 debug=false；3host/4Kit源SHA与提交blob等同构建；无需重建未变字节",
+      "install": "22:24 checked positive install正文/传入ed1c7e7d SHA/bm0.1.0code1；普通nativeLibrary已观察，无清数据",
+      "verdict": "本书设置与标题命名路径接受；总体Reader替换仍OPEN",
       "verdictKind": "open",
-      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。",
+      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。",
       "remaining": "单图Catalogue102不证明双图spread/RTL页序；Debug强制布局/队列竞争为真实逻辑内存协作者证据，非native视觉或立即kill持久化。共享Reader其他既有未接受分支保持OPEN。",
-      "appHead": "58a2e303626f60e8321ac2a85b45574e653fa77e"
+      "appHead": "8acd87562d8ef1da29ede67dc69bd407dc9f06d4",
+      "installedKit": "b118406db06598c9550a53db01b767223d6d6bf5"
     }
   ],
   "gaps": [
@@ -64,16 +80,16 @@
       "title": "验证策略与完整行为基准",
       "status": "ACTIVE · 尚未完成要求的核验",
       "kind": "active",
-      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。 N旧blur/spinner根因已由原帧和旧Index分支建立；当前残留清理的warmFullGrid/原38恢复已观察，源连续性仅命名路径。",
-      "action": "限定提交N这份源证明清理及当前行为记录；随后仅处置已记录K普通Reader标题/章节metadata与Legacy差异，先查既有chrome/adapter所有权与显示条件决定真缺口或合法差异，不开展整产品重测。未命中取消/延迟加载保持未接受，不撞时长。",
+      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。 N旧blur/spinner根因已由原帧和旧Index分支建立；当前残留清理的warmFullGrid/原38恢复已观察，源连续性仅命名路径。 K title leaf同页/同章/实际翻页/Legacy提取与同Shared直接返回重入现有命名路径接受。",
+      "action": "只检查未接受入场writer/真实motion取消的现有日志、源码条件和证据缺口，确定一个可执行普通操作链；无新前提不重复已冻结路径、不调时长穷举。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
       "closedAt": null,
       "disposition": {
         "state": "reopened-by-user-unfinished-entry-verification",
-        "recordedAt": "2026-10-06T21:18:52.775891+08:00",
-        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only; named N/E implementation choice + cold actual route and paged tap-preview roundtrip; K existing per-book Store named own-sheet/bottom write/ordinary+cold reentry/global+other-book isolation/Legacy read/reset restoration",
+        "recordedAt": "2026-10-06T22:45:13.523679+08:00",
+        "runtimeAccepted": "Named window/normal loading/KReleaseentry+chapter+return only; named N/E implementation choice + cold actual route and paged tap-preview roundtrip; K existing per-book Store named own-sheet/bottom write/ordinary+cold reentry/global+other-book isolation/Legacy read/reset restoration; K current title leaf named ordinary/chapter/body-swipe/Legacy/direct-reentry paths",
         "unaccepted": [
           "cancelled-motion same-request loading backdrop UI",
           "E cancellation before child mount UI",
@@ -134,7 +150,65 @@
             "acceptanceGap": "Resolved before commit: actual bottom HostModeControl -> onPolicyChanged -> preference queue was executed on the same installed Release, immediate own-sheet readback/reentry/reset/Library restored. Independent consecutive original intervals0–255/0–831 plus root review retained; no new product edit/build. Root whole-image frame214 icons inference was corrected by exact raw crop; no unsupported all-state statement."
           },
           "historyEvidence": "Shared global load/save was introduced by f4a17aa0e (2026-09-13). Existing narrow per-book store and Legacy sheet/reset were introduced by 4e9e16b0 (2026-09-22), whose seven changed files omit KomaReaderLabPage. Current blame still assigns Shared load/save to Sept13. This proves missed host integration, not author motive or a historical runtime acceptance.",
-          "runtimeEvidence": "koma-per-book-current-acceptance-receipt.json; K QA build/install/original native captures, ui-review-result/notes and exact production logic evidence, all with explicit layer limits."
+          "runtimeEvidence": "koma-per-book-current-acceptance-receipt.json; K QA build/install/original native captures, ui-review-result/notes and exact production logic evidence, all with explicit layer limits.",
+          "titleCandidatePlan": {
+            "recordedAt": "2026-10-06T21:30:18.761185+08:00",
+            "state": "accepted for declared title leaf paths; coherent Kit/K/E checkpoints and this N sync commit",
+            "userScope": "Existing user authorization: complete three-host Shared-versus-Legacy behavior comparison and fix source-proven missing behavior; no new Reader feature or UI redesign.",
+            "existingBehavior": "K Legacy ReaderChrome.TopBar always presents title (fallback reader_title_default), pageText plus current chapter title or localized chapter ordinal. Chrome opens hidden on ordinary entry, reveal shows both bars, chapter switch replaces current title/ordinal/page together, closing retains the existing return/progress path. N/E Legacy top bars intentionally show centered page count and action groups; book/chapter title is a K-owned leaf.",
+            "cause": "KomaReaderLabAdapter configs retain title/chapterTitles/current key and ReaderUnit.title contains combined metadata. Shared ReaderChrome.build renders only centered page/count and has no host title placement. No title preference or suppressed-loading condition exists. This is a confirmed missing display integration, not absent data or a fetch delay.",
+            "change": "Extract the existing K title/page/chapter Column into one pure K presentation leaf used by Legacy and Shared. Add one optional host title builder to the existing ReaderSurface/ReaderChrome extension pattern, fed only from the canonical current unit/anchor. With no builder, retain exact current Blank and centered page/default status presentation. Read K current metadata from existing in-memory adapter config without copying full page/chapter arrays on every page publication. No title Local state, observer, timer, parsing of combined title, new queue, catalog I/O, or second chrome owner.",
+            "parentTree": "Stable ReaderSurface owns chrome visibility, session snapshot and top/bottom overlay placement. Shared ReaderChrome owns fixed top background/inset/56vp and existing back/share/settings/more 44vp actions. Host title occupies only the existing flexible Blank region. Existing center page is omitted only when host title includes that same canonical page; default centered page/enhancement unaffected. K Legacy own ReaderChrome keeps all parent/action/sheet/bottom ownership and uses the extracted same Column.",
+            "unchangedGeometry": "Current fixed top height/inset/background/position and 44vp action bounds; original action order/menus/callbacks; K title Column spacing2, title14 medium/maxLines2/balanced, subtitle11/ellipsis and original4/8 padding; Reader body, bottom controls, thumbnail rail, source window, entry/return geometry/system-bar writers, preferences/progress stores unchanged. Shared K has existing extra Share action; keep it and accept narrower remaining title width only from current action geometry, not by changing action placement.",
+            "impact": "Direct: K title leaf and its current page/chapter text. Exposed: K Legacy extraction/reveal, Shared reveal/hide, chapter switch and page changes, action reachability and ordinary return/reentry. N/E compile the shared extension but do not supply it; their exact default rendering branch and callbacks must remain unchanged. No core/provider/preload/gesture/window/navigation writes are added.",
+            "baseline": "Same ordinary Long Catalogue/Catalogue102 P1/1 own-settings captures under .hermes-artifacts/20261006-reader-per-book-review/legacy-own-settings-baseline and shared-own-settings-baseline: both root com.honjow.koma/EntryAbility/pages/Index [0,117][1320,2232], portrait1320x2232; raw screenshots personally reviewed. Legacy shows Long Catalogue/1 / 1 · Catalogue102, Shared only1 / 1. Kitc0ad identical; K58a changed only preference integration, not Legacy title or Shared chrome implementation, so the retained baseline applies to this display boundary.",
+            "acceptance": "One coherent source/diff review; compile all three consumers once with identical Kit bytes. On current installed K Release: ordinary same-book reveal/own sheet/reveal state compared with baseline; switch adjacent chapter via existing native host picker and require current chapter/title/page together; return/reopen original Catalogue102/P1; ordinary Legacy same-book title extraction retains baseline; restore original Shared backend/Library progress. Use existing other ordinary multi-page book for page number updates if reachable without import/data writes; lack of this evidence remains explicit. One current complete action interval and terminal native layouts, no per-click screenshots. Native writer/FPS/full-replacement not inferred.",
+            "disproof": "Any wrong book/chapter or stale page after navigation; metadata copy/I/O per-frame; title overlaps actions/systembar or changes bar/action/body geometry; frozen mode/settings/menu/entry strategy changes; title state writer or forced tree reconstruction; N/E default path changes; or failed ordinary return/restoration rejects candidate.",
+            "limits": "Catalogue102 single-page chapter alone does not prove multi-page or spread/RTL order; separate existing three-page body cycle accepts its current page-title update only. Original settings evidence frozen; no whole-product retest/feature queue.",
+            "independentReview": "Pre-edit source-plan and r4 read-only Binding source review reconciled; independent-r4-body-review, remaining-review and direct-reentry-review plus root original evidence now cover the named title rows. No broad runtime claim.",
+            "builderForwardingCorrection": {
+              "recordedAt": "2026-10-06T13:48:19.317679+00:00",
+              "evidence": "First coherent K build succeeded, but ReaderSurface direct BuilderParam-to-BuilderParam assignment emitted a new initialization warning. Official arkts-builderparam requires a decorated Builder initialization; existing HostModeControl is the source precedent.",
+              "change": "Add only a stateless @Builder HostTitleControl forwarding a single field-wise object literal and initialize child with conditional lexical arrow calling it. Undefined remains undefined for N/E default branch.",
+              "impact": "Same optional leaf pipeline only; no snapshot/local state, writer, route, timer, geometry or runtime policy change. Rebuild once after exact diff reconciliation, before installation.",
+              "conditionalInitializationFinding": "R2 warning remains on conditional arrow initialization. Mirror existing private ReaderChrome modeControl contract: constant decorated forwarder + presence boolean/default empty Builder. Public Surface optional title API retained. Presence is a derived Param, not independent state."
+            },
+            "sourceReview": "root-reactive-source-review.json + binding-forwarding-review.json; official API20 read-only Binding forwarded unchanged; canonical snapshot is sole authority",
+            "buildBinding": "/private/tmp/koma-production-20261005/.hermes-artifacts/20261006-reader-title-review/current-release-r4-binding.json",
+            "hap": "ed1c7e7dba5b3966a4db11bc7b6cd7364a319493efc41266fb4b7f87477848b2",
+            "consumerBuilds": {
+              "NextN": {
+                "hapSha256": "e7d7b4d9d58973000224edb9fe8605bf5c25f415a5dde1b4f2bc77955a0716b8",
+                "buildExit": 0,
+                "scope": "Source and three-consumer compilation only; no N/E install or new native acceptance",
+                "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nextn-koma-title-r4-consumer-signed.binding.json"
+              },
+              "NextE": {
+                "hapSha256": "71ef5efe5e64d1d79abb484c74f95f73159ce8f9d3ad8149e5bff693ec79a2d2",
+                "buildExit": 0,
+                "scope": "Source and three-consumer compilation only; no N/E install or new native acceptance",
+                "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nexte-koma-title-r4-consumer-signed.binding.json"
+              }
+            },
+            "reactiveCorrection": {
+              "recordedAt": "2026-10-06T22:21:50.499940+08:00",
+              "evidence": "Current r3 body-page-cycle-root MOV912b6a7d: PTS3.392 distinct P2 image/bottom2 and4.600 distinct P3/bottom3; host title remains1/3. Initial slider-only finding was withdrawn; earlier alleged Library restore also rejected because terminal remained Reader. Current body cycle ends actual native Library/ContinueP1.",
+              "owner": "ReaderSurface @Localstate publishes canonical snapshots to ReaderChrome @Paramsnapshot. Existing bottom page reads this.snapshot directly and updates. New title slot projects primitives across undecorated lexical-arrow callbacks and stateless Builders; the snapshot dependency is lost in that projection. Literal forwarding alone did not preserve it through callback boundaries.",
+              "theory": "Official arkts-builder API20 callback-passing: Binding plus UIUtils.makeBinding read callback evaluates live decorated state in the consuming UI node. Keep a read-only Binding<ReaderTitleParams> whose getter reads ReaderChrome.snapshot; forward the same Binding object through every callback, dereference only inside K decorated title Builder. No second state authority.",
+              "change": "Slot type Binding<ReaderTitleParams>; nullable unitKey handles no-current-unit without stale fallback. Chrome constructs read-only callback binding; Surface and K lexical arrows forward it unchanged. K decorated Builder reads binding.value and passes field-wise values to existing pure leaf helper. Existing adapter getter accepts nullable key and immediately returnsnull. No other source path.",
+              "impact": "Only newly added title leaf projection and shared slot typing. Direct K current page/chapter display; exposed original predeclared five rows retained. No core/session subscriber/navigation/gesture/window/preload/progress/preferences/menu/remount writes. N/E omit slot, keep existing default branch. Recompile all consumers for public type change.",
+              "acceptance": "Same predeclared ordinary/chapter/multipage/Legacy/no-hook rows; actual body swipes with Chrome continuously visible must update 1→2→3→2→1 plus ordinary return. Chapter must reach current-unit ready subtitle before return, not just change a queued catalog counter. Original globalShared/LongCatalogue102/P1 restored.",
+              "reject": "Any stale title/page/chapter, new title state/monitor/subscriber/forced refresh/remount, changed default N/E branch, altered actions/menus/geometry, or wrong terminal restoration rejects capability."
+            },
+            "acceptanceReceipt": "/private/tmp/koma-production-20261005/.hermes-artifacts/20261006-reader-title-review/koma-title-current-acceptance-receipt.json",
+            "runtimeEvidence": "r4 actual distinct BODY1→2→3→2→1 with title/bottom synchronization; picker101→102 current subtitles/counters; direct sameShared BackLibrary/Continue102P1/reveal/BackLibrary without backend switch; ordinary Legacy current same-state baseline unchanged; originalShared and Catalogue102P1 restored. Root/independent reconciliation retained. No FPS/nativeN/E/fullReplacement.",
+            "sourceCheckpoint": {
+              "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
+              "Koma": "8acd87562d8ef1da29ede67dc69bd407dc9f06d4",
+              "NextE": "5f632e720a0f7ed38293700631833e5031cedce2",
+              "NextN": "this scoped sync commit; current runtime/build bases retained in exact receipt"
+            }
+          }
         },
         {
           "behavior": "普通/缩略图入场 / 源图连续性",
@@ -410,6 +484,11 @@
   ],
   "evidence": [
     {
+      "id": "koma-title-current",
+      "label": "K标题：实际翻页/章节/Legacy/同Shared直接返回与提交绑定",
+      "path": "koma-title-current-acceptance-receipt.json"
+    },
+    {
       "id": "koma-per-book-current",
       "label": "K本书设置接入：命名即时/重入/隔离/Reset与提交绑定",
       "path": "koma-per-book-current-acceptance-receipt.json"
@@ -601,7 +680,7 @@
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "只完成当前已报告入场窗口/加载能力的有限修复和命名证据；不扩展菜单/性能/资源窗口/全产品重测。未接受分支明确保留，不能以构建、提交或已缓存图像结果代偿。",
+  "stopRule": "只完成当前既有行为一致性对照中有源码因果与影响依据的缺口；有效命名结果冻结。下一动作仅针对已登记未接受入场/加载分支的证据条件，不启动新功能/性能调参/全产品重测或按时长穷举。缺证据保留，不由构建或提交代偿。",
   "excluded": "保留现有宿主菜单、设置、数据、导航、根转场、默认选择与旧版回退；未切换默认、未推送、未操作实机。已知限制没有被标为通过。",
   "costNote": "不显示虚构完成百分比或费用。每项工时为已记录下界、历史覆盖不完整。本次剩余两项联合源码可行性核对另记录7分钟，未精确拆分，未伪分摊到单项工时。",
   "jointAssessmentHandling": {
@@ -617,14 +696,14 @@
     "authority": "2026-10-06用户要求继续核验全部已报告问题，禁止未完成即结束",
     "fullReplacementAchieved": false,
     "performanceSuperiorityProven": false,
-    "currentDelivery": "既有c0ad源码与命名证据保留；当前源等待链反例重开相关入口结论。",
+    "currentDelivery": "K原标题叶复用及页码/章节只读同源已按原五行接受；全Reader原未接受分支保留。",
     "deferredOutcomesRemainUnresolved": true,
     "readerSpecificWorkActive": true,
     "bindingReceipt": "package5-finite-handoff-binding.json",
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
-    "latestFiniteCheckpointAt": "2026-10-06T20:30:59+08:00",
-    "currentBindingReceipt": "koma-per-book-current-acceptance-receipt.json",
-    "currentRestorationReceipt": "reader-current-physical-restoration.json",
+    "latestFiniteCheckpointAt": "2026-10-06T22:45:13.523679+08:00",
+    "currentBindingReceipt": "koma-title-current-acceptance-receipt.json",
+    "currentRestorationReceipt": "koma-title-r4-chapters-direct-reentry-root/run-metadata.json",
     "reopenedAt": "2026-10-06T17:42:20.819259+08:00"
   },
   "currentEntryReceipts": {
