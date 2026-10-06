@@ -35,6 +35,12 @@ def main() -> None:
         stdout = str(command.get("stdout", ""))
         stderr = str(command.get("stderr", ""))
         combined = stdout + "\n" + stderr
+        args = argv[3:] if len(argv) >= 3 and argv[1] == "-t" else argv[1:]
+        is_install = bool(args) and (args[0] == "install" or args[:3] == ["shell", "bm", "install"])
+        if is_install:
+            output = combined.lower()
+            if "error:" in output or "[fail]" in output or "install bundle successfully" not in output:
+                fail(f"{name} installation did not report success")
 
         is_aa_test = any(argv[index:index + 3] == ["shell", "aa", "test"]
                          for index in range(max(0, len(argv) - 2)))
