@@ -118,9 +118,59 @@
 > source dark status312 before reverse, same FullPreview324–478. Terminal
 > root220[0,117][1320,2232]/P38 matches baseline. Permanent ready=true05.220
 > precedes chrome=true05.221; it does not independently timestamp native inset.
-> Portrait ordinary show/hide/Back accepted only. Next check changed zero-top/
-> landscape compatibility against actual policy/capability once; no timing sweep,
-> geometry/guard change, forced success or independent K production resume.
+> Portrait ordinary show/hide/Back accepted only. Zero-top modes remain
+> unaccepted: no actual simulator rotation from known -motion command, native
+> CUA inventory has no Emulator. Official policy allows zero areas/free-window
+> no-op; no guessed compatibility branch. Current N retained-Legacyfcdb0531
+> original1–478/all14 sheets reviewed (stale0 excluded), same bundle/root/P38
+> before/after as current Shareda258c835. Both retain pixels through contained
+> thumbnail growth/original fit and reverse; final original boundaries agree.
+> This accepts only this cached same-source geometry interval. Ordinary canonical
+> settings restoredShared, actual Lab/entryid5/observedpage37 and terminal same
+> FullPreviewP38 observed05:20:44–05:21:02. Failed1174 setup moved38→40 and was
+> rejected as route, then quick native gestures restored38. No product fix from
+> this pair/FPS/allgeometry claim. Next reconcile remaining source/receipt
+> boundaries, including non-owned E initial intent; no timing sweep/frozen replay
+> or K production resume.
+> Current E source/HAP d7cdffba correction removes the second async capture and
+> in-content preview, reuses ordinary openClaimed/root handoff/overlayOpacity,
+> draws the existing root proxy above either navigation, and delegates the sole
+> parent SystemBarStyle to the non-owned destination. Source/epoch/environment
+> guards, geometry/radius, initial hidden intent and current-target restoration
+> remain. The redundant post-departure sourceHidden recheck is removed; sole
+> root authorization still runs before departure. Ordinary N embedded content
+> has no child destination writer and is byte-preserved.
+> Retained failed old566/d54b59d7 source spinner/internal zoom/white109/black
+> return235–236 and initial728/0960cf47 premature close are not acceptance.
+> Partiald7/73af87d8 missed the first chrome action before finished; one1900ms
+> route correction, with source and other waits unchanged, supplies current
+> e4a626f5 whole0–574/all16 sheets (stale0–3 excluded): source4–107/root108+,
+> retained proxy130–132/sharp original133, icons189 before tools192, hide243,
+> retained body279–281, reverse282–300/same DetailP3 from301. Current native
+> moving58.696/cancelled58.772, chrome true00.503/false01.585, hidden Back02.209,
+> close_layout_ready=true02.258/colors restored02.261. This accepts the named
+> cancelled-entry pixels/chrome/current-target return only, not normal-finished
+> geometry. Current cancellation has no reason log; prior metadata-refinement
+> source probe remains a separate boundary, with guard/tolerance unchanged.
+> The same changed style dependency is separately verified on current d7
+> no-thumbnail0c1c5719 whole0–668/all19 sheets (stale0–2 excluded): source3–74,
+> explicit loader75–136/original137, icons202 before tools206, hidden279,
+> retained body324–325/same DetailP3 from326. Current07:07 native chrome
+> true12.493/false14.012, Back14.943/current-root ready14.995/restored14.997.
+> Actual E root[0,117][1320,2232]/visible page-2[673,1197][947,1583]/ContinueP3
+> retained in both routes. Old0b55de2e is not substituted for this changed style.
+> No missing backdrop or whole-body gap after actual image in these intervals.
+> Original screen timeout30000 read back07:12:51 after checked cleanup.
+> E four-file checkpointf593e88e matches installed d7 source hashes; N receipt
+> receipt checkpoint preserves unrelated K WIP. Existing five behavior rows
+> now carry named acceptance or native-unhit dispositions individually.
+> N explicit Debug retains awaited capture/entryPreview/optional2500ms probe,
+> black navigation above root proxy, child-default style and an eager parent
+> admission callback; ordinary direct embedded route does not use that branch.
+> Source-only finding remains unresolved: map its actual NhGalleryPage facts
+> and close context/lifetime before any narrow edit; no blind E patch replay.
+> Unhit pending/stale/fallback, zero-top/FPS/all-layout/whole replacement remain
+> unaccepted; no timing sweep, frozen replay, new capability queue or K resume.
 
 
 > Earlier physical boundary (2026-10-06; later source finding above supersedes
