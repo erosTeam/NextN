@@ -2114,13 +2114,16 @@ struct Index {
       this.readerDestinationVisible && !this.readerDestinationClosing && this.readerWindowRootSettled(false),
       this.appUsesDarkIcons() ? STATUS_BAR_DARK_CONTENT : STATUS_BAR_LIGHT_CONTENT,
       this.readerPresentationChromeVisible || this.readerPresentationCanvasDark
-        ? STATUS_BAR_LIGHT_CONTENT : STATUS_BAR_DARK_CONTENT)
+        ? STATUS_BAR_LIGHT_CONTENT : STATUS_BAR_DARK_CONTENT,
+      this.readerOverlay.activeReader.backend !== NextNReaderBackend.SHARED ||
+        !this.readerPresentationFullscreen || this.readerPresentationChromeVisible)
   }
 
   private readerTrialNavigationSystemBarStyle(): window.SystemBarStyle {
     return readerEntryStatusBarStyle(this.readerEntryTransition,
       this.readerTrialHostAlive && !this.readerTrialCloseRequested && this.readerTrialRootPresentationSettled(),
-      this.appUsesDarkIcons() ? STATUS_BAR_DARK_CONTENT : STATUS_BAR_LIGHT_CONTENT, STATUS_BAR_LIGHT_CONTENT)
+      this.appUsesDarkIcons() ? STATUS_BAR_DARK_CONTENT : STATUS_BAR_LIGHT_CONTENT, STATUS_BAR_LIGHT_CONTENT,
+      this.readerTrialWindow?.statusBarVisible() ?? true)
   }
 
   @Monitor('readerThumbnailTransition.presentationEpoch')

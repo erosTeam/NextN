@@ -526,7 +526,8 @@ export struct NextNReaderLabPage {
   private ownsTrialWindow(): boolean { return this.managesTrialWindow && !this.embedded }
 
   private rootWindowPresentationSettled(): boolean {
-    if (this.volumeDisposed || this.closeRequested || this.hostClosing) return false
+    if (this.volumeDisposed || this.closeRequested || this.hostClosing ||
+      !this.hostRouteActive() || !this.labVisibility.foreground) return false
     const root = this.readerThumbnailTransition
     return root.galleryId !== this.request.work || !root.active() || root.presentationSettledFor(this.request.work)
   }
@@ -547,7 +548,7 @@ export struct NextNReaderLabPage {
     if (visible) return // The before-show gate already applied host visibility.
     const statusVisible = !connectReaderPresentation().fullscreen || visible
     if (this.ownsTrialWindow()) this.trialWindow.setStatusBarVisible(statusVisible, (): boolean =>
-      !this.volumeDisposed && !this.closeRequested && !this.hostClosing && this.hostRouteActive() && this.labVisibility.foreground)
+      !this.volumeDisposed && !this.closeRequested && !this.hostClosing)
     else this.onStatusBarVisible(statusVisible)
   }
 
@@ -1243,9 +1244,9 @@ export struct NextNReaderLabPage {
         this.readerContent()
       }.titleBar(nextNHdsTitle($r('app.string.rkit_lab_title')))
       .systemBarStyle(readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
-        this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF'),
+        this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF', this.trialWindow.statusBarVisible()),
         readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
-          this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF'))
+          this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF', this.trialWindow.statusBarVisible()))
       .hideTitleBar(this.request.readingChrome)
       .onBackPressed((): boolean => {
         if (!this.request.readingChrome) return false

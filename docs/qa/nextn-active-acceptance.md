@@ -69,10 +69,45 @@
 > same-request cancellation and N later duplicate-progress native paths unhit;
 > whole native Window chronology/full replacement/FPS unaccepted. Independent
 > source reviews found no concrete blocker; prior independent movie review failed
-> with429 and gives no visual result. All temporary proof logs removed. Next safe
-> action: scoped same-byte source checkpoint, then current pending-load evidence
-> and one bounded ordinary cancellation opportunity; no cache clear/delay/sweep.
-> Frozen settings/title/rail remain frozen; independent K product work held.
+> with429 and gives no visual result. All temporary proof logs are removed.
+> Current status-intent owner5b9014cc is identical in all3. N673ae263/Ee3f51352/
+> K Release3a32ff76 all compiled/installed; original Nd68984ab0–597,
+> E929d35b30–685 and Ke81137a20–679 complete ordinary intervals were reviewed.
+> Named N/E white-before-hide flash is absent; show/hide/Back and original
+> N P38/E P3/K Catalogue102P1 observed. K retains its ordinary native slide
+> and no-thumbnail delay. These receipts do not accept all Window chronology,
+> uncached loading/cancellation, Debug, geometry, FPS or full replacement.
+> N toolbar193 precedes icon paint195; paint does not measure actual top-area
+> readiness. Raw N323–342 shows page-label removal, not pre-return displacement;
+> that suspicion is withdrawn. Proxy/body-fit claims remain limited.
+> Existing continuous geometry candidatesf715588a/ac0c8c90 stay uncommitted WIP,
+> byte-identical inall3 and included in these named HAPs. The first restores
+> the base's current-snapshot URI mount gate after the copied-frame candidate
+> caused100% loading stall, and uses only attested selected preview geometry;
+> the second reads the actual common Reader clip parent and reuses after-layout
+> measurement plus current canonical dimensions. Current finite E continuous
+> entry has actual original/Back but does not accept whole geometry, fast input,
+> mode switching or all system chrome. Earlier counterexamples stay retained
+> in the work order and ignored receipts, not as a new implementation queue.
+> E current observationf9ca2aaf/9f0648d3 whole0–684 identifies moved-rect cancel
+> ReaderPagedViewport863. Same-process geometry/decode logs prove preview200x282
+> fit620.4vp → original1280x1808 fit621.5vp at unchanged root/surface/viewport
+> 440x744. This is canonical metadata refinement, not a window resize in that
+> interval. Host/root source retains flight and hides live content through proxy
+> handoff; the cancel log alone does not justify loosening a geometry guard.
+> Exact one caller probe removed/source4bd9a204 restored. Checked04:22–04:23
+> restore installed clean Ee3f51352 successfully and cold ordinary Detail/root217
+> [0,117][1320,2232] observed, without data/settings/cache clearing. Later literal
+> retained-log read no longer contains26802 aftercold restore; no root-finish
+> timestamp inferred. Full bindings/findings remain in the current work order
+> and ignored status-intent-current-acceptance-receipt.json.
+> Frozen settings/title/rail stay frozen; independent K production remains held.
+> Package OPEN: natural pending cancellation, N late duplicate, actual N area,
+> non-owned Debug and required visual boundaries remain unaccepted. Existing
+> Shared/Legacy mode gap is deferred under its separate work-order disposition.
+> Next finite ordinary E P3→80ms→Back→1800ms whole interval addresses motion/route
+> cancellation only; no artificial latency, cache clear, repetition sweep,
+> fullscreen-first, internal zoom, remount or new feature scope.
 
 
 > Earlier physical boundary (2026-10-06; later source finding above supersedes

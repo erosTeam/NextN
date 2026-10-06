@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T00:29:14.791276+08:00",
+  "updatedAt": "2026-10-07T04:31:31.306233+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "ACTIVE · 三应用既有阅读行为一致性复核",
@@ -12,19 +12,19 @@
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "title": "修正入场取消后丢失的真实内容交接",
-    "detail": "共享取消交接、N终态对象寿命与同页通知/保存去重分离已完成源码和三消费者构建；当前普通录屏已逐项归档。N缓存取消后的实际交接可见，反向尺寸/Window全程和未命中加载取消仍OPEN，不扩大结论。",
+    "title": "保存三应用状态栏颜色修正；有限核验入场中返回",
+    "detail": "Common5b9014cc checkpoint saved inall3; no sourcebytes changed by Git advancement. E preview/original refinement mapped and root flight preserved byexisting owners. Next finite interrupted ordinaryP3 route only, frozen product surfaces untouched.",
     "startedAt": "2026-10-06T23:10:00.397131+08:00"
   },
-  "nextAction": "Commit the reviewed same-byte Kit and N/E/K host/dependency source checkpoint, preserving unrelated WIP; then inspect the existing pending-load entry evidence and current ordinary source route for one bounded same-request cancellation opportunity. No new timing sweep, cache clear, provider delay, frozen tests or broad validation claim.",
+  "nextAction": "Review exact status-intent checkpoint diffs, commit applicable hosts on common5b9014cc, then one predeclared ordinaryE P3 early-Back whole interval. No geometry/timer/guard tuning; N area and uncached cancellation limits remain explicit.",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
-      "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
-      "hap": "d08f874c9e3b2da197099fbaebec659de55ff085d236b76673fce45734ce56a1",
-      "build": "一次签名Debug构建成功；10个源SHA/currentdiff与HAP绑定；只删除N obsoleteproductionwaitfields/overlay，无Kit/其他host源码变更",
-      "install": "checked正向install正文、传入SHA和bundle1.0.5/code7匹配；installedentry.hap digest读取permissiondenied，不声称已读回digest",
+      "kit": "7326ade7da088b2517c96e0ce770ad1f9babbe01 + continuous candidate SHA10f0d26",
+      "hap": "2144ce4380270b7399eb633c8bad452e2740a1fe17466d0aa36a28044eec440c",
+      "build": "当前同字节候选签名构建成功；源码/HAP绑定；这是构建证据，不是运行时验收",
+      "install": "checked protocol正向install bundle successfully，原生bundle包身份已读；安装摘要读取未执行，不冒充已读回",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route.",
@@ -42,10 +42,10 @@
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
-      "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
-      "hap": "f1c50cc311e3fce384b3cfa79effbe2ed719899058cfd48e1f80d638a853e7d3",
-      "build": "签名构建成功；构建时HEAD/HAP/source/diff绑定；对应所有源字节现已按独立提交保存，内容未变；不以提交作为新增运行证据",
-      "install": "本次checked install正文成功；传入HAP SHA及bundle version读回匹配，无数据清理命令",
+      "kit": "7326ade7da088b2517c96e0ce770ad1f9babbe01 + continuous candidate SHA10f0d26",
+      "hap": "c2bc27103176b98830bcd63feca3e5c2e6a766e58621ec4438d5a939510a8a1f",
+      "build": "当前同字节候选签名构建成功；源码/HAP绑定；这是构建证据，不是运行时验收",
+      "install": "checked protocol正向install bundle successfully，原生bundle包身份已读；安装摘要读取未执行，不冒充已读回",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions.",
@@ -62,10 +62,10 @@
     {
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
-      "kit": "b118406db06598c9550a53db01b767223d6d6bf5",
-      "hap": "ed1c7e7dba5b3966a4db11bc7b6cd7364a319493efc41266fb4b7f87477848b2",
-      "build": "当前签名Release r4 debug=false；3host/4Kit源SHA与提交blob等同构建；无需重建未变字节",
-      "install": "22:24 checked positive install正文/传入ed1c7e7d SHA/bm0.1.0code1；普通nativeLibrary已观察，无清数据",
+      "kit": "7326ade7da088b2517c96e0ce770ad1f9babbe01 + continuous candidate SHA10f0d26",
+      "hap": "4019966f6578696149e178edd12b45e36c777eb29fa4a04ed4d531e41cdb4deb",
+      "build": "当前同字节候选签名构建成功；源码/HAP绑定；这是构建证据，不是运行时验收",
+      "install": "compile-only；本轮没有K安装或UI操作，原Library102P1保持冻结",
       "verdict": "本书设置与标题命名路径接受；总体Reader替换仍OPEN",
       "verdictKind": "open",
       "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。",
@@ -240,15 +240,16 @@
         "impact": "Direct: common canonical cancelled-readiness predicate/RootEntryHandoff and N/E snapshot argument; N Index terminal cleanup now reuses E route lifetime. Indirect: N normal/cancelled image content IDs ReaderPagedViewport726/730 use entryId, so clearing causes identity replacement; keeping existing object prevents remount. N currentWindowEntry sees terminal transition rather than null: readerEntryWindowReady pending=false remains equivalent, and independent root-settled admission unchanged. Source claim still released at settle; close/disappear/background/safe-mode/navigation retire existing transition. E already retains object; K no RootEntryHandoff caller/compile dependency. N observation callback directly exposed: same-page delivered original acknowledgement no longer depends on progress-save dedupe; progress mapper/store/write queue unchanged. Existing Surface canonical position requires current selection/visible original; no metadata/commanded-anchor notification. No menu/rail/provider/preload/Legacy change.",
         "reject": "No actual motion cancellation or no pending same request does not accept the row; backdrop loss during loading or premature window presentation rejects the route.",
         "limits": "Rotation capability sample rejected because actual viewport unchanged. Cached continuous sample is a current lost-readiness counterexample, not delayed-loading backdrop proof. Whole Window writer chronology/full replacement/FPS remain unaccepted.",
-        "nextAction": "Commit the reviewed same-byte Kit and N/E/K host/dependency source checkpoint, preserving unrelated WIP; then inspect the existing pending-load entry evidence and current ordinary source route for one bounded same-request cancellation opportunity. No new timing sweep, cache clear, provider delay, frozen tests or broad validation claim.",
+        "nextAction": "Review whole clip-parent E selected83/actualcontent/fastinput/Back Grid/Detail/P3LTR interval against original five rows, source chrome and actual measured geometry. Any visible counterexample rejects route; then only source-mapped necessary action.",
         "capabilityObservation": "Checked rotation command returned no size change; N root remained1320x2232; not an accepted cancellation sample. Native CUA unavailable but scoped host-window capture independently works and contains current native Library.",
         "selectedAlternative": "Existing continuous List onDidScroll cancels entry while pendingPosition=false and positionInFlight=false, with no provider/session mutation. Use native continuous mode temporarily, ordinary current Gallery thumbnail, one fast within-image swipe during loading, Back and exact original LTR/P38 restoration. No forced delay/cache clear or timing sweep.",
         "declaredRun": {
-          "name": "nextn-current-continuous-entry-motion-cancel-root",
-          "sourceIndex": 27,
-          "expected": "one real cancellation while same initial request remains loading; backdrop retains through decode; normal Back reaches same source",
-          "notAcceptance": "command exit, absent cancel marker, already displayed asset, or endpoint-only screenshots",
-          "restoration": "same gallery P38 and pagedLTR plus originalportrait"
+          "name": "nexte-current-continuous-pending-cancel59",
+          "sourceIndex": 58,
+          "expected": "Current same initial request still loading at actual motion cancellation; initial backdrop remains until canonical original visibility, one root flight, correct Back and original restoration",
+          "notAcceptance": "Already displayed/cache hit before cancellation, no cancel event, different anchor/request, or endpoint-only image",
+          "restoration": "Original E P3/LTR by own menu and ordinary source thumbnail; original N P38 unchanged",
+          "disposition": "Executed with current E24a8a30. Source visible until original264, root proxy from265; native id5 cancelled_from=layout00:33:49.832, original already visible. No visible pending-loading interval; row unhit, no acceptance. Original E P3/LTR restored via own menu and ordinary reentry00:35:10.589; rawframes270/281/500/540 and native DetailContinueP3 inspected."
         },
         "sourceCause": "Native observation occurred while entry.pending; host suppressed readiness. Layout then cancelled entry, RootEntryHandoff ignored cancelled phase and unchanged anchor was deduplicated. No later actual notification reached root waiting state.",
         "implementation": "Shared strict current native displayed predicate and once-only handoff; N/E pass same snapshot; N Index retains terminal entry exactly as E current precedent until existing route retirement. Additionally N reuses E existing observePosition callback/readiness-before-progress ordering; persistence still uses unchanged NextNReaderObservedProgress on position.anchor. No new monitor, timer, copied state, force refresh, geometry or Window writer. All temporary proof logs removed.",
@@ -294,7 +295,279 @@
         "temporaryDiagnosticDisposition": "8fffa161 IDs demonstrated captured=current initial native request and rootwaiting sync; all temporary ReaderEntryProof logs removed. Formal0c011a3c compiled from currenthashboundsource. Reviewer429 finite originalmovie review failed without result; primary reviews actual original intervals, no independentUI acceptance asserted.",
         "receipt": "ignored reader-entry-statusbar-20261006/cancelled-readiness-current-acceptance-receipt.json",
         "acceptanceDisposition": "Five predeclared rows reconciled: N cached continuousP28 actual handoff accepted narrowly; pending same-request and N late duplicate-progress native paths unhit. N normal flight/reveal observed, whole Window row unaccepted. N reverse has oversized proxy changes; clipped-source side-slide invalid as full-source geometry comparison. N originalP38/LTR and E originalP3 restored. E ordinaryP3 actually cancelled during moving, not normal-finished. K compile dependency only. No package closure or full replacement.",
-        "sourceReviewDisposition": "Independent terminal lifetime and late canonical observation reviews find no concrete source blocker; coordinator only completes WAITING_READER_CONTENT, reverse cannot complete forward handoff. Malformed/debug work-scope edge has no production path. Prior independent movie review429 has no result; primary original PTS review retained."
+        "sourceReviewDisposition": "Independent terminal lifetime and late canonical observation reviews find no concrete source blocker; coordinator only completes WAITING_READER_CONTENT, reverse cannot complete forward handoff. Malformed/debug work-scope edge has no production path. Prior independent movie review429 has no result; primary original PTS review retained.",
+        "continuousMountWaitPlan": {
+          "recordedAt": "2026-10-07T00:46:52.986856+08:00",
+          "boundary": "Existing unrotated uncropped whole-page continuous thumbnail entry; retained source/root/proxy and actual content handoff remain owners",
+          "existingBehavior": "Paged entry mounts its fitted content Stack before URI only for current eligible verified geometry. Root uses measured target; actual decode alone controls content release. Continuous ordinary cell/scroll/loading/failure/crop/rotation/zoom and return remain native owners; no synthetic target.",
+          "cause": "ContinuousCell574 gates the measurement subtree on URI, while ReaderSession publishes a copied host page before awaiting resolve/download. Therefore even a host-attested whole-page preview cannot supply a mounted measurable target until original asset URI delivery. Continuous imageAspectRatio278 separately ignores that preview geometry and uses0.75 when original dimensions unknown. This is a source-proven unnecessary wait; the full native2.3s delay is not attributed solely to it.",
+          "impact": "Direct shared ContinuousSurface only: selected current entry may mount the existing ZoomImage/PagedImage fitted Stack before URI; URI-delivered Image remains conditional inside same PagedImage. Existing positioning token epoch/selection/navigation/slot/load/asset fences and measured bounds remain unchanged. For unrotated uncropped original frames with current page, use existing readerPagedFrameAspectRatio, including parser-attested preview. Preserve existing manual crop/rotation/thumbnail and page-null geometry. E/N same shared caller; K compiled dependency, no root-handoff/entryTransition on its ordinary route. No catalog/provider/cache/preload/menu/rail/progress/Window/root owner or Legacy edits.",
+          "implementation": "Reuse ReaderEntryGeometryGate.frame and current ReaderContinuousEntryPosition.isCurrent for early selected whole nonrotated mount; no new state/timer/monitor/refresh. Reuse existing shared aspect function only when original/nonrotated/no frame or metadata crop/current page.",
+          "disproof": "Missing preview attestation/unknown geometry must not publish fallback target; stale positioning token/request must not mount early; decoded size change retains existing reflow/cancel. Premature fullscreen/color, internal zoom, blank handoff, missing loading backdrop or wrong Back rejects route.",
+          "acceptance": "Review current ordinary whole-source continuous entry plus one naturally not-yet-read source opportunity without cache reset or delayed provider; source/root flight, loading backdrop if actually pending, actual image, fast swipe, Back/same source and original P3/LTR restoration. All existing five rows remain; unhit pending cancel/native dedupe still unaccepted. Existing cropped/rotated/thumbnail geometry branches remain byte-identical; no frozen surface retest.",
+          "limits": "Original E59 and N routes do not prove all Window writer chronology, pending cancellation, complete reverse or FPS. Those remain explicitly unaccepted.",
+          "sourceReview": "Independent existing Luna exact-diff review finds no concrete blocker; asset0 promotion/token/crop invalidation/request callbacks remain current. ignored continuous-measured-entry-source-review.json. Source-only, no visual conclusion.",
+          "builds": "Clean same ContinuousSurfaceSHAf715588a/PagedViewportcleanfe9604cc all3; N e3d9946a/Eb79c42cd signedDebug, K986b1fb3 nonDebugRelease compile-only; exit0 bindings saved, probes removed. E checked positiveinstall/bm/currentroot; complete P83 path reviewed and rejected; runtime OPEN.",
+          "runtime": "Clean E b79c42cd P83 movieaa4b53d0 reviewed full declared action interval0–1151 by root; independent288–1977 andoriginal812–824. Actual native original appears153; prior candidate100% stall absent on this warm route. PackageREJECTED: proxy/native geometry change152→153 and source dark status icons153/light154; continuous→LTR body blank812–814 restored815. Fast input submitted but no page/scroll advance observed153–483; not input-effect acceptance. Back returns sameGrid/Detail and finalContinueP3; ordinary singleP3 moving/waiting/revealing/finished once. Pending uncached/N duplicate native remainUNACCEPTED.",
+          "counterexample": {
+            "movie": "continuous-measured-E-entry79-return.mov",
+            "sha256": "7147c5d68bc86d1efc23e41c44861d6f58e31f083d44100cc0ed374d55a48561",
+            "reviewedOriginalFrames": "0–647",
+            "expected": "Actual native current original eventually replaces retained preview/loading; correct flight alone insufficient",
+            "observed": "Loading100% remains at217–467; no canonical original handoff visible beforeBack; original currentDetailP3 retained",
+            "disposition": "REJECTED route; no speculative follow-up source edit"
+          },
+          "nativePresentationProbePlan": {
+            "state": "OBSERVED; temporary probes removed from all3 before current clean builds",
+            "question": "P79 root flight and100% transfer remained on thumbnail untilBack. Distinguish URI delivery, nativeImage completion/frame acknowledgement, continuous positioning/visibility/nativeReady gates, and actual host/root observed-content handoff.",
+            "existingEvidenceLimit": "production_part_presented skips cancelled entry; upper-case Reader capture omittedlower-case host diagnostics. Runner ordinarystdout tail8000. Narrow readback retains onlylaterP3. Own native persistent diagnostic directory lsPermissionDenied. Historical absencecannot establishlostcallback.",
+            "change": "Temporary console-only observations at existing PagedImage completed/report/failed and ContinuousList snapshot/position/presentation/measure/visible callbacks. No callback scheduling, predicates, state, componentidentity, timers, geometry, cache, menus, Window or route changes.",
+            "scope": "Shared exactbytes N/E/K, compilethreeconsumers. E existingordinarycontinuoussource routeonly; restoreoriginalP3/LTR. N38/K102untouched.",
+            "boundedRun": "One inherited P79 entry/swipe/Back chain, targetedstreaminghilog andcontinuoushostrecording. Currentcachemaychangecondition; do notclaimuncached/pendingcancel unless actualevents establishit. No timing/coordinate/cache/provider sweep.",
+            "decision": "No furtherproductfix untilactualfailinggate/nativeeventplus sourcemap isolatesbadtransition. Remove temporarydiagnostics before productcommit and cleanacceptancebuild.",
+            "sourceDecision": "P79 partiallyclipped currentgrid afterinheritedsixflings; rejected beforetap. Current P83fullyvisible exactsamegrid chosenatfreshsemanticdecision; same timings/actions/sourcecapability; no extra scroll orcache mutation. Combine inheritedP3/LTRrestoration inonecontinuousroute.",
+            "runManifest": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/native-presentation-probe-E-selected83-and-restore.json"
+          },
+          "currentFrameCorrectionPlan": {
+            "recordedAt": "2026-10-07T01:29:42.146626+08:00",
+            "sourceCause": "ReaderPagedFrame copies plain asset/part objects; forItem projects new frame copies. ContinuousCell ForEach retains slotId key but the mount condition reads its original generator frame, while child frame, opacity and loading read current snapshot.frames[0]. Same-key URI0→URI1 can leave the mount gate closed after entry cancellation. Existing PagedCell explicitly resolves current snapshot state instead of generator data.",
+            "nativeEvidence": "E c7229dd4 P83 movie627aa4b9: List fullyVisible=true, position ACK, pending=false; cancel_from=layout01:20:30.126; same slot URI=true/request1/decoding31.300 onward, no selected native image complete/ACK/presented beforeBack. This excludes position/visibility gating for this run, but does not alone prove every framework closure behavior.",
+            "reference": "Current ReaderPagedViewport ForEach stable identity/current snapshot comment and ReaderPagedCell.frame() gate; Huawei ForEach official stable-key reuse/documented unchanged-key replacement caveat.",
+            "minimalEdit": "Remove temporary console probes from ContinuousSurface/PagedViewport using verified pre-probe baselines; change only ContinuousCell normal-image mount condition to current snapshot.frames[0], which already drives child frame/opacity/loading. Preserve stable slot key, callsite, all event identities, retained original replacement, failed/suppressed outer branches, List positioning and viewport geometry.",
+            "impact": "Directly exposes ordinary continuous same-slot resource delivery and eligible pre-URI measurement across N/E/K. Current initial URI absent, later loaded URI and cancelled entry must mount existing native image. Retained replacement keeps nonempty current URI so same node survives. Failed/suppressed branches remain unchanged; asset request/retirement/nativeReady guards remain unchanged. Paged, Legacy, menus/settings/rail/preload/cache/provider/root/Window writers unaffected by concrete unchanged diff. Existing geometry candidate remains separately declared.",
+            "decision": "Keep all five existing acceptanceRows and original failure criteria. Current P79/P83 rejected evidence retained. Build all3 consumers once clean. Ordinary current E continuous source→rootflight→loading/original→fast swipe→Back/same Grid/Detail→original P3/LTR restoration; inspect complete affected action interval. Use fresh semantic fully-visible source gate, no cache reset/delay/coordinate sweep. Host Window chronology and previously unhit native branches remain unaccepted until actual evidence.",
+            "independentReview": "Existing Luna current-source review confirms split data dependency, Paged precedent, unchanged retained/failure ownership; source-only, no runtime acceptance.",
+            "disproof": "If current URI arrives and mounted image still lacks actual native handoff, cause not sufficient; retain failure and return to actual callback/paint owner. No key churn, new timer, guessed geometry, fullscreen-first or internal zoom substitute.",
+            "introducedBy": "Exact git diff against Kit7326ade7 shows original ContinuousCell URI condition already used this.snapshot.frames[0]. The uncommitted early-mount candidate10f0d26 changed it to captured frame; P79/P83 counterexample is a candidate regression, not proof of a preexisting closure defect. Clean correction restores original current-source condition and adds eligible geometry alternative using same current frame.",
+            "implementedSourceSha256": "f715588ae84691dd653f943cb371161e42f82a890f0a6507184b9c537c56b43e",
+            "temporaryProbes": "Removed from all3; exact probe sources/diff archived ignored native-presentation-probe-source; PagedViewport restored clean SHAfe9604cc."
+          },
+          "clipOwnerCorrectionPlan": {
+            "recordedAt": "2026-10-07T01:46:23.573170+08:00",
+            "state": "IMPLEMENTED; all3 compiled; E complete interval counterexample retained; P3 normal measured flight, P83 layout cancellation unaccepted",
+            "existingBehavior": "Actual positioned continuous image bounds plus intersection with its Reader viewport govern the optional flight; root owns sole thumbnail snapshot on N/E ordinary paths. Local ReaderEntryPreview is optional; all branches retain source chrome until shared window admission, actual decode/loading handoff, same-source reverse and original progress/preferences.",
+            "sourceCause": "N Index.sharedReaderBody3364 and E Index ReaderShared2282 explicitly pass entryPreview:null for root-owned flight. ReaderSurface855 mounts ReaderEntryPreview only when preview nonnull; rkit-entry-preview-root is created only by that optional component184. ReaderPagedImage.measureEntryTarget continuous branch832 unconditionally queries it for clipping. Missing optional geometry yields invalid intersection/cancel (or catch886), invoking RootEntryHandoff.startCancelledFlight with no measured target. Host arm stores the Legacy-style centered fit, unlike actual continuous width-fit native List. Source-proven invalid component dependency; exact current cancel caller was not logged, and this does not explain every Window writer.",
+            "parentTree": "N/E actual root Navigation/overlay proxy → ReaderSurface outer100%x100% rkit-reading-surface1070 → body100% → content100% → ContinuousList100%/current positioned cell → PagedImage fitted content. Local preview root184 is100% of the same parent; its child clip affects pixels, not root geometry. K ordinary shared host supplies no entry, so measurement branch not invoked.",
+            "minimalEdit": "Only continuous measureEntryTarget viewport intersection reads actual common parent rkit-reading-surface instead of optional rkit-entry-preview-root. Preserve computed intersection, actual leaf/list measurement, clipRect, position token/request fences and all transition phases. No optional-name fallback, new parameter/state/timer/key/callback/Window owner or host change.",
+            "impact": "Direct N/E root-owned continuous measured entry, plus local-preview continuous entry through same ReaderSurface parent. Paged position=null branch unaffected. K ordinary entry=null unaffected but shared dependency compiled. Parser attestation/source aspect/ordinary ratio/preload/cache/menus/rail/Legacy/source capture/root flight/reverse and Window writers unchanged. Five original expected/reject rows retained, not reduced to cancellation avoidance.",
+            "acceptance": "After exact-source review build all3 clean, replay one ordinary current same-source continuous entry/native handoff/fastgesture/Back/sameGrid/Detail/originalP3LTR. Inspect full action interval against existing five rows. Actual source chrome/geometry/loading/backdrop/body/return anomalies reject; cached path cannot accept pending acquisition. N applicable host remains unaccepted until its own bounded receipt; K compile is not runtime acceptance.",
+            "disproof": "If valid same-parent clip is measured yet current continuous entry still cancels before flight or lands at incorrect fit, the correction is insufficient; retain counterevidence and map actual rejecting transition. Do not suppress cancellation, changefullscreen/internalzoom, invent geometry or tune timing to manufacture pass.",
+            "rejectedQuery": "Queried N/E rejected registries by ReaderPagedViewport,ReaderEntryPreview,measureEntryTarget,clipRect. No matching prohibited clip-owner correction; fullscreen/return-target caches/status-after-return remain prohibited.",
+            "sourceSha256": "0ed41a3520cc6d841a51ff63d3dd0b511d9adce8d2463ff828bbec4ccdf54e83",
+            "independentReview": "Existing Luna clipOwnerCandidateDiffReview in same ignored source-review receipt: targeted root-owned N/E/null preview, local preview same100%parent, K noentry caller; no extra source blocker, not runtimeacceptance",
+            "buildBindings": [
+              "clip-parent-nextn-binding.json",
+              "clip-parent-nexte-binding.json",
+              "clip-parent-koma-binding.json"
+            ],
+            "builds": "N5db821bf/Edbc5c8af signedDebug; K560c6709 nonDebugRelease compile-only, all3exactsharedbytes, exit0. Epositiveinstall/currentroot[0,117][1320,2232].",
+            "routeRecovery": "First inherited ViewAllsetupwrongcoordinatesREJECTED8530ed60. No productfinding. OrdinaryDetailgenericroute recovery→freshsemanticViewAll1145,948→sameboundedGridscroll→fullyvisible currentP83Stack[672,797][966,1209]. Complete83/Back/Detail/P3LTR chain recorded once, unchanged actiontimings; nocache/delay/gesture sweep.",
+            "runtime": "Clean E movie84035aadd2b0dd9e parent reviewed original0–1151 includingfull167,168,686,687,816: P83fallbackFit→nativeWidthfit167→168, P3sourceicons geometry/color exposed686→687, direction switch bodyabsent816–818, original3/LTRreturn1104 onward. Reject five-row package; P3normalmeasuredflight alone is narrow observation. Independent currentmovie reviewer errored429, no currentindependentvisualacceptance; not retried."
+          },
+          "cancelCallerObservationPlan": {
+            "recordedAt": "2026-10-07T02:04:33.143001+08:00",
+            "state": "OBSERVED finite diagnostic interval; soletemporarylog removed; no behavioral correction yet",
+            "question": "Which actual existing call cancels E P83 before any measured target?",
+            "sourceMap": "All existing cancellation callers mapped: current session snapshot identity/navigation, continuous failed/disposed/position/area/input lock/scroll, fitted image geometry/intersection/catch, shared handoff host refusal, host retire. Saved lowercase layout gate excludes handoff host refusal for this interval. Current ReaderEntry.cancel logs phase only and conflates those paths.",
+            "minimalObservation": "One temporary E-only console.info in existing ReaderEntryTransition.cancel prints new Error().stack at first pending cancellation. No new parameter, state, callback, gate, phase or timing modification. Archive exact probe diff/binding in ignored artifacts and remove after one bounded existing ordinary P83 entry interval. Probe is diagnosis, never clean visual acceptance; clean candidate still required.",
+            "impact": "Log-only existing terminal transition; no library ABI or native tree change. N/K clean source unchanged. Existing five behavior rows retained; ordinary runtime remains unaccepted even if caller becomes known.",
+            "decision": "If stack maps specific measured-geometry failure, map its actual current parent/layout condition before any behavior edit. If no stack or alternate caller, preserve unknown; no timer/fullscreen/retime or cancellation suppression.",
+            "result": "E84b61b4e diagnostic installedpositive. Mode-setup P3id1 cancelledmoving02:10:05.610 actualstack measureEntryTarget848→publishEntryTarget754→completed912: decodedratio and pre-present currentfit differ. P83id3 ordinary02:11:29.975moving→30.489finished with no cancel; requested P83layoutcancel caller NOT reproduced, no causal conclusion. P3continuous5 and single7finished. Diagnostic movie3bbc4ec4 not clean acceptance.",
+            "restoration": "Same native Detail/root[0,117][1320,2232], terminal originalP3/LTR; screenshot/layout preserved. N/K untouched. Temporarysinglelogsource archived ignored and removed; all3clean commonbytes restored."
+          },
+          "canonicalDecodeMeasurementPlan": {
+            "recordedAt": "2026-10-07T02:17:34.150273+08:00",
+            "state": "DECLARED before source edit",
+            "sourceCause": "ReaderPagedImage.completed912 measures synchronously after assigning local decoded dimensions. The canonical ReaderPage dimensions are reported later by existing next-render-frame report→ReaderSurface.reportAssetPresented797→ReaderPagedSession.reportPresentation1138→installSlotPage/rebuild/emit. Existing measureEntryTarget ratio check848 can therefore compare old preview-derived actual fit against new decoded metrics and cancel an already moving entry before the canonical frame catches up. Actual E P3 setup stack02:10:05.610 proves this exact order/branch, not every P83layoutcancel.",
+            "reference": "Existing GeometryGate/currentframe comments and @Monitor(frame/entryLayoutWidth/Height/topology/navigation/continuousEntry) already retry measurement when canonical metadata changes. Canonical dimensions are the owner; leaf-local decode must not be validated against earlier metadata. Existing report/position/request/native presentation fences retained.",
+            "minimalEdit": "Before geometry measurement of an already decoded current original, return until current page.width/height equal this leaf decodedWidth/Height. Do not publish decoded-ready target from the old canonical frame. Reuse existing report and frame monitors to re-enter. No new state, callback, scheduling, owner, API, node, key or timer. Keep actual fit/clip/moved/invalid geometry checks unchanged once both dimensional observations match.",
+            "impact": "Paged and continuous pending original entry across all3 shared bytes. Unknown→attested preview flight still starts before original decode; canonical actual metrics still refine layout and may legitimately cancel actual moved geometry. Invaliddecoded terminal path/failure still executes before this guard. Ordinary noentry and completed entry return earlier unchanged; thumbnail/crop/rotate excluded by existing eligibility. Existing decode→presentation scheduling/core acknowledgement/native observation unchanged. All host root/Window/loading/mode/menu/rail/cache/progress/Legacy writers untouched.",
+            "acceptance": "Original five rows unchanged. All3 compile; E clean ordinary P3 and applicable continuous/P83 current source route, N applicable ordinary entry/return and original38LTRrestoration. Whole sourceflight/loading/body/chrome/mode/return retained. Same current dimensions plus real changed fit must still reject; no relaxation or cancellation suppression to pass movies. Probe removed; archive raw rejected840and diagnostic3bbc separately.",
+            "disproof": "If current dimensions agree but actual target still rejects, keep exact measured-geometry failure; this corrects mixed-age comparison only and cannot accept P83layoutunknown or mode-switch blank.",
+            "implementation": "Same 3-line existing decoded/canonical-dimensions guard applied to all3 ReaderPagedViewport; current source SHA256 a73f80369b9a77ad0df7255e713738b925dd41786c84d9549c43bbc96d29c432; other geometry/moved/clip checks unchanged; no diagnostic logs.",
+            "buildEvidence": {
+              "recordedAt": "2026-10-07T02:21:00+08:00",
+              "all3BuildExit": 0,
+              "all3SharedBytesMatch": true,
+              "sharedDiffSha256": "0b8680be4c08df5933d07196236496944c54a4726398a2654f4bbc4362563feb",
+              "bindings": [
+                ".hvigor/outputs/reader-entry-statusbar-20261006/canonical-dim-nextn-binding.json",
+                ".hvigor/outputs/reader-entry-statusbar-20261006/canonical-dim-nexte-binding.json",
+                ".hvigor/outputs/reader-entry-statusbar-20261006/canonical-dim-koma-binding.json"
+              ],
+              "runtimeAcceptance": "OPEN — clean E source gate established; full ordinary P3/continuous/source restoration pending; Koma entry-null dependency compile only"
+            },
+            "runtime": {
+              "movieSha256": "81fd57f4eb86bdcb9b39a6cac7f61714745a72d906cabf2fb519a8bd7e109d60",
+              "protocolExit": 0,
+              "ordinaryP3": "02:21:43.151 moving→43.177 cancelled; not accepted",
+              "sourceGate": "post-install P3 image current bounds [672,881][948,1267]; center8101074",
+              "visualCounterexample": "Mode LTR→continuous body blank frame246–249; ordinary source icons flicker on native admission; original source restoration retained",
+              "reviewedOriginalFrames": "108–251; remainder pending"
+            },
+            "nextFiniteObservation": "Sole E temporary ReaderEntryTransition.cancel caller stack on the existing canonical guard package. Use current same Detail P3 -> existing continuous→LTR→Back -> ordinary single P3→Back to capture moving cancellation branch; no timing sweep or cache clear, no state/timing/fit/window/menu change. Remove diagnostic line after build/run before clean acceptance. Branch determines whether actual moved geometry or snapshot/area callback order; do not relax checks.",
+            "cancelCallerResult": {
+              "diagnosticHapSha256": "dfbade856a8c01226eb8296c4a62fbf064815b57bce716a6c180585b5337d087",
+              "firstWarmRoute": "b816ac movie; P3 continuous and single move/wait/reveal/finish, no cancellation; not proof of cold branch",
+              "coldRoute": "11c6717390830b51625a59d2c2cfee0d358f831fa618a3b2a499826c7745bbc9",
+              "coldCancelAt": "2026-10-07T02:27:43.142+08:00",
+              "caller": "onSelectionChanged717→publishEntryTarget754→measureEntryTarget826 (leaf size differs from current entryLayoutWidth/Height before native layout)",
+              "interpretation": "Canonical guard excludes stale dimensional metadata, but V2 monitor remains synchronous before actual area applies new fitted dimensions. Moving safety gate sees different-aged expected dimensions/physical rect. Existing continuous path already schedules this measurement on after-render idle."
+            },
+            "afterLayoutMeasurementPlan": {
+              "state": "DECLARED before edit",
+              "theory": "Existing onIdle FrameCallback runs after rendered frame; onFrame canonical report occurs at rendering start. Both ordinary and continuous image measurement must consume native rectangle after layout, never V2 Monitor during state update. The cancelled cold stack identifies exact offending boundary. Existing callbacks/monitors continue retries; actual real moved geometry still cancels.",
+              "minimalEdit": "Reuse existing ReaderEntryAfterLayout callback for position-null too; retain position identity/currentness guard and all measureEntryTarget identity/fit/clip/ratio/moved validation. Keep canonical decoded-age guard, needed for retained onIdle presentation ordering. No added API/state/timer/key/node or host code. Remove sole diagnostic cancel log.",
+              "impact": "Pending entry measurement only across all3 shared bytes. First target must already be laid out; no source snapshot/image decode wait, fullscreen/internal-scale/fake geometry, menu/loading/rail/corecache change. Decode report/invalid/failure and exact request fences remain. Geometry cancellation may still occur for actual changes.",
+              "acceptance": "Original five rows unchanged; single cold E P3 first, continuous/LTR modes/Back and current N ordinary route next; full visual rejection conditions remain. Build all3 one coherent snapshot. Koma entry-null compile only. Failed/stale/unhit branches remain unaccepted; no timing sweeps.",
+              "implementation": "Clean all3 ReaderPagedViewport ac0c8c90f3d428f7af85e78410c0ef8404e74012c8a73294e83a2cc18fc98357; existing postFrameCallback/ReaderEntryAfterLayout reused for both paged/continuous; all old fit/clip/moved/identity guards unchanged; sole E diagnostic removed.",
+              "buildEvidence": {
+                "all3BuildExit": 0,
+                "all3SharedBytesMatch": true,
+                "bindings": [
+                  ".hvigor/outputs/reader-entry-statusbar-20261006/after-layout-nextn-binding.json",
+                  ".hvigor/outputs/reader-entry-statusbar-20261006/after-layout-nexte-binding.json",
+                  ".hvigor/outputs/reader-entry-statusbar-20261006/after-layout-koma-binding.json"
+                ],
+                "nexteInstall": "positive clean1e332311 install/current bm; cold ordinary P3 LTR source decision complete, full visual acceptance pending"
+              },
+              "coldRuntime": {
+                "movieSha256": "4de98d13b83aee669db21c18a0a72328c582d459af5e166c421ff7170a10bd9c",
+                "protocolExit": 0,
+                "cancelAt": "02:30:46.350 moving",
+                "reviewedOriginalFrames": "72–287",
+                "acceptance": "REJECTED pending whole visual/actual cancellation type; after-layout excludes source-proven old-rectangle read but remaining cancel not identified"
+              },
+              "nextFiniteObservation": "Restore E clean bound HAP while installing current N clean HAP; one ordinary N663205 current source→reader→Back path with unchanged standards. Remaining E cancellation caller unhit; do not infer source timing cure or mutate strict geometry guard.",
+              "finiteCallerObservation": {
+                "binding": ".hvigor/outputs/reader-entry-statusbar-20261006/after-layout-caller-nexte-binding.json",
+                "hapSha256": "b8b457f27ffa6e0524d389140152cde45cc9633de6d880a3cf5b5c8d9d3b752b",
+                "movieSha256": "7319083160db63ee72483655c6227031048b24b6c9199e59b5517c2fbec4f596",
+                "protocolExit": 0,
+                "cancelCaller": "UNHIT, no cancel or moved log. moving03:02:29.812 waiting30.290 revealing30.300 finished30.323. Does not explain preceding moving cancellation. No repeated diagnostic sweep.",
+                "temporarySourceLogs": "Removed exactly both E-only logs; all3 clean shared hashes restored ac0c8c90/f715588a/4bd9a204.",
+                "acceptance": "Full 0–436 movie reviewed: one root flight and same P3 return; source status kept during flight, transient white system icons observed175–176 and196 before normal reverse; chrome row remains unaccepted, normal completion not whole-package acceptance."
+              },
+              "currentNObservation": {
+                "hapSha256": "a69aa80577672dde6829f24a5d960fddc839ccc3997f26c7181e18abc0f5242e",
+                "movieSha256": "fae1afad03f81facdfaf98e088b09e2feadc0690bc21f4e878d19a8318a22b02",
+                "protocolExit": 0,
+                "reviewedOriginalFrames": "0–456",
+                "phase": "moving46.281 waiting46.833 revealing46.845 finished46.987, no cancel",
+                "visual": "Current native663205 P38LTR full source[460,790][860,1350], root1320x2232. One root flight115–129, original fades130–139, no blank; transient white system icons151–153 after finish, then hidden. Reverse210–225 returns same P38 source, originalContinueP38 preserved. Normal image geometry row bounded observed; chrome row remains unaccepted."
+              }
+            }
+          }
+        },
+        "statusIconHandoffInvestigation": {
+          "state": "OPEN: ordinary hidden-intent color observation retained; complete geometry/readiness package unaccepted",
+          "evidence": [
+            "E73190831 whole0–436: white icons175–176/196; Nfae1afad whole0–456: white icons151–153 after finished. One root flight and same source return in both."
+          ],
+          "established": "N ordinary root-owned Window visibility queue and native .systemBarStyle both have finish admission. E ordinary uses child ReaderTrialWindow and dynamic page style. Native style backups and Window color writes coexist; official Navigation explicitly warns against mixing them. E discards initial chrome=false event while entry pending, so TrialWindow desiredStatus stays default=true until late republish.",
+          "notEstablished": "Which native/style/visibility setter produces each one-frame icon reappearance; updated external engine source is reference, not emulator binary identity. No edit based solely on correspondence.",
+          "nextAction": "Review exact status-intent checkpoint diffs, commit applicable hosts on common5b9014cc, then one predeclared ordinaryE P3 early-Back whole interval. No geometry/timer/guard tuning; N area and uncached cancellation limits remain explicit.",
+          "platformSourceFindings": {
+            "reference": "Official OpenHarmony master; emulator reports OpenHarmony-7.0.0.105, exact source revision unknown",
+            "color": "SystemBarStyleOhos calls SetStatusBarColorForNavigation(content-only); it does not directly set enable. WindowSceneSessionImpl merges owner property flags, latest same flag wins except ABILITY_RUNTIME priority. Native color paths can affect resulting settingFlag, not proven emulator flash cause.",
+            "visibility": "Page enable is separate SetSystemBarPropertyForPage; N/E ordinary pages do not configure enableStatusBar explicitly.",
+            "runtimeReadback": "03:19 readonly protocol completed; native status regex output empty. No call chronology inferred from absence."
+          },
+          "probePlan": {
+            "scope": "Only N readonly console diagnostics in existing navigation style computation and shared applyReaderStatusBar around actual Window dispatch/readback. No setter order/admission/value/API/phase/layout/state/key/gesture changed.",
+            "question": "Does reader-color publication precede the actual fullscreen hide in the ordinary P38 full-preview route? Distinguish native style publication from Window visibility dispatch/completion.",
+            "path": "One source→ordinary P38 LTR→Back same source; one complete original host recording + fresh N root1320x2232/package binding. Diagnostic removed after evidence; exact clean HAP restored unless source-proven scoped fix implemented.",
+            "falsifier": "If no actual source-color/readercColor-before-hide ordering appears, color-race hypothesis remains unestablished. Capture cannot accept full replacement, mode blank, cancellation or uncached branches."
+          },
+          "probeObservation": {
+            "hap": "6cb5c4542ff8d603f930947812fd403539d1f2ffdc1bd2f28eb78018a2a7e592",
+            "movie": "fe1dae4ad015ce0cc4a94a8a6bb51b491fbe46f6aff8f0fb88031d7e30b7c099",
+            "wholeReview": "original0–446 reviewed; frames0–1 recorder prior cached image excluded from clock/causal timing. Current source2–104, sole flight105–115, native original116 onward, white icons139–141 then hidden142 onward, Back198→216 same P38 source. No blank; no full geometry/FPS/pending-cancel acceptance.",
+            "chronology": "finished03:22:31.222; native style white31.225 while fullscreen=true/chrome=false; actual Window hidden dispatch31.251, completion31.253 still top117. Real compositor hide is later than setter completion. Return restore black before reverse.",
+            "diagnostics": "Both temporary log sites removed exactly; host/TrialWindow clean hashes restored before product edit."
+          },
+          "ownerCorrectionPlan": {
+            "existingBehavior": "Legacy only writes Reader icon colors when showing status; hiding preserves current colors. Source visibility/colors through pending entry, root-only flight, original/loading/backdrop continuity, actual controls show before Reader chrome, same-source Back/late writer retirement and original data must remain. Existing500ms host delay stays.",
+            "cause": "N native color derives canvas dark even when actual status intent is hidden; E drops initial false while pending; TrialWindow unconditionally sets white before interpreting latest hidden intent.",
+            "change": "Make the existing ReaderStatusVisibilityRequest a stable V2 observable holder for its one visible property; no duplicate chrome/window model. Require that desired visibility at shared native-style helper. Hidden native style stays source color. TrialWindow only sets Reader color for visible intent (color-only leases unchanged); before-show applies existing white color then visibility inside same queue and admission. N embedded uses its existing recorded presentation; N/E owned leases expose current existing intent. N/E child stores lifetime-current initial intent before admission, root readiness additionally requires active foreground, so recording cannot dispatch early.",
+            "impact": "Direct source/system colors and desired visibility handoff; indirect no-thumbnail ordinary entry, Reader toolbar reveal/hide, fullscreen preference, Background/cancel, close restore, queued stale caller. Actual source/target/fit/rotation/crop/image/provider/cache/session/preload/progress/rail/menu/Legacy unchanged by no calls or identity changes in those owners. K shares actor changes, keeps its existing500ms no-thumbnail behavior, needs compile and ordinary route window/reveal/return evidence; independent production work remains paused.",
+            "acceptance": "One all-consumer build then existing ordinary N P38/E P3 entry→Reader→show/hide chrome→Back same source complete videos, plus K existing ordinary route window/reveal/return. Reject unexpected pre-handoff bar/color/resize, transient white-before-hide, missing image/loading backdrop, show controls before real status area, late hide on source, changed image fit/menu/page or original data. Cancellation/mode/pending rows remain independently unaccepted if not hit; one ordinary pass cannot accept package.",
+            "falsifier": "If hidden entry still changes colors or transient white exists, candidate fails; do not tune a timer, force fullscreen, bypass geometry/cancel or remount. Missing actual show/hide/return or K evidence is unaccepted.",
+            "consumerBuildFinding": "E first compile rejected Index.ets:1126 remaining four-argument Debug trial navigation call. Before correcting it, traced parent TrialWindow creation/retirement, onStatusBarVisible callback and child-owned ordinary path. Add required fifth argument from the existing parent window getter only; no optional default. Debug non-owned child initial notification still has entry admission and is not included in ordinary owned-entry acceptance; that branch remains unaccepted.",
+            "currentResult": {
+              "updatedAt": "2026-10-07T04:31:31.306233+08:00",
+              "state": "OPEN",
+              "device": "127.0.0.1:5555",
+              "lease": "20261006-112816-bff2ab11",
+              "viewport": "portrait 1320x2232; source root [0,117][1320,2232]",
+              "scope": "Existing three-host source / entry / chrome reveal-hide / Back; independent K production held. No whole replacement or FPS acceptance.",
+              "hosts": {
+                "NextN": {
+                  "hapSha256": "673ae263bdad4cf059ae3bb51149ddaf42b5d10a572707a2137ac9593e1f1442",
+                  "movieSha256": "d68984ab16affbb344cf96a3486ab74ada5db06ccda0427aa9f849c2cdd24488",
+                  "protocolExit": 0,
+                  "recorderExit": 0,
+                  "reviewedOriginalFrames": "0–597",
+                  "observed": "FullPreview P38 LTR: flight99–113, image114+, hidden status from120. No transient white-before-hide. Toolbar visible193 before icon paint195; paint is not an actual-area readiness measurement. Hide281+. Reverse343–355; same FullPreview356+. Raw323/324/329/335/342 shows page label removal, not proof of pre-return image displacement. Proxy/body entry fit113→120 remains unaccepted."
+                },
+                "NextE": {
+                  "hapSha256": "e3f51352f966907f49d9a26214beee9c0ce4e39bf8928910e05911bf504dea19",
+                  "movieSha256": "929d35b3952128dd22171735f1159b857a9675795bd572a05509f88e5af857fb",
+                  "protocolExit": 0,
+                  "recorderExit": 0,
+                  "reviewedOriginalFrames": "0–685",
+                  "observed": "Detail P3 LTR: flight140–150, body151+, no transient white-before-hide. Icons221 before toolbar226, hide317+. Back385–402, same Detail403+. Proxy/body entry fit150→156 changes; whole geometry remains unaccepted. Bound log also records id1 cancelled_from=moving03:44:30.470, not a normal-finished entry. This invalidates any normal-finish interpretation of that flight; exact caller remains unknown."
+                },
+                "Koma": {
+                  "hapSha256": "3a32ff76cca0295ae19b6560a2303467edadcbc4f754cf891460ae32d231ff3c",
+                  "movieSha256": "e81137a2378b3a6fafb01e589ca074b3601bad4edac9a12a297a61de334a01a8",
+                  "protocolExit": 0,
+                  "recorderExit": 0,
+                  "reviewedOriginalFrames": "0–679",
+                  "observed": "Library Continue Catalogue102 P1: native system slide91–107, status hidden121 after retained no-thumbnail delay. Icons225 before toolbar229; hide318–346. Native system return379–396; same Library/Continue102 P1 through679. No-thumbnail ordinary path only; it does not accept thumbnail flight."
+                }
+              },
+              "unaccepted": [
+                "Proxy/body geometry handoff N/E",
+                "Actual Window top-area readiness chronology N embedded preparation",
+                "Natural pending same-request cancellation (unhit)",
+                "N later duplicate progress UI callback (unhit)",
+                "Mode-switch blank gap remains reproduced on Shared and Legacy",
+                "Non-owned Debug initial intent",
+                "All-layout/performance/full replacement"
+              ],
+              "nextAction": "Review exact status-intent checkpoint diffs, commit applicable hosts on common5b9014cc, then one predeclared ordinaryE P3 early-Back whole interval. No geometry/timer/guard tuning; N area and uncached cancellation limits remain explicit."
+            }
+          },
+          "geometryCancellationObservation": {
+            "recordedAt": "2026-10-07T04:09:55.975973+08:00",
+            "evidence": "Current Ee3f51352/929d35b3 ordinaryP3 log moving03:44:30.330 -> cancelled_from=moving30.470; same video fit150->156. N id1 moves->waiting->revealing->finished instead.",
+            "sourceMap": "Root handoff forwards actual measured contentRect unmodified. Shared pager fits current frame ratio to actual native viewport. Legacy arm calculates root-contained target. Both window layouts can resize after hide; this alone does not identify E moving cancellation. Existing canonical decode-age and after-layout guards remain.",
+            "change": "One temporary E-only console caller stack at existing ReaderEntryTransition.cancel log. No fields, phase, geometry, schedules, validation, host entry/Window/gesture or loading behavior changed. Archive exact pre-probe source and diff, build E once, ordinary existingP3 entry/show-hide/Back with whole capture.",
+            "impact": "Observation-only E Shared cancel site; N/K/Legacy and clean shared bytes untouched. One log per actual cancellation. Diagnostic artifact is not clean product acceptance.",
+            "decision": "If same current cancellation stack resolves a specific geometry/identity/viewport branch, map actual before/after owner before any product edit. If not reproduced or caller unresolved, preserve unknown and remove probe; no repeats/timer/tolerance/cancellation suppression/early fullscreen/internal zoom.",
+            "restoration": "Remove exact one log and verify original hash, restore clean Ee3f51352 HAP unless separately predeclared source-proven fix follows; original nativeP3 and LTR restored.",
+            "observedResult": {
+              "diagnosticHapSha256": "f9ca2aaf42edb0f9bd3e86413fb536d388513b0d5240b8078844c3f624c42fe9",
+              "movieSha256": "9f0648d324c09d062bd631296d6a678839f35b2536e23e0eacdb3a754acfd4ce",
+              "wholeReview": "All original0–684/all20 contact sheets reviewed; source flight, metadata fit change, chrome reveal/hide and same DetailP3 return. Observation-only, no clean acceptance.",
+              "caller": "04:12:42.333 id1 cancelled_from=moving; measureEntryTarget ReaderPagedViewport:863 moved-rect branch, from existing after-layout onIdle. No canonical-age/native-fit/decoded-aspect cancel branch attribution.",
+              "cause": "Existing structured logs from same26802 process: at42.272 root/surface/viewport unchanged0,0,440,744; content0,61.8,440,620.4. Decode42.298 reports1280x1808. At42.338 content0,61.3,440,621.5 while proxy0,61.7,440,620.4. Preview200x282 creates initial fit; canonical metrics refine topology/current fit. This proves metadata-driven target change, not window resize during that interval.",
+              "sourceCleanup": "Exact single caller log removed; source byte equality backup SHA4bd9a2049e5cef9a342d81a9834e1f1ed5de1d9adb26e37b35360ee5d6c58468 confirmed.",
+              "runtimeRestoration": "Checked read+install protocol04:22:52.869–04:23:00.985 completed. Exact clean Ee3f51352 installed-r success; cold ordinary Detail foreground root217[0,117][1320,2232]; both power checks AWAKE override86400000. No new Reader entry or data/settings/cache clear."
+            },
+            "sourceDisposition": "Metadata ratio refinement is now established; it is not by itself a skipped root flight. Existing host contentOpacity=0 inOPENING/OPEN_PROXY_HANDOFF; root startCancelledFlight returns whenflightStarted; original-ready flags only complete afterWAITING_READER_CONTENT. Legacy similarly flies contained thumbnail ratio then crossfades independently-contained original. Do not suppress correct dimension refinement or weaken moved/viewport/identity guards. Exact matched geometry acceptance remains limited; no extra geometry product edit justified by cancel log alone.",
+            "chronologyReadLimit": "First extra existing-log read used combined regex; remote shell interpreted pipe symbols, so returned command errors, not absence. Corrected literal no-metacharacter filters completed but retained26802 entries were no longer present after clean cold restoration. No exact root-finish timestamp inferred from absence; original whole movie and source ownership retained.",
+            "checkpoint": "Shared status visibility intent owner committed5b9014cc identically in all3. Existing geometry candidates remain uncommittedWIP, byte-preserved; named HAPs already include those bytes. This checkpoint does not accept whole geometry/cancellation or full replacement."
+          },
+          "boundedInterruptedEntryPlan": {
+            "boundary": "Existing root-owned thumbnail entry cancellation/return; E current ordinaryP3 only. No new product source/build or force data/cache change.",
+            "whyActionable": "Cancellation source has been mapped and clean package restored. Ordinary completed videos did not execute Back while root flight stillpending.",
+            "actions": "Fresh ordinary Detail/root/P3 anchor decision; one whole movie clickP3→80ms→Back→1800ms source settling. Same source/root/P3 return and late status color/hide must be reviewed through last original frame. No second entry inside rejected chain.",
+            "acceptance": "Reject immediate source status color/size jump before departure, direct fullscreen/internal zoom, blank proxy/image, late forward flight/hide after source return, changed progress or different terminal source. This path accepts only motion/route cancellation if actually hit; does not accept natural uncached loading cancellation unless actuallogs/frame prove that separate state.",
+            "stopBoundary": "One finite chain; if branch nothit retain unaccepted with exactobserved route, no artificial delay/cache reset/repetition sweep."
+          }
+        }
       }
     },
     {
@@ -785,7 +1058,14 @@
     ],
     "komaPerBook": "koma-per-book-current-acceptance-receipt.json"
   },
-  "activeId": "reader-validation-strategy"
+  "activeId": "reader-validation-strategy",
+  "interruptionRecovery": {
+    "kind": "thread heartbeat",
+    "automationId": "automation",
+    "intervalMinutes": 15,
+    "status": "ACTIVE",
+    "scope": "Resume only latest authorized unfinished action after abnormal interruption; no duplicate running work, no real-device retry, no paused Koma Goal resume."
+  }
 }
 -->
 
