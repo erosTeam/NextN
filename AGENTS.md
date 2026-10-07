@@ -39,6 +39,14 @@ the summary here.
   completion readback, and artifact receive; the lease helper rejects other
   direct HDC forms.
 
+## Shared Reader work
+
+- Read the common ownership and preservation contract in
+  [Reader Kit](third_party/reader-kit/README.md#consumer-contract).
+- The only cross-host queue is
+  [the active work order](docs/plans/active/shared-reader-replacement-work-order.md).
+  QA receipts and archives supply evidence; their old next actions are not live.
+
 ## Reference-derived UI
 
 For visible work based on NextE or ErosN, treat the reference page's full parent

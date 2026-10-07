@@ -3,6 +3,32 @@
 This file is a behavioral control, not a test plan. It governs every claim,
 scope change, agent delegation, and task handoff in this repository.
 
+## Authority and document ownership
+
+The latest human instruction determines scope and authorization. This protocol
+defines execution discipline; applicable skills and device/account protocols
+define how to perform that work. A work order records state, not new permission.
+If they conflict, identify the exact conflict and follow the human instruction;
+do not silently choose the document that permits the preferred action.
+
+| Document | Owns | Does not own |
+| --- | --- | --- |
+| `AGENTS.md` and this protocol | Routing and execution discipline | Product queues or device selection |
+| `docs/controls/rejected-approaches.md` | Evidence-backed rejected approaches | Feature backlog or replacement acceptance |
+| Applicable skills, `docs/device-lease.md`, account S0–S6 protocol | Safe operation, lease and evidence procedure | New authorization or a default target |
+| `docs/plans/active/shared-reader-replacement-work-order.md` | One cross-host Reader outcome and next action | A release decision or permission inferred from history |
+| `docs/qa/nextn-active-acceptance.md` | Current evidence disposition and non-Reader limitations | A duplicate Reader queue |
+| `docs/qa/nextn-ui-change-ledger.md` | UI rationale and bounded freeze decisions | A per-run diary or whole-product acceptance |
+| `third_party/reader-kit/README.md` | Shared/host ownership and consumer invariants | Host-specific menus, data schemas or a work queue |
+| `docs/plans/archive/`, `docs/qa/archive/` | Immutable historical evidence | Current instructions, default devices or next actions |
+
+Read each applicable control once when beginning its task, then re-read changed
+sections or a concrete conflict. Compaction, a status question and a retry do
+not restart the task or justify repeatedly reading rules instead of acting.
+Keep historical facts and original user quotes; remove superseded dispatch
+text from current entrypoints. Do not add another rule file, checklist or script
+merely because an existing rule was not followed.
+
 ## 1. The user outcome is the only completion authority
 
 - A task stays open until the outcome the user asked for has been observed at
@@ -27,6 +53,12 @@ scope change, agent delegation, and task handoff in this repository.
   explicit user stop or explicit instruction not to resume changes that.
 - A heartbeat is a scheduling mechanism. It must never be used to imply that
   a task was completed, paused, abandoned, or handed back to the user.
+- An idle unfinished outcome with an authorized safe action must resume even
+  without a 429 or abnormal-interruption log. “No source-proven code patch” is
+  not “no investigation or acceptance action”. A waiting disposition must name
+  the exact unavailable action, its observed prerequisite, safe alternatives
+  already considered, and the event that makes it actionable. An agent-written
+  generic `no next action` sentence cannot close or suspend the outcome.
 
 ### 1.1 No autonomous termination or abandonment
 
@@ -246,14 +278,17 @@ be justified by a test written to mirror the new implementation.
   surfaces. Every visible surface is either **FROZEN**, **OPEN**, or
   **EVIDENCE-ONLY**. A label records the evidence boundary; it is not a visual
   completion claim.
-- **FROZEN** means no screenshot, source inspection, UI test, source edit, or
-  value recomputation may be performed for that surface. It may reopen only
-  after (a) a visible source change inside the named boundary, (b) new explicit
-  user feedback about that boundary, or (c) same-state counter-evidence.
+- **FROZEN** prevents speculative edits, value recomputation and repeated UI
+  validation of the accepted behavior. It is bounded by the receipt's route,
+  version, environment and dependencies, not by an entire filename. A narrow
+  source impact trace required by Section 7.1.1 is allowed without rerunning
+  the surface. Reopen only for (a) a relevant direct or indirect dependency
+  change, (b) new explicit user feedback, or (c) same-state counter-evidence;
+  record why the old receipt no longer covers the affected behavior first.
 - **OPEN** means a required decision or evidence boundary has not been reached.
-  It is not permission to repeatedly revisit the surface. Record one concrete
-  next evidence/action and leave it alone until that action becomes available
-  or one of the three reopening triggers occurs.
+  Record and perform one concrete available next action. If unavailable, retain
+  its exact prerequisite and recovery event; do not repeatedly replay it or
+  treat the whole outcome as blocked while another in-scope action is safe.
 - **EVIDENCE-ONLY** means a prior observation is retained but lacks a valid
   same-state comparison or a decisive device state. Do not rerun it merely to
   obtain another similar capture; retain it until a materially new comparison
@@ -410,7 +445,9 @@ build result, or an account concern without current S0 evidence does not by
 itself stop the active delivery lane. Once triggered, its completion requires
 both:
 
-1. real-device proof on `192.168.50.237:12345`, without clearing data, that a
+1. real-device proof on the user-authorized target appropriate to that account scenario
+   (the prior named real-device path was 237; its address is not authorization
+   to reconnect or switch targets), without clearing data, that a
    completed login survives force-stop/cold start, native account remains
    authenticated, and Favorites completes an authenticated read; and
 2. a complete postmortem written in-repository after that proof: the verified
