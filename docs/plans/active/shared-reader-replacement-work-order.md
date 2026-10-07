@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T15:47:25+08:00",
+  "updatedAt": "2026-10-07T16:25:24.963078+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 文档约束已收口；已恢复既有 E 操作，normal-finished 未命中",
+  "state": "OPEN · 文档约束已提交；E 同进程正常入场整段命名路径接受，剩余条件逐项保留",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "state": "active",
-    "title": "完成文档范围提交，恢复已有同源再入行",
-    "detail": "冷启完整操作已留证且整段审阅；正常完成分支仍未命中。只恢复一次已有同进程缓存再入前提，不改代码、等待或缓存。",
-    "startedAt": "2026-10-07T15:47:25+08:00"
+    "state": "waiting-for-recorded-condition",
+    "title": "当前可执行文档前置与 E 正常入场证据已完成",
+    "detail": "同源 warm P3 一次完整区间实际 finished，整段原帧/日志/显隐/隐藏返回已审阅。剩余自然未命中、能力限制及用户暂挂分别有证据与恢复条件；不重复冻结路径。",
+    "startedAt": "2026-10-07T16:25:24.963078+08:00"
   },
-  "nextAction": "One natural same-process P3 re-entry after the just-completed E read, using current source discovery and unchanged current HAP. Do not cold-restart, change cache, waits or guards; native image-cache reuse can precede initial canonical target measurement. Record one complete entry/show/hide/hidden-Back interval and accept normal-finished only if the actual finished event is emitted. If moving cancellation recurs, stop replaying this route and retain its specific unaccepted target prerequisite. Other user holds remain.",
+  "nextAction": "On an actual reachable ordinary native same-request pending/late/stale/early-moving/fallback reproduction or a verified emulator viewport/capability change, select that exact existing unaccepted row, bind current source/HAP/route and execute one complete checked interval. Current cached P3 cold/warm and existing unreadP59 evidence did not establish those prerequisites; do not force delays/cache changes, repeat accepted entry, re-run unchanged records, use197, or resume user-held work. Relevant user feedback or source/dependency change reopens only its affected row. Conditions and considered safe alternatives are recorded in remainingEvidenceConditions below.",
   "hosts": [
     {
       "name": "NextN",
@@ -45,8 +45,8 @@
       "install": "Checked positive install and native E identity; ordinary original DetailP3 retained.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; normal-finished geometry unaccepted. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3.",
-      "remaining": "Normal-finished metadata geometry separate from accepted cancelled-entry handoff; natural pending/stale/fallback native paths unhit; universal native chrome chronology/zero-top/all-layout/FPS/full replacement unproven; Shared-and-Legacy mode gap deferred.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change.",
+      "remaining": "Natural pending/late duplicate-progress/stale/early-moving/fallback native paths unhit; universal native chrome chronology/zero-top/all-layout/FPS/full replacement unproven; Shared-and-Legacy mode gap deferred. Named E root-owned opaque composed handoff is not a guaranteed140ms standalone fade.",
       "appHead": "f593e88ecbf827123504f5f46a003954fad1e942",
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
       "appHeadLayer": "Four-file E checkpoint; committed product-source hashes equal installed d7 HAP build inputs, no rebuild needed for documentation checkpoint.",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "执行约束整理完成，原有限修复证据沿用。已实际恢复一次 E 当前 P3 入场/显隐/隐藏后返回操作；仅 moving-cancelled，不接受 normal-finished 行。",
-      "action": "One natural same-process P3 re-entry after the just-completed E read, using current source discovery and unchanged current HAP. Do not cold-restart, change cache, waits or guards; native image-cache reuse can precede initial canonical target measurement. Record one complete entry/show/hide/hidden-Back interval and accept normal-finished only if the actual finished event is emitted. If moving cancellation recurs, stop replaying this route and retain its specific unaccepted target prerequisite. Other user holds remain.",
+      "detail": "执行约束整理已提交并恢复实际工作；E 当前 same-process cached P3 正常入场/显隐/隐藏后返回整段命名路径接受。剩余原自然分支与能力/用户暂挂不由此推广。",
+      "action": "On an actual reachable ordinary native same-request pending/late/stale/early-moving/fallback reproduction or a verified emulator viewport/capability change, select that exact existing unaccepted row, bind current source/HAP/route and execute one complete checked interval. Current cached P3 cold/warm and existing unreadP59 evidence did not establish those prerequisites; do not force delays/cache changes, repeat accepted entry, re-run unchanged records, use197, or resume user-held work. Relevant user feedback or source/dependency change reopens only its affected row. Conditions and considered safe alternatives are recorded in remainingEvidenceConditions below.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -131,7 +131,7 @@
         }
       ],
       "entryRemainingEvidencePlan": {
-        "existingBehavior": "Root thumbnail flight finishes before content handoff. Actual already-visible original content releases the retained opening proxy, including after motion cancellation. Cancellation without visible original content retains the initial same-request loading backdrop. Source Window/color admission and reverse return retain current owners. Normal verified geometry uses one flight and one140ms reveal.",
+        "existingBehavior": "Root thumbnail flight finishes before existing host content handoff. E root-owned handoff composes opaque original for a painted frame before removing the retained opening proxy; standalone presenter uses its140ms reveal. Actual visible original releases retained proxy including after motion cancellation; pending same-request cancellation retains original loading backdrop. Source Window/colors and current-target reverse retain their owners.",
         "acceptanceRows": [
           {
             "behavior": "Already observed cancelled entry",
@@ -153,11 +153,11 @@
           },
           {
             "behavior": "Normal decoded entry",
-            "expected": "Normal verified-geometry one rootflight/140ms reveal; terminal entryId retained so selected native bitmap does not remount; source bar visibility/colors retained until existing root-settled admission. No new image-acquisition or duplicate Stage from removing entry identity.",
+            "expected": "Normal verified-geometry one rootflight followed by the existing presenter handoff: E root-owned opaque original plus painted-frame composition; standalone animated reveal uses140ms. Terminal entryId retained so selected native bitmap does not remount; source bars/colors retain existing root-settled admission. No new acquisition or duplicate Stage.",
             "reject": "pre-flight fullscreen/color jump/internal zoom/black frame/early proxy removal/menu or geometry regression",
             "disposition": {
               "state": "NAMED ACCEPTANCE ONLY",
-              "evidence": "N current ordinarya258 and same-source Legacyfcdb pair; E partial73af normal finish has incomplete chrome route, so no full normal-finished E receipt. No all-layout/FPS acceptance. Current Na895/d178 explicit Debug normal-finished cached single/LTR whole interval also reviewed; it is a separately named route, not universal geometry."
+              "evidence": "N ordinarya258/same-source Legacyfcdb and current Na895/d178 named cached single/LTR explicit Debug accepted. E partial73af lacked a complete chrome route; current2c9ef292/d7 now covers normal-finished same-process cached P3 root/proxy/original/show/hide/hidden current-target Back/same DetailP3, current4–1127 reviewed by full unique RGB coverage and raw gates. E existing root-owned composition is not an accepted140ms timing claim. No all-layout/FPS acceptance."
             }
           },
           {
@@ -166,7 +166,7 @@
             "reject": "late forward readiness during reverse, blank/incorrect return or preference/progress loss",
             "disposition": {
               "state": "NAMED ACCEPTANCE ONLY",
-              "evidence": "N ordinary same FullPreviewP38; E current Debuge4 thumbnail and0c no-thumbnail same DetailP3/current-target return. Unhit fallback/stale/early-moving returns remain source only. Current Na895/d178 thumbnail and091 no-thumbnail explicit Debug restore same FullPreviewP38 with ready before colors; unhit rows unchanged."
+              "evidence": "N ordinary same FullPreviewP38; E current Debuge4 thumbnail and0c no-thumbnail same DetailP3/current-target return. Unhit fallback/stale/early-moving returns remain source only. Current Na895/d178 thumbnail and091 no-thumbnail explicit Debug restore same FullPreviewP38 with ready before colors; unhit rows unchanged. Current E2c9ef292 actual normal-finished show/hide/hidden Back closes at ready44.218 before status restoration44.219 and returns same DetailP3; remaining variants unchanged."
             }
           },
           {
@@ -180,7 +180,13 @@
           }
         ],
         "history": "../archive/shared-reader-work-order-through-20261007.md",
-        "causalRecord": "完整 owner/writer/async/parent/consumer 因果图及失败样本在历史快照与当前 receipt 中；历史 nextAction 均已撤出调度。当前任务只取本单顶层 nextAction。"
+        "causalRecord": "完整 owner/writer/async/parent/consumer 因果图及失败样本在历史快照与当前 receipt 中；历史 nextAction 均已撤出调度。当前任务只取本单顶层 nextAction。",
+        "contractClarification": {
+          "recordedAt": "2026-10-07T16:25:24.963078+08:00",
+          "previousWording": "Generic one140ms reveal conflated standalone animation with E root-owned composed handoff.",
+          "sourceBasis": "Unchanged E ReaderThumbnailTransitionCoordinator (last source commit1ef76e97), revealRootOwnedOriginal commitReveal + postFrame finished; startOpeningHandoff root-owned branch composes before removal. Existing Legacy/root contract, not a new standard derived from candidate pixels.",
+          "limit": "Named current visual interval accepted; guaranteed140ms E reveal duration and all-layout/FPS remain unaccepted. No product change."
+        }
       },
       "handling": {
         "trackingSince": "2026-10-06T13:16:27+08:00",
@@ -189,36 +195,57 @@
         "note": "No independently recorded effort intervals for this existing row; zero is recorded time only, not total actual time."
       },
       "remainingEvidenceConditions": {
-        "recordedAt": "2026-10-07T08:00:45.423291+08:00",
+        "recordedAt": "2026-10-07T16:25:24.963078+08:00",
         "scope": "Original five acceptance rows and existing pending/stale/geometry limits only; no new feature/audit/test queue.",
-        "currentActionableDefect": "N duplicate explicit Debug entry owner and default-visible initial parent intent now source corrected; complete two-route current HAP intervals have no remaining counterexample in the declared cached portrait source/body/chrome/hidden-return boundary.",
+        "currentActionableDefect": "No further source-proven edit from these observations. This does not itself stop investigation or acceptance; current E normal-finished obligation was performed and accepted separately. Remaining exact preconditions/alternatives/recovery events follow.",
         "conditions": [
           {
             "boundary": "Natural same-request pending cancellation",
             "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready.",
-            "disposition": "UNACCEPTED native condition; no source-proven further change. Forced delay/cache mutation/timing sweep forbidden."
+            "disposition": "UNACCEPTED native condition; no source-proven further change. Forced delay/cache mutation/timing sweep forbidden.",
+            "unavailableAction": "Observe pending original after same-request motion cancellation without synthesizing readiness.",
+            "observedPrerequisite": "Current coldP3 bc286415 cancels moving but original is shown; warmP3 2c9ef292 normal-finishes. Earlier natural unread continuousP59 run00:33:46 emits layout cancellation at00:33:49.832, not bound motion-cancelled pending original.",
+            "safeAlternativesConsidered": "Cold and warm current P3, ordinary beyond-neighbor unreadP59 and existing uncancelled loading receipts are distinct safe alternatives already considered; none accepts this required simultaneous native state. Cache deletion/delay/timing sweep would change the condition and is forbidden.",
+            "recoveryEvent": "A naturally unresolved current original request with actual motion cancellation and bound request/slot/epoch; then capture the existing complete interval once. No claim that all other galleries cannot reach it."
           },
           {
             "boundary": "Late canonical displayed observation with duplicate persisted page",
             "currentEvidence": "Current readiness bridge is separate from progress-write deduplication; native late-after-cancel/same-page branch was not emitted in retained samples. Existing callback/terminal lifetime source review found no concrete blocker.",
-            "disposition": "UNACCEPTED native condition; not an additional implementation candidate without actual counter-evidence."
+            "disposition": "UNACCEPTED native condition; not an additional implementation candidate without actual counter-evidence.",
+            "unavailableAction": "Observe a late current displayed-original callback after cancellation while saved page is already equal.",
+            "observedPrerequisite": "Current cold/warm intervals do not emit this combined ordering; source readiness is separate from progress-write deduplication. Warm normal finish is not this row.",
+            "safeAlternativesConsidered": "Existing equal-page source bridge/epoch fencing and cancelled-entry evidence retained; replaying a ready cache hit or command anchor cannot accept a late displayed callback.",
+            "recoveryEvent": "Actual bound late callback for the same current request/slot/unit with unchanged persisted page, or a relevant source/dependency counterexample."
           },
           {
             "boundary": "Stale/background/early-moving/fallback variants",
             "currentEvidence": "Current request/epoch/foreground/source guards and close fences are source-mapped; E early layout Back has prior named evidence, not these variants. Current declared two Debug intervals settle normally or cancelled with body; those variants were not hit.",
-            "disposition": "SOURCE ONLY for these variants; do not relabel as runtime accepted or extend existing protocol through repeated timing guesses."
+            "disposition": "SOURCE ONLY for these variants; do not relabel as runtime accepted or extend existing protocol through repeated timing guesses.",
+            "unavailableAction": "Observe stale/background/early-moving/system-fallback variants at their actual guarded request lifecycle.",
+            "observedPrerequisite": "Existing bounded early-Back ordinary E9e2e cancelled from layout, not the missing moving branch; current normal and moving-cancelled completed intervals do not emit stale/background/fallback cases.",
+            "safeAlternativesConsidered": "Current owner/epoch/foreground/reverse source map and prior early-Back named receipt considered; rapid timing guesses, synthetic callbacks and frozen route repetitions excluded.",
+            "recoveryEvent": "A bound actual ordinary-route native variant or relevant changed guard/feedback; select only that row and declare one full interval."
           },
           {
             "boundary": "Zero-top/landscape and all-layout/FPS/full replacement",
             "currentEvidence": "Current emulator input left actual1320x2232 viewport unchanged, so it cannot establish zero-top/landscape. Recorded host frames/native events are different clocks. No performance superiority or all-layout proof is available.",
-            "disposition": "CAPABILITY/EVIDENCE LIMIT; real-device197 remains excluded by user, no repeated transport/rotation attempts."
+            "disposition": "CAPABILITY/EVIDENCE LIMIT; real-device197 remains excluded by user, no repeated transport/rotation attempts.",
+            "unavailableAction": "Accept real zero-system-top/landscape geometry or performance superiority.",
+            "observedPrerequisite": "Existing checked display-capability22:53:28 exposes dms.hidumper.supportdebug=false;22:55:08 rotation command exited0 but retained actual1320x2232 portrait root. Host movie/native clocks are not an FPS measurement.",
+            "safeAlternativesConsidered": "Existing guest rotation input was tried/restored; command success is not changed geometry. Host cosmetic window rotation does not prove guest viewport;197 is excluded. No app orientation change just to manufacture the test.",
+            "recoveryEvent": "A different actual guest viewport/zero-top source capability verified on authorized emulator, or user-authorized appropriate capability/performance measurement; no repeated unchanged rotation command."
           },
           {
             "boundary": "Layout-switch short black / system enhancement / Koma folder production",
             "currentEvidence": "Existing separate dispositions: Shared and Legacy both short-black; API26 cross-parent reuse has no bounded safe candidate; enhancement skipped by user after unavailable guest service; folder moved to paused independent K production.",
-            "disposition": "DEFERRED or USER HOLD unchanged; not this consistency capability queue."
+            "disposition": "DEFERRED or USER HOLD unchanged; not this consistency capability queue.",
+            "unavailableAction": "Fix layout-switch short black, validate successful system enhancement, or perform Koma folder import.",
+            "observedPrerequisite": "User limited layout work on2026-10-05, skipped system enhancement without emulator capability, and independent Koma production Goal remains PAUSED.",
+            "safeAlternativesConsidered": "Existing source feasibility and separate Shared/Legacy black samples retained; do not build larger cross-parent reuse or switch model/device; folder remains host feature.",
+            "recoveryEvent": "Explicit user reopening of the relevant hold and its concrete capability; independent K production is not automatically resumed."
           }
-        ]
+        ],
+        "executionDisposition": "OPEN conditions, not full replacement acceptance or proof that all possible native routes are unavailable. Existing permitted finite cold/warm/unread/rotation alternatives are recorded; do not repeat them to wait for a different outcome. User holds remain distinct from native unhit and platform evidence limits."
       },
       "executionRecovery": {
         "recordedAt": "2026-10-07T14:56:27+08:00",
@@ -237,16 +264,16 @@
           "releasedAt": "2026-10-07T15:26:50+08:00"
         },
         "latestResult": {
-          "recordedAt": "2026-10-07T15:47:25+08:00",
-          "receipt": "e-post-controls-normal-entry-result.json",
-          "sourceGate": "e-post-controls-normal-entry-source.json",
-          "wholeManifest": "e-post-controls-normal-entry-whole.json",
-          "actualResult": "One current-binding continuous interval after completed prerequisite; moving-cancelled, normal-finished UNHIT, no acceptance promotion. Source cancellation reasons not logged; no speculative patch/replay."
+          "recordedAt": "2026-10-07T16:25:24.963078+08:00",
+          "receipt": "e-post-controls-warm-entry-result.json",
+          "sourceGate": "e-post-controls-warm-entry-source.json",
+          "wholeManifest": "e-post-controls-warm-entry-whole.json",
+          "actualResult": "One distinct same-process cached P3 interval after cold bc286415; actual normal-finished id3 and complete chrome/hidden Back, whole current4–1127 reviewed. Named route accepted; no source/cache/wait mutation. Raw manifest descriptive context retained stale cold label; actual action array/fresh ledger/native PID identify warm route."
         },
         "sourceDisposition": {
           "currentPhaseOnlyReason": "No current caller log; existing guards preserved. Prior diagnostic maps preview-to-original metadata refinement at unchanged root, not evidence of current Window resize.",
-          "review": "Current bc286415 full interval through exact RGB first-frame coverage; same cancelled-entry bounded behavior observed.",
-          "distinctRemainingAction": "Natural same-process just-presented URI re-entry, once; no cold restart or mutation. Stop repeats if target still cancels."
+          "review": "Cold bc286415 moving-cancelled retained separately; distinct warm2c9ef292 normal-finished branch accepted for full named interval after raw review.",
+          "distinctRemainingAction": "Completed once with actual finished; freeze this cached portrait row. Remaining native/capability prerequisites are classified below, no repeated warm/cold route."
         }
       }
     },
@@ -682,10 +709,10 @@
     "performanceSuperiorityProven": false,
     "deferredOutcomesRemainUnresolved": true,
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
-    "currentBindingReceipt": "reader-status-intent-latest-receipt.json",
-    "currentRestorationReceipt": "n-debug-root-initial-intent-timeout-restored/run-metadata.json",
+    "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
+    "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
     "readerSpecificWorkActive": true,
-    "state": "OPEN — 文档前置完成并已恢复原动作；正常完成分支未接受"
+    "state": "OPEN — 文档整理及 E 当前正常入场命名义务已完成；原条件未验收/暂挂仍保留"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
@@ -700,8 +727,9 @@
       "nexte-tap-zone-current-review.json"
     ],
     "komaPerBook": "koma-per-book-current-acceptance-receipt.json",
-    "statusIntent": "reader-status-intent-latest-receipt.json",
-    "postControlsRun": "e-post-controls-normal-entry-result.json"
+    "statusIntent": "status-intent-current-acceptance-receipt.json",
+    "postControlsRun": "e-post-controls-normal-entry-result.json",
+    "postControlsWarmRun": "e-post-controls-warm-entry-result.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -772,14 +800,14 @@
     }
   },
   "currentPhysicalState": {
-    "observedAt": "2026-10-07T15:31:22.994+08:00",
+    "observedAt": "2026-10-07T16:00:47.084695+08:00",
     "target": "127.0.0.1:5555",
     "app": "NextE Detail4203217 after Reader hidden-area Back",
     "root": "[0,117][1320,2232]",
     "sourceTile": "page2 [673,745][947,1131] / ContinueP3; discovery/current interval only",
-    "cleanup": "AWAKE; ScreenOffTimeout and OverrideTimeout30000 restored, keepScreenOn=false restored, lease released without force. No normal-finished acceptance.",
+    "cleanup": "AWAKE; ScreenOffTimeout and OverrideTimeout30000 restored, keepScreenOn=false restored, lease20261007-075848-76e5ad3d released normally. Normal-finished named warm route accepted; no all-layout/FPS/full replacement.",
     "evidenceRoot": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/emulator__PHEMU-FD00/not-applicable/portrait-1320x2232",
-    "receipt": "e-post-controls-normal-entry-result.json"
+    "receipt": "e-post-controls-warm-entry-result.json"
   }
 }
 -->
@@ -787,7 +815,7 @@
 ## 当前任务与权威
 
 本单是三个宿主的唯一 Reader 执行队列。用户最新指令优先。执行文档前置已完成，
-Reader 结果仍 OPEN，恢复顶部记录的已有 E 正常入场未验收动作；独立 Koma 生产 Goal
+Reader 结果仍 OPEN，E 正常入场的当前命名区间已完成；剩余动作按顶部明确条件恢复。独立 Koma 生产 Goal
 保持 PAUSED。租约、归档、构建与自动任务不创建授权。
 
 执行规范见 [NextN integrity](../../controls/nextn-execution-integrity.md)、
@@ -801,16 +829,20 @@ QA 入口只索引当前事实，不复制下一步。历史证据完整存于
 和工时仍在上方快照。共同产品基线 Kit `5b9014cc`；两文件 geometry WIP 保留，不能据此宣称
 全几何验收。文档修改不生成新 HAP 或新的运行结论。
 
-E 当前 accepted 的缩略图样本是 moving-cancelled，不能接受正常完成的整段几何与 chrome。
-同 HAP 早先 `73af87d8` 原生 finished 样本证明该分支可达，但未覆盖隐藏后 Back。
-这项已有义务不能被“没有源码可修”排除。自然 pending、late-progress、stale/fallback、
-zero-top/landscape 另保留各自实测前提；不能强延迟、改缓存或扫描输入时长造出命中。
+文档前置提交后，先保留冷启 `bc286415` 的 moving-cancelled 判定；再按既有同进程缓存前提，
+只做一次自然 P3 再入 `2c9ef292`。实际 id3 moving40.528→waiting41.007→revealing41.016→finished41.042，
+显栏42.493→藏栏43.544→隐藏后 Back44.169；close-layout-ready44.218早于恢复系统色44.219。
+当前原帧4–1127整段已审阅：单次根飞行、缩略图/原图连续交接、工具栏显隐、当前目标反向回到同 DetailP3。
+此命名 normal-finished 区间接受；未命中分支不能推广。完整 MOV/PTS/原帧及旧冷启失败边界保留。
 
-文档前置提交后已实际恢复一次 E P3 完整动作并录屏（`bc286415`）：moving16.573、
-取消16.656、显栏18.399、藏栏19.462、Back20.096；close-layout-ready20.153早于
-恢复系统色20.154。仍未命中正常完成分支；整段已按原始联排与精确像素等价审阅，仍不能把取消分支算成正常完成通过。
-原 HAP/九份源码 SHA 相同，未改缓存、等待参数或产品代码；ContinueP3、30 秒超时
-及 keepScreenOn 已恢复，租约正常释放。完整产物与审阅限制见 currentPhysicalState/currentEntryReceipts。
+E 既有 root-owned 手法是原图不透明合成后等一个绘制帧，再撤外层占位；通用表原“140ms reveal”
+混入了 standalone 的动画时长，已依据未改变的原 Coordinator 明确区分。没有为了录像修改产品或
+放宽入场/系统栏/黑帧等失败条件，也没有接受 E 保证140ms或任何FPS结论。
+
+未改变 HAP/九份源码、等待、缓存或产品。原 Detail4203217/root `[0,117][1320,2232]`、ContinueP3
+和30秒超时、keepScreenOn均恢复，租约正常释放。自然 pending/late/stale/fallback、zero-top/landscape
+仍未接受；顶部 remainingEvidenceConditions 分列被阻止动作、已有实际证据、安全替代和恢复事件。
+系统增强、布局大改与独立 Koma 生产仍沿原用户暂挂，不能以“没有代码可修”或这次命名通过替代。
 
 ## 验收方法
 

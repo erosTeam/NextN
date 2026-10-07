@@ -9,21 +9,28 @@
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |
 | N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回的命名区间 | 自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
-| E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择与命名 moving-cancelled 缩略图、无缩略图加载/显隐/隐藏后同 DetailP3 返回 | normal-finished 整段 chrome/hidden-Back 尚未接受；自然 pending/stale/fallback、全量几何/FPS/替换 |
+| E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载 | 自然 pending/stale/fallback、全量几何/FPS/替换 |
 | K | HAP `3a32ff76`：仅原目录/章节/自动阅读/按书设置/标题/媒体面板命名证据，依赖不变才沿用 | 全量布局/FPS/替换；文件夹实际导入移回暂停的 Koma 生产工作 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。
 两文件共同 geometry WIP 未提交且原字节保留；不存在全量替换或性能超越的接受结论。
 
-本次 material physical result（2026-10-07 15:31+08）：文档前置提交后，实际恢复一次 E P3
-入场→显栏→藏栏→隐藏后 Back，并连续录屏 `bc286415`。原生 id1 在 moving 后取消，
-没有 finished，故 normal-finished 行仍未接受；整段联排及精确原始像素等价已审阅，不新增正常完成分支通过。
-同 HAP/九份源码 SHA 已核对；原 Detail4203217/root `[0,117][1320,2232]`、ContinueP3 保留。
-15:31:22.994 checked postflight 读回 AWAKE、两种 timeout=30000、keepScreenOn=false 已恢复，
-租约随后正常释放。产物位于 ignored `.hvigor/outputs/reader-entry-statusbar-20261006/`，
-`e-post-controls-normal-entry-result.json` 记录原 MOV/日志/协议、取消调用点未记录及审阅限制。
-未改等待、缓存或产品；不能把这次命令执行成功推广为正常完成、所有入场或性能通过。
+本次 material physical result（2026-10-07 16:00+08）：文档前置完成后，冷启 `bc286415`
+只命中 moving-cancelled，旧判定保留。一次自然同进程 warm P3 再入 `2c9ef292` 实际
+moving→waiting→revealing→finished→显栏→藏栏→隐藏后 Back→同 DetailP3；原帧4–1127完整覆盖
+已审阅（所有不同RGB首次帧联排1–26及原图门控，后续精确重复映射保留）。只接受此 named cached
+portrait/single/LTR explicit Debug normal-finished 区间，不接受未命中分支、FPS或全量替换。
+
+E 原 root-owned 合成路径先提交不透明原图、等绘制帧再撤占位；其26ms原生 phase区间不能接受
+standalone140ms动画承诺。工作单原通用时长描述已按未改变的原源码澄清；没有更改产品或验收红线。
+原 manifest 描述元数据残留前一次 cold 字样，原产物不改写；实际动作无cold/cache操作、fresh warm
+绑定与同PID31472/id3日志证明这次warm路径，限制明确记录于 `e-post-controls-warm-entry-result.json`。
+
+HAP/九份源码SHA相同，未重构建、安装或改缓存/等待。原 root `[0,117][1320,2232]`、ContinueP3
+及16:00:47.084695 checked AWAKE、timeout/override=30000、keepScreenOn=false恢复，租约正常释放。
+剩余自然未命中、能力限制和用户暂挂的实际证据/安全替代/恢复条件只在唯一工作单，不复制队列。
+所有产物仍位于 ignored `.hvigor/outputs/reader-entry-statusbar-20261006/`，构建成功不代替这份运行证据。
 
 ## 非 Reader 遗留边界（不自动启动）
 
