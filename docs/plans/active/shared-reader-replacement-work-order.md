@@ -3,28 +3,28 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T18:28:31.171783+08:00",
+  "updatedAt": "2026-10-07T19:21:09.348844+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · N普通动作留证；继续既有章节边界源码对照",
+  "state": "OPEN · K切章/冷启命名进度接受；退出History颜色反例调查",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "核查Koma既有章节末端与进度语义",
-    "detail": "N实际306.524秒命令链已执行，MOV仅217.063秒且只到P35；短补拍覆盖末段，不能接受完整五分钟画面。K旧版章节边界显式start/end，Shared现统一restore，需要先完成因果与影响评估。",
-    "startedAt": "2026-10-07T18:28:31.171783+08:00"
+    "title": "核查Koma退出后History投影与主题范围",
+    "detail": "Current55c manual/cold progress originals fully reviewed and scoped K/Kit checkpoints committed. Today cards become dark on Reader return while yesterday stays white; cold restores white. Map per-page background projection and close ordering before any patch.",
+    "startedAt": "2026-10-07T19:21:09.348844+08:00"
   },
-  "nextAction": "Resolve the existing Koma chapter-edge/persistence gap by comparing Legacy user boundary intent against current Shared host/Kit request semantics and current installed3a32 source binding. Preserve frozen chapter-menu acceptance. Establish one native ordinary baseline before a narrow cause-backed change; no production feature work, new source/import,cache/delay mutation or repeated entry checks.",
+  "nextAction": "Map exact History projection notifications and theme scope order; correct only a source-proven return update ownership defect.",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
-      "kit": "fca2b2267a2aa6ee5863100f5962424cc34e547e",
+      "kit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "hap": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
-      "build": "Six-file N explicit Debug root reuse plus five-line initial-intent seed; signed build0. Ordinary embedded body/E/K/Kit/Legacy unchanged; geometry WIP included and not accepted.",
+      "build": "Six-file N explicit Debug root reuse plus five-line initial-intent seed; signed build0. Ordinary embedded body/E/K/Kit/Legacy unchanged; geometry WIP included and not accepted. Shared dfdd signature compiled0 with current entrypoint; installed baseline remains5b.",
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
@@ -34,14 +34,14 @@
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
       "appHeadLayer": "Current six-source checkpoint; installed a895 build-source hashes are bound by n-debug-root-current-postcommit-binding.json. Documentation does not add runtime acceptance.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "Docs-only child of installed product baseline5b9014cc; product tree and existing geometry WIP unchanged, no rebuild or new runtime acceptance."
+      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
-      "kit": "fca2b2267a2aa6ee5863100f5962424cc34e547e",
+      "kit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "hap": "d7cdffba9b05453a3e5a63f5bba42255b911b178a1ddbf829a1f139e5708038b",
-      "build": "Current E-only d7 signed build0; root-owner reuse/delegated parent style and claim retirement. Kit/N/K/Legacy byte unchanged; geometry WIP retained.",
+      "build": "Current E-only d7 signed build0; root-owner reuse/delegated parent style and claim retirement. Kit/N/K/Legacy byte unchanged; geometry WIP retained. Shared dfdd signature compiled0 with current entrypoint; installed baseline remains5b.",
       "install": "Checked positive install and native E identity; ordinary original DetailP3 retained.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
@@ -51,23 +51,23 @@
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
       "appHeadLayer": "Four-file E checkpoint; committed product-source hashes equal installed d7 HAP build inputs, no rebuild needed for documentation checkpoint.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "Docs-only child of installed product baseline5b9014cc; product tree and existing geometry WIP unchanged, no rebuild or new runtime acceptance."
+      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
     },
     {
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
-      "kit": "fca2b2267a2aa6ee5863100f5962424cc34e547e",
-      "hap": "3a32ff76cca0295ae19b6560a2303467edadcbc4f754cf891460ae32d231ff3c",
-      "build": "Current status-intent signed HAP exact source binding; all3 compiled. Geometry WIP included, no full replacement claim.",
+      "kit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
+      "hap": "55c1706ffbbb668f90b02b0dcba58174beac79866fb142a100473ac8ceda3552",
+      "build": "Current55c release/default build0; prepared target page-count readback. Exact source hashes match fa45 host and dfdd Kit; unchanged geometry WIP included.",
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
-      "verdict": "本书设置与标题命名路径接受；总体Reader替换仍OPEN",
+      "verdict": "切章/冷启命名进度接受；退出History颜色反例OPEN",
       "verdictKind": "open",
-      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。",
-      "remaining": "Current K named ordinary entry/chapter/auto-read/settings/title/media receipts retained only for identical dependencies. All-layout/FPS/full replacement unproven; folder import belongs paused Koma production work, not this Reader consistency queue.",
-      "appHead": "0cc4bf471866866eba3a60698ac07f0ee9172416",
-      "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
+      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored.",
+      "remaining": "Current K named ordinary entry/chapter/auto-read/settings/title/media receipts retained only for identical dependencies. All-layout/FPS/full replacement unproven; folder import belongs paused Koma production work, not this Reader consistency queue. Current History return color defect under source investigation; eligible automatic end/start native branch unhit.",
+      "appHead": "fa45b3c5635e5dc36240c83fd7f0ddb263c85ebe",
+      "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "Docs-only child of installed product baseline5b9014cc; product tree and existing geometry WIP unchanged, no rebuild or new runtime acceptance."
+      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
     }
   ],
   "gaps": [
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "E/N普通生产命名基本行为留证；N五分钟完整视觉覆盖缺口保留；不接受全量替换。继续既有K章节末端/持久化边界源码对照。",
-      "action": "Resolve the existing Koma chapter-edge/persistence gap by comparing Legacy user boundary intent against current Shared host/Kit request semantics and current installed3a32 source binding. Preserve frozen chapter-menu acceptance. Establish one native ordinary baseline before a narrow cause-backed change; no production feature work, new source/import,cache/delay mutation or repeated entry checks.",
+      "detail": "E/N普通生产命名基本行为留证；K切章/冷启进度有限接受并提交，退出History出现同父分组颜色反例，先作源码因果/影响评估。完整替换仍未接受。",
+      "action": "Map exact History projection notifications and theme scope order; correct only a source-proven return update ownership defect.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -389,6 +389,35 @@
             "unaccepted": "Full five-minute visual coverage/arbitrary-user no-bug guarantee/FPS/download/all-layout/full replacement"
           }
         }
+      },
+      "chapterEdgePlan": {
+        "recordedAt": "2026-10-07T18:38:51.793422+08:00",
+        "reference": "Koma ReaderChapterSequence automaticContinuationChapterIds and Legacy ReaderPage crossToNext/PreviousChapter; menu uses resume, boundary uses start/end; existing feature e8817da5 (2026-09-22).",
+        "cause": "ReaderSurface explicit chrome chapter and actual boundary both call ReaderChapterNavigation.request without origin; Koma switchChapter uses adapter.adjacent continuation??chapterIds and openChapterTarget always restores persisted target. This loses verified-sequence authorization and one-shot edge landing. ReaderPagedSession.open only supports page start, so last-page bottom/split end cannot be represented for a backward boundary.",
+        "owners": "Kit determines current gesture boundary and generic initial source-page edge. Koma owns verified sequence, source preparation, target resume/start/end choice and progress flushing. Existing observed-position writer/catalog commit remains sole progress authority.",
+        "candidate": "Carry explicit/boundary origin in existing optional ChapterNavigation. Koma adjacent uses existing automaticContinuationChapterIds only for boundary; explicit/picker retain current fallback/resume. Prepare target beside current chapter, flush existing observed progress, resolve start/end from prepared count, then same session.open with optional generic page-end alignment, retained for retry. No new component/session/controller.",
+        "impact": "Koma current chapter edge/persistence only; manual chapter callbacks remain explicit and same saved position. Kit open default two-argument behavior unchanged for N/E; all three consumer builds required for shared signature changes. Existing request/epoch/cancellation/active checks retained.",
+        "unchanged": "Root entry/status-bar/window/transition, UI tree/geometry/menu items/thumbnails/preload/cache/mode settings/Legacy/production source features unchanged. Preserve ContinuousSurface f715588a and PagedViewport ac0c8c90 byte-for-byte.",
+        "baseline": "Current installed 3a32 ordinary cold Library then native History Terra01upper P1/60. One ordinary backward edge swipe changed to02lower P1/71; PID2233 chapter_boundary previous7493→2866/opened. MOV7142be3a retained; no fixture/delay/cache mutation. Original Library LongCatalogue102 P1/100% and Terra upperP1 history recorded.",
+        "disproof": "Unverified sequence still auto-crosses; explicit menu/picker stops restoring; next boundary does not land first; previous boundary does not land last reading fragment/bottom; departed progress overwritten by target; stale/cancelled/background request commits; initial index defaults in N/E change; root/menu/geometry changes.",
+        "validation": "Source cause and unchanged-default diff first, compile all consumers, bound native eligible/unverified boundary plus explicit restoration and return/cold progress. Unavailable eligible metadata branch stays unaccepted, not forced by fixture. No frozen entry/menu replay except affected manual-vs-boundary distinction.",
+        "progressReadbackAddendum": {
+          "recordedAt": "2026-10-07T19:02:00+08:00",
+          "observed": "Candidate c504 main movie frame380=upper3, frame630=upper1 after manual lower/upper; cold same-unit terminal upper3. Main resume claim REJECTED.",
+          "cause": "chapterInitialPage calls host readInitialPage(work,unit) before first target observation. Index.readerLabInitialConfig resolves only active transient source or Library; target transient config is prepared in adapter but not yet committed, so readReaderLabInitialPage returns0. Stored chapter-position keyed comic/unit is present; cold active-unit read succeeds.",
+          "patch": "Pass prepared totalPages as optional third parameter through existing readInitialPage callback into the same ReaderSessionStore.restorePageIndex using a read-only identity/count config. No premature target commit, new progress store or pending state.",
+          "affected": "KomaReaderLabPage event+chapterInitialPage; Index.readReaderLabInitialPage+both production/lab bindings. Initial call retains existing config fallback; observed progress writes/guards/session remain unchanged.",
+          "disproof": "Ordinary upper3->manual lower->manual upper remains upper1 despite valid prepared count, or cold progress/Library original item changes.",
+          "validation": "Rebuild Koma only because shared and E/N source unchanged; review one affected native manual return interval. Do not replay blocked-edge or other frozen menus."
+        },
+        "implementationState": "Kitdfdd/Kfa45 committed; all3 consumers compile0; current55c manual/cold progress named accepted, eligible auto-end/start algorithm-only.",
+        "runtimeReceipt": "koma-chapter-edge-progress-acceptance-receipt-20261007.json"
+      },
+      "historyReturnCounterexample": {
+        "recordedAt": "2026-10-07T19:21:09.348844+08:00",
+        "evidence": "55c manual movie0d5e96f2 original725 onward Today rows dark, Yesterday white; cold movie25b103b8 History all white. Full unique RGB reviews, same1320x2232 native root.",
+        "sourceFindings": "Index.persistReaderLabObserved increments readerProgressRevision per observed page. HistoryPage reloads hidden History on every revision; progress/timestamp embedded in row and section ForEach keys rebuilds whole affected group. ReaderSurface scopes DARK. Exact dark-resource resolution cause not yet established.",
+        "disposition": "OPEN; no forced-light workaround or History redesign; source-map close/return notification owner first."
       }
     },
     {

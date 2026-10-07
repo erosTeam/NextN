@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回、普通生产菜单/设置/翻页/rail/后台保持及同P38往返的命名区间 | 完整五分钟视觉覆盖、自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
 | E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载、显式 Debug Home/前台 retirement 返回同DetailP3 | 连续五分钟/下载预载/自然 pending/stale/fallback、全量几何/FPS/替换 |
-| K | HAP `3a32ff76`：仅原目录/章节/自动阅读/按书设置/标题/媒体面板命名证据，依赖不变才沿用 | 全量布局/FPS/替换；文件夹实际导入移回暂停的 Koma 生产工作 |
+| K | HAP `55c1706f` / host `fa45b3c5`、Kit `dfdd2b04`：原按书设置/标题等只按未变依赖沿用；不可信序列边界拒绝自动越章、手动 upper3→lower1→upper3、无清数据冷启实际 upper3 的命名证据 | 退出 History 今天组变暗反例 OPEN；可信自动 end/start native 未命中；全布局/FPS/替换；独立生产工作暂停 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。
@@ -41,6 +41,10 @@ P12–14原帧313–394确有黑底加载，不接受为缓存/下载性能。�
 本次 material physical result（2026-10-07 17:51–17:56、18:17补拍+08）：N a895 普通生产同Gallery663205/single/LTR，连续受控命令链306.524秒，实际railON、P38→26快滑、原四方向菜单、P26→32、宿主设置、Home/普通Ability回同ReaderP32、P32→38、railOFF、Back/Continue/Back同DetailP38。没有改设置/缓存/数据/后端或产品源码。见 `n-ordinary-basic-use-receipt-20261007.json`。
 
 原MOV `d3ba0ee9`实际媒体217.063秒、12319帧/2693种RGB；57张全首次RGB联排和原图门控已审阅，只录到P35。最后P36–38及退出重入没有该录像覆盖，日志/终点不补足画面。短例外补拍MOV `75645822`的972帧/832种RGB、18张联排/原图门控覆盖Continue38→35→38→Back→Continue38→Back；原图710实际38/40，终态Detail继续P38、root0,117、超时30000和退出keep=false恢复。两段不能拼成完整五分钟视觉接受；宿主录像帧率不能作为guestFPS。只接受已观察的命名普通菜单/设置/翻页/rail/后台保持/同P38进度往返，完整替换和五分钟普通用户无明显bug承诺仍无证据。
+
+本次 material physical result（2026-10-07 19:04–19:07+08）：K `55c1706f` 普通 History Terra upper3→手动 lower1→upper3，MOV `0d5e96f2` 1137原帧/779种RGB全部首次帧审阅；实际原390/464/618起对应3/1/3。无清数据force-stop/plain cold MOV `25b103b8` 736帧/600种RGB全部首次帧审阅，History3/60→实际upper3；最终原书架Catalogue102 P1/100%、超时30000恢复。当前源码与K `fa45b3c5` / Kit `dfdd2b04` 提交字节相符。N/E仅新Kit签名构建0，未安装，不扩展其运行接受。
+
+原 `3a32` 不可信顺序仍自动越章及 `c504` 手动3→1是保留的失败，不抹掉。当前可信自动向前start/向后end只有源码和核心算法结果；未在普通源数据命中，不称运行接受。录像另发现**退出后History今天组黑卡片、昨天组仍白**（manual原725以后持续；cold后全白）。整段返回因此不接受，继续查进度投影通知及主题作用域，不强制改颜色。源中逐页通知后台History并以进度/timestamp重建整组已定位，具体颜色因果尚未确认。详细SHA/PTS及边界见 `koma-chapter-edge-progress-acceptance-receipt-20261007.json`。
 
 ## 非 Reader 遗留边界（不自动启动）
 
