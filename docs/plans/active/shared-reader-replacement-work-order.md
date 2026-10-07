@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T19:21:09.348844+08:00",
+  "updatedAt": "2026-10-07T19:40:42.395231+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · K切章/冷启命名进度接受；退出History颜色反例调查",
+  "state": "OPEN · K切章进度/返回投影命名路径已提交；继续横屏能力边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "核查Koma退出后History投影与主题范围",
-    "detail": "Current55c manual/cold progress originals fully reviewed and scoped K/Kit checkpoints committed. Today cards become dark on Reader return while yesterday stays white; cold restores white. Map per-page background projection and close ordering before any patch.",
-    "startedAt": "2026-10-07T19:21:09.348844+08:00"
+    "title": "核查模拟器实际横屏能力",
+    "detail": "K host projection source checkpoint850af0c5 accepted only named Shared/Legacy returns. Source hashes bind installedb4fb; original Shared/upper1/Library restored. Inspect actual guest orientation capability instead of replaying failed commands.",
+    "startedAt": "2026-10-07T19:40:42.395231+08:00"
   },
-  "nextAction": "Map exact History projection notifications and theme scope order; correct only a source-proven return update ownership defect.",
+  "nextAction": "Inspect existing emulator rotation controls/capability and host orientation ownership once; if guest viewport can actually change, declare one zero-top/landscape affected interval. Do not repeat unchanged guest rotation commands or alter app orientation/cache to manufacture evidence.",
   "hosts": [
     {
       "name": "NextN",
@@ -57,14 +57,14 @@
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
       "kit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
-      "hap": "55c1706ffbbb668f90b02b0dcba58174beac79866fb142a100473ac8ceda3552",
-      "build": "Current55c release/default build0; prepared target page-count readback. Exact source hashes match fa45 host and dfdd Kit; unchanged geometry WIP included.",
+      "hap": "b4fb2cf0560eee697b489f1c4bafd8ca86982fa8edb381936e347537e95d5182",
+      "build": "Currentb4fb release/default build0; KIndex7+/4- projection boundary only. All nine current inputs equal installed HAP build/source binding and committed850af0c5; Kitdfdd/geometry WIP unchanged.",
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
-      "verdict": "切章/冷启命名进度接受；退出History颜色反例OPEN",
+      "verdict": "切章/冷启进度及Shared/Legacy返回投影命名路径接受；其他原边界OPEN",
       "verdictKind": "open",
-      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored.",
-      "remaining": "Current K named ordinary entry/chapter/auto-read/settings/title/media receipts retained only for identical dependencies. All-layout/FPS/full replacement unproven; folder import belongs paused Koma production work, not this Reader consistency queue. Current History return color defect under source investigation; eligible automatic end/start native branch unhit.",
-      "appHead": "fa45b3c5635e5dc36240c83fd7f0ddb263c85ebe",
+      "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored. Currentb4fb Shared ordinaryHistory1->3->Back and nativeLegacy3->4->Back complete RGB reviews14/17contacts: all Today/Yesterday remain white, rowupdates3/4; publication follows ownedOnDisappear exactly once. RestoredShared/upper1/Library102P1/timeout30000. Earlier55c dark return retained as rejected baseline.",
+      "remaining": "Eligible automatic end/start native branch unhit; ordinary named receipts retained only for unchanged dependencies. All-layout/FPS/full replacement unproven; independent K production/folder lane remains paused.",
+      "appHead": "850af0c574265794ac3308872d942eeb19ec0bc3",
       "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
       "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "E/N普通生产命名基本行为留证；K切章/冷启进度有限接受并提交，退出History出现同父分组颜色反例，先作源码因果/影响评估。完整替换仍未接受。",
-      "action": "Map exact History projection notifications and theme scope order; correct only a source-proven return update ownership defect.",
+      "detail": "E/N普通生产命名基本行为留证；K章节进度及Shared/Legacy退出投影命名路径接受并提交。既有横屏/zero-top能力边界仍未验收，先调查真实视口能力，不扩大产品修改。",
+      "action": "Inspect existing emulator rotation controls/capability and host orientation ownership once; if guest viewport can actually change, declare one zero-top/landscape affected interval. Do not repeat unchanged guest rotation commands or alter app orientation/cache to manufacture evidence.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -417,7 +417,34 @@
         "recordedAt": "2026-10-07T19:21:09.348844+08:00",
         "evidence": "55c manual movie0d5e96f2 original725 onward Today rows dark, Yesterday white; cold movie25b103b8 History all white. Full unique RGB reviews, same1320x2232 native root.",
         "sourceFindings": "Index.persistReaderLabObserved increments readerProgressRevision per observed page. HistoryPage reloads hidden History on every revision; progress/timestamp embedded in row and section ForEach keys rebuilds whole affected group. ReaderSurface scopes DARK. Exact dark-resource resolution cause not yet established.",
-        "disposition": "OPEN; no forced-light workaround or History redesign; source-map close/return notification owner first."
+        "disposition": "Named b4fb Shared and Legacy ordinary History return accepted and committed850af0c5; baseline55c retained; no framework-wide color cause claim.",
+        "candidatePlan": {
+          "recordedAt": "2026-10-07T19:24:30.969678+08:00",
+          "reference": "Legacy persists per page inside ReaderPage but Index publishes projection once at close. Existing ReaderDestination.onDisAppear owns actual root-return completion. Reader DARK WithTheme is local, host native History resources follow app/system.",
+          "cause": "Shared persistReaderLabObserved publishes root readerProgressRevision per actual page; hidden Library and History monitors rebuild their projections while Reader remains the foreground theme owner. Current History keys replace Today section on every progress update. Hilog retained PID3558 reader_progress loads at19:07:44.608 and45.688 coincide with restore3->2->1; close adds another. Background root publication is source-proven; precise framework color-resolution leak is not established.",
+          "ownersAndWriters": "ReaderSessionStore remains sole progress write/flush authority. Index readerProgressRevision is a UI projection invalidation only. Other startup/remote sync/backup/Detail writers remain unchanged; standalone Lab existing publication retained.",
+          "candidate": "Remove production per-page projection publication; retain standalone Lab via !readerOpen guard. Move existing close invalidation from pre-pop to owned ReaderDestination.onDisAppear after entries retire. Preserve immediate save/flush, same session, root tree/resources/geometry and all chapter paths; no delays or force-light.",
+          "impact": "K production Shared page observation, Shared/Legacy ordinary Back return and native History/Library/Detail projections. Host-only; N/E/Kit untouched. No menu/entry/window/status writer/cache/I/O change.",
+          "disproof": "Today still dark on return, stale History or Continue page, missing flush, changed root geometry, or refresh still occurs for each production page. Reject whole return if any counterexample; do not force color or rewrite keys to pass.",
+          "validation": "One ordinary History upper1->3->Back captured continuous, all distinct frames reviewed; History logs must show one projection after route removed, terminal same app/viewport/progress. Return upper1 and original Library102P1/timeout afterward. Existing cold persistence source unchanged; no full chapter replay."
+        },
+        "sharedCandidateResult": {
+          "recordedAt": "2026-10-07T19:30:43.291938+08:00",
+          "hap": "b4fb2cf0560eee697b489f1c4bafd8ca86982fa8edb381936e347537e95d5182",
+          "movie": "07bb9566d1d86ef048bf260f6358865325ce3b2161aabba7f3699affa8ac4f07",
+          "review": "1021frames/492uniqueRGB all14contact sheets reviewed; staleframe0 excluded, current1 onward. Native1320x2232 sameHistory: before1/60, actualReader3, Back nativepush return all Today/Yesterday white; updated3/60 from frame432 onward; no black Today.",
+          "logs": "PID16749 only appear/tab_active at19:26:45; no History reload per page; route_closed19:26:51.585 then reader_progress19:26:51.588 exactly once.",
+          "remaining": "Affected Legacy return reviewed, original state restored and source committed850af0c5."
+        },
+        "legacyCandidateResult": {
+          "recordedAt": "2026-10-07T19:40:42.395231+08:00",
+          "movie": "c0a5a69b6710a5e57c9cce4d35ff7615f585ad73d52a8a2b207f2d7c47a2b7b2",
+          "review": "1137frames/597uniqueRGB all17contacts reviewed; stale0excluded. Native existingReader choice, actual upper3->4->Back: Today/Yesterday remainwhite throughout, row4from474. Exact repeat map retained.",
+          "logs": "PID16749 ReaderPage actualLegacy onShown19:31:50.896; OnDisappear55.119 -> publication55.119 -> Historyreload55.126 once; no perpage reload.",
+          "cleanup": "Checked originalShared nativechoice, upper4->1/Back then Library102P1/100%; terminal rootnative1320x2232 and timeout30000 restored.",
+          "commit": "850af0c574265794ac3308872d942eeb19ec0bc3",
+          "receipt": "koma-progress-projection-return-receipt-20261007.json"
+        }
       }
     },
     {

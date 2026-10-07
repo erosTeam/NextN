@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回、普通生产菜单/设置/翻页/rail/后台保持及同P38往返的命名区间 | 完整五分钟视觉覆盖、自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
 | E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载、显式 Debug Home/前台 retirement 返回同DetailP3 | 连续五分钟/下载预载/自然 pending/stale/fallback、全量几何/FPS/替换 |
-| K | HAP `55c1706f` / host `fa45b3c5`、Kit `dfdd2b04`：原按书设置/标题等只按未变依赖沿用；不可信序列边界拒绝自动越章、手动 upper3→lower1→upper3、无清数据冷启实际 upper3 的命名证据 | 退出 History 今天组变暗反例 OPEN；可信自动 end/start native 未命中；全布局/FPS/替换；独立生产工作暂停 |
+| K | HAP `b4fb2cf0` / host `850af0c5`、Kit `dfdd2b04`：章节/冷启进度只按未变依赖沿用；Shared及原生Legacy普通History返回、正确页码和退出后单次投影更新的完整命名区间 | 可信自动 end/start native 未命中；全布局/FPS/替换；独立生产工作暂停 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。
@@ -45,6 +45,10 @@ P12–14原帧313–394确有黑底加载，不接受为缓存/下载性能。�
 本次 material physical result（2026-10-07 19:04–19:07+08）：K `55c1706f` 普通 History Terra upper3→手动 lower1→upper3，MOV `0d5e96f2` 1137原帧/779种RGB全部首次帧审阅；实际原390/464/618起对应3/1/3。无清数据force-stop/plain cold MOV `25b103b8` 736帧/600种RGB全部首次帧审阅，History3/60→实际upper3；最终原书架Catalogue102 P1/100%、超时30000恢复。当前源码与K `fa45b3c5` / Kit `dfdd2b04` 提交字节相符。N/E仅新Kit签名构建0，未安装，不扩展其运行接受。
 
 原 `3a32` 不可信顺序仍自动越章及 `c504` 手动3→1是保留的失败，不抹掉。当前可信自动向前start/向后end只有源码和核心算法结果；未在普通源数据命中，不称运行接受。录像另发现**退出后History今天组黑卡片、昨天组仍白**（manual原725以后持续；cold后全白）。整段返回因此不接受，继续查进度投影通知及主题作用域，不强制改颜色。源中逐页通知后台History并以进度/timestamp重建整组已定位，具体颜色因果尚未确认。详细SHA/PTS及边界见 `koma-chapter-edge-progress-acceptance-receipt-20261007.json`。
+
+本次 material physical result（2026-10-07 19:26–19:33+08）：K `b4fb2cf0`，仅 Index 投影边界7行增加/4行删除，提交 `850af0c5`。Shared 普通History1→3→Back MOV `07bb9566`（1021帧/492种RGB、14张联排），原生选择Legacy后3→4→Back MOV `c0a5a69b`（1137帧/597种RGB、17张联排），全部首次RGB帧及精确重复映射审阅；排除各自录屏缓存旧frame0。Today/Yesterday返回过程中均白色，实际历史页码分别更新3和4；日志均在owned OnDisappear之后发布一次投影，没有生产逐页History重载。保存/flush与唯一Store未变，没有强制浅色、改树/几何/菜单或定时补丁。
+
+checked cleanup原生恢复Shared及Terra upper1、原Library Catalogue102 P1/100%、超时30000；终态native bundle/root确认。九份源码SHA与安装包构建输入、提交Index blob一致；此前55c黑卡片录像和c504进度失败保留。只接受上述普通Shared/Legacy返回路径，不声称框架颜色泄漏机制已证实、全部主题/布局/性能/替换通过。详情在 `koma-progress-projection-return-receipt-20261007.json`，原未验收边界仍由唯一工作单调度。
 
 ## 非 Reader 遗留边界（不自动启动）
 
