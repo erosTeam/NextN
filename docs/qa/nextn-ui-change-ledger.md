@@ -13400,3 +13400,17 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
 - Disproof/acceptance: one ordinaryfullyvisible currentlyuncachedthumbnail rapidBack/reenter anotherpage; retain realreverse/sourcewindow and fenceoldcallbacks. Source/build/install only until fullcurrentoriginalvideo review. Existingfrozenpaths not replayed.
 
 - N-OPENING-BACK named current acceptance (2026-10-08): committed85602960 four-line existingreverseOpening branch, signed/positiveinstalleb44. Actualfullyvisible uncachedP1movingBack rootreverse completes, distinctP2 reentry/body/preparation/normalreverse sameDetailContinueP2; originalb5f5c65a all406/12contacts andraw219222244331 reviewed. Wholedeclaredsource/window/root/image/loading/return interval acceptedonly; noFPS/alllayout/fallback/latecallback guarantee. 1497delete/query0, original682531ContinueP2/root[0,124][1260,2720]restored; menus/geometry/Kit/Legacyunchanged. Receipt n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json.
+
+### SOURCE-STATUS-RESTORE — 2026-10-08 pre-edit source visibility ownership
+
+- Authority: existingcross-host ReaderWindow/sourcepreservation contract and current197 actualNlandscape sourcezero→return124pxheaderreserve failure. No newfeature. Fullsource/refinement/impact/disproof and finitevalidation onlyinunique work-order sourceStatusRestorationPlan.
+- REJECTED after required portrait counterexample: native actual visibility is not a restorable policy. Both isFullScreen-derived true and TYPE_SYSTEM-derived false are insufficient. Remove only source-mode candidate, preserve existing lease/root queue and unrelated WIP. Official 5.1.0(1) change makes the last explicit setSpecificSystemBarEnabled value authoritative even in landscape; investigate default-policy ownership before replacement. No orientationguess, delayedbarrestore, cachedcloseendpoint, root/targeteligibility/geometry/menu/preload/session/tree changes.
+- NcommonShared/Legacy rootintent, ESharedWindowlease andKSharedroot/standalone consumers affected. ELegacyoldforcevisible not edited oraccepted bythiscandidate. Visible-source, closing/opening/background/rapidreentry and source/chrome/image/currenttargetreturn rows mustbe judgedtogether; builds/source cannotacceptthem. User-independent K production/Goal remains PAUSED.
+
+### ACCEPTED — Local progress page maintenance (2026-10-08)
+
+- User requests existing webpage progress maintenance. Parent remains header → activity → three host cards → gaps/timing → milestones → evidence. Same URL, work-order authority and3-second polling; no product UI/device edits.
+- Before: long historical English runtime blocks, old milestones, invisible rejected-candidate fields; evidence server resolves only emulator storage. After: current Chinese summaries with historical details, replacement/performance limits, restored HAP vs rejected candidate, newest milestones first and registered197 evidence.
+- Preserve theme/responsive cards, unknown original issue timestamps, actual-time lower bounds; no fictional percentages or second queue. Verify real HTTP snapshot/evidence and wide/narrow browser. Browser rendering cannot accept Reader runtime.
+
+- Observed: local8765 HTML/snapshot, four new197 JSON links and prior status receipt return200. Actual browser1280×900 and default567×766 reviewed; viewport reset, no horizontal overflow in wide DOM, browser warning/error list empty. Screens wide.jpg/narrow.jpg retained under ignored reader-entry-statusbar-20261006/progress-page-20261008. This accepts webpage rendering/data access only.

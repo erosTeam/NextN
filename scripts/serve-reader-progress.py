@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ORDER = ROOT / 'docs/plans/active/shared-reader-replacement-work-order.md'
 PAGE = ROOT / 'docs/qa/shared-reader-progress.html'
 ARTIFACTS = ROOT / '.hvigor/outputs/emulator-reader-20261003'
+DEVICE_ARTIFACTS = ROOT / '.hvigor/outputs/reader-entry-statusbar-20261006'
 MARKER = re.compile(r'<!-- reader-progress-snapshot\s*\n(.*?)\n-->', re.S)
 
 
@@ -77,8 +78,12 @@ class Handler(BaseHTTPRequestHandler):
                 entry = entries.get(evidence_id)
                 if entry is None:
                     return self.reply(404, b'{"error":"Unknown evidence"}')
-                path = (ARTIFACTS / entry['path']).resolve()
-                if not path.is_relative_to(ARTIFACTS.resolve()) or not path.is_file():
+                roots = {'emulator': ARTIFACTS, 'device197': DEVICE_ARTIFACTS}
+                artifact_root = roots.get(entry.get('storage', 'emulator'))
+                if artifact_root is None:
+                    return self.reply(404, b'{"error":"Unknown evidence storage"}')
+                path = (artifact_root / entry['path']).resolve()
+                if not path.is_relative_to(artifact_root.resolve()) or not path.is_file():
                     return self.reply(404, b'{"error":"Evidence unavailable"}')
                 mime = mimetypes.guess_type(path)[0] or 'application/octet-stream'
                 # Range requests allow the browser to seek through local recordings.

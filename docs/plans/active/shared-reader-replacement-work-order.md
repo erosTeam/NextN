@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T01:13:02.860536+08:00",
+  "updatedAt": "2026-10-08T03:23:03.448303+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · N入场反转命名区间已接受；继续原有zero-top/landscape边界",
+  "state": "OPEN · 状态栏恢复方案未通过；已撤除候选并恢复设备基线",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
-  "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
+  "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "197横屏/零系统顶部边界：先确认现有普通入口能力",
-    "detail": "85602960/eb44当前P1立即Back及P2重入完整406帧已审阅；1497清理query0，原682531ContinueP2恢复。下一步仅调查既有真实横屏能力/根窗口与当前目标测量，不改产品。",
-    "startedAt": "2026-10-08T01:13:02.860536+08:00"
+    "title": "查清三个应用的状态栏恢复策略",
+    "detail": "两个可见性快照方案均已否决，相关源码已撤除。197 已安装回上一版留证包；NextE/Koma 冷启动源页面实测竖屏保留状态栏、横屏自动隐藏、转回竖屏恢复。正在整理共享窗口与各宿主的策略所有权，尚未开始新修复候选。",
+    "startedAt": "2026-10-08T01:19:00+08:00"
   },
-  "nextAction": "Source-first map existing N/E landscape root/close-current-target ownership against Legacy and known197 rotation protocol; declare one ordinary197 landscape source capability gate with actualroot/layout/foreground identity. If achievable, one complete source→rootflight→body→Back/restoration interval; no repeated frozenportrait/timing/cache/FPS or apporientation edits.",
+  "nextAction": "依据已有原生自动隐藏证据，完成源窗口策略、显式写入与 Shared/Legacy 关闭路径的影响映射；确定能保持旋转与入退场顺序的共同方案后才修改源码。",
   "hosts": [
     {
       "name": "NextN",
@@ -25,16 +25,22 @@
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
       "build": "Signed currenteb44 compilation0; narrow4-line Index existingreverse branch; other7host/3KitSHA unchanged.",
-      "install": "Checked native install bodypositive and exactlocaleb44 bound. Nativebm tailtruncated; no packageversion readback claim.",
-      "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
+      "install": "197已通过install -r恢复此前留证包 eb44a98b；安装输出成功，未执行清数据。",
+      "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted. Physical197 initiallyuncached560948P3 pendingasset0/moving→backgroundcancelled→stored111888, samepagebody/processing/ordinarysystemreturn reviewed443originals; original682531ContinueP2 restored. Currenteb44 namedP1openingreverse/P2reentry/normalBack movieb5f5c65a all406/12contacts and raw219222244331 reviewed; nofullscreenfirst/bodyblack/staleoldpage. Original682531ContinueP2/root0,124 restored;1497query0.",
-      "remaining": "Named uncachedP1 openingreverse/P2reentry accepted; zero-top/landscape currentordinary gate remains, otherlate/stale/fallback/FPS/fullreplacement limits retained.",
+      "remaining": "当前状态栏恢复未通过；性能/完整替换未验收。此前保留边界：Named uncachedP1 openingreverse/P2reentry accepted; zero-top/landscape currentordinary gate remains, otherlate/stale/fallback/FPS/fullreplacement limits retained.",
       "appHead": "85602960",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "appHeadLayer": "85602960 Index source SHA53ae7784; currenteb44 bound; unrelatedgeometryWIP retained.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "Installed3468 current-loading guard and prior dfdd chapter-origin checkpoint; N no chapterNavigation. GeometryWIP unchanged/unaccepted."
+      "kitDocumentation": "Installed3468 current-loading guard and prior dfdd chapter-origin checkpoint; N no chapterNavigation. GeometryWIP unchanged/unaccepted.",
+      "rejectedCandidate": {
+        "hap": "035b8a85a8ffa03f12a0080af62a45424b24b229ce17be7f37cac3e6c3059106",
+        "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
+      },
+      "installedHap": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
+      "progressSummary": "已留证：设置单选、真实在线加载、后台回前台、打开中返回与另一页重入。当前缺口：横屏源返回及再转竖屏的状态栏策略。"
     },
     {
       "name": "NextE",
@@ -42,16 +48,22 @@
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
       "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
-      "install": "Checked positive197 current7e0315fd install without data clear; foreground admission1601e159 bound. Native4203217/124pages originalContinueP3 restored, Detail root[0,124][1260,2720].",
-      "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
+      "install": "197已通过install -r恢复此前留证包 7e0315fd；安装输出成功，未执行清数据。",
+      "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored. Physical197 current7e0315fd ordinaryP3 interrupted/cancelled/foreground and normalfinished rootflight/original/BacksameDetailContinue3 accepted in all197/114 originals, nativeactualroot0,0/1260/2720. Physical197 initiallyuncachedP9 exactabsent-before/stored402586after: asset0 pending/moving→backgroundcancelled, foreg100%panelretainsbackground then sameimage/BackDetailP9 accepted full206originals; originalP3restored.",
-      "remaining": "Named E197 initiallyuncached interrupted interval accepted; sharp-image/100% adjacentframe95->96 nativephase unobserved, no zero-overlap guarantee; processing/spread/late/stale/FPS/fullreplacement limits retained.",
+      "remaining": "当前状态栏恢复未通过；性能/完整替换未验收。此前保留边界：Named E197 initiallyuncached interrupted interval accepted; sharp-image/100% adjacentframe95->96 nativephase unobserved, no zero-overlap guarantee; processing/spread/late/stale/FPS/fullreplacement limits retained.",
       "appHead": "1601e159",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "appHeadLayer": "One foreground admission source file committed and positive197installed7e0315fd; ten source SHA plus unchanged geometryWIP bound.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
+      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged.",
+      "rejectedCandidate": {
+        "hap": "021aea893f1066d01ea90655c0be18c07c26358a839e9cbbe2d734873c31c46f",
+        "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
+      },
+      "installedHap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
+      "progressSummary": "已留证：设置单选、后台前台交接、真实无缓存加载底板与返回。当前缺口：共同状态栏恢复；冷启动源页面旋转基线已取得。"
     },
     {
       "name": "Koma",
@@ -59,25 +71,49 @@
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "9b85a661b0c68ba34d80c6ce198d0c9a25c14b6aef006336c889f9448f2f2b68",
       "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
-      "install": "Current9b85 not installed; previous named K runtime receipts retain their prior HAP.",
-      "verdict": "切章/冷启进度及Shared/Legacy返回投影命名路径接受；其他原边界OPEN",
+      "install": "197已通过install -r恢复此前留证包 b4fb2cf0；安装输出成功，未执行清数据。",
+      "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
       "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored. Currentb4fb Shared ordinaryHistory1->3->Back and nativeLegacy3->4->Back complete RGB reviews14/17contacts: all Today/Yesterday remain white, rowupdates3/4; publication follows ownedOnDisappear exactly once. RestoredShared/upper1/Library102P1/timeout30000. Earlier55c dark return retained as rejected baseline.",
-      "remaining": "Changed optional entry predicate unreachable in K consumer (no entryTransition); current3468 signedcompile0 only. Existing automatic chapter/alllayout/FPS/independentproduction limits retained.",
+      "remaining": "当前状态栏恢复未通过；性能/完整替换未验收。此前保留边界：Changed optional entry predicate unreachable in K consumer (no entryTransition); current3468 signedcompile0 only. Existing automatic chapter/alllayout/FPS/independentproduction limits retained.",
       "appHead": "26815685",
       "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
+      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged.",
+      "rejectedCandidate": {
+        "hap": "86a4fe112980f5b5832c724fbe4c11cbf041e8bff0b6304ced9b77d2bd505c6f",
+        "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
+      },
+      "installedHap": "b4fb2cf0560eee697b489f1c4bafd8ca86982fa8edb381936e347537e95d5182",
+      "progressSummary": "已留证：本书设置、章节/网络阅读、共享/旧版进度返回命名路径。当前安装为此前b4fb进度投影包；共同状态栏恢复未验收，独立生产工作暂停。"
     }
   ],
   "gaps": [
+    {
+      "id": "source-status-restoration",
+      "title": "源页面状态栏：横屏返回与竖屏恢复",
+      "status": "方案否决 · 正在查共同恢复策略",
+      "kind": "bad",
+      "detail": "硬写true破坏横屏默认隐藏；按当前可见性写false又导致回竖屏仍隐藏。两个完整反例留存，源码已撤除并恢复旧安装包。",
+      "action": "依据已有原生自动隐藏证据，完成源窗口策略、显式写入与 Shared/Legacy 关闭路径的影响映射；确定能保持旋转与入退场顺序的共同方案后才修改源码。",
+      "reportedAt": null,
+      "reportedAtSource": "此次具体旋转缺口由实机发现，未冒充原始用户消息时间。",
+      "firstEvidenceAt": "2026-10-08T01:19:00+08:00",
+      "closedAt": null,
+      "handling": {
+        "trackingSince": "2026-10-08T03:23:03.448303+08:00",
+        "recordedSeconds": 0,
+        "activeSince": null,
+        "note": "此前工时未完整分段，不能由墙钟经过时间回填。"
+      }
+    },
     {
       "id": "reader-validation-strategy",
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "E ordinaryP87 selectednetwork47%→100% retainedthumbnail/darkpanel and samepageoriginal/sameGrid-DetailBack accepted17contacts. N ordinaryrelated682531P7 genuineabsent-before/stored-after, loading/preparingpanel through237, samepageoriginal238, normalBacksameGrid/Detail and original663205Continue38 restore accepted16contacts. Named intervals only; pendingacquisition across background still open.",
-      "action": "Follow the unique top-level nextAction. User restored physical197; do not replay emulator accepted intervals.",
+      "detail": "设置单选双源已收口并在N/E留证即时、重开、冷启与实际入口。真实在线加载、后台/前台、打开中返回等已有命名证据。新状态栏旋转反例已否决候选，整体替换仍未验收。",
+      "action": "沿唯一当前动作推进状态栏策略，不重复已冻结路径。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -781,6 +817,34 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-08T03:01:36.429881+08:00",
+      "text": "197：NextE/Koma冷启动源竖屏→横屏→竖屏，状态栏空间124→0→124；NextN终态竖屏124、继续P2。仅源策略基线，不是阅读器返回验收。"
+    },
+    {
+      "at": "2026-10-08T02:54:45.426950+08:00",
+      "text": "三应用撤除状态栏快照候选并恢复此前留证包：NextN eb44、NextE7e03、Koma b4fb。安装成功，未清数据。"
+    },
+    {
+      "at": "2026-10-08T02:22:00+08:00",
+      "text": "状态栏R2候选被转竖屏反例否决：横屏返回不能抵消竖屏仍隐藏。三应用候选未接受，原始录像留存。"
+    },
+    {
+      "at": "2026-10-08T01:09:00+08:00",
+      "text": "NextN打开中返回复用既有根反向转场；P1快速返回、另一P2重入与正常退出完整区间留证。提交85602960，未改菜单/几何/Kit。"
+    },
+    {
+      "at": "2026-10-07T23:43:00+08:00",
+      "text": "NextE197真实未缓存P9在入场中后台取消，回前台保留底板并交接同页原图，正常返回且恢复原P3；命名区间接受。"
+    },
+    {
+      "at": "2026-10-07T15:26:50+08:00",
+      "text": "三个宿主入口与共同 consumer contract 已整理；旧工作单/QA/重写指令逐字节归档，当前单一动作和未验收边界保留。自动恢复不再仅依赖异常日志；没有修改产品源码。"
+    },
+    {
+      "at": "2026-10-05T18:23:33+08:00",
+      "text": "Koma master 69af0c14 的新Build OHOS工作流已通过云端构建与上传；下载HAP后完成提交、Kit、SHA-256、ZIP及arm64原生库核验。"
+    },
+    {
       "at": "2026-10-05T02:23:07+08:00",
       "text": "同一Kit7032的有限裁切路径收尾：E连续ON/OFF、K原菜单分割/旋转/连续已审阅并恢复原状态。现有布局黑屏反例仍保留；开始范围提交。"
     },
@@ -797,26 +861,42 @@
       "text": "本地进度页已真实打开并核对宽 / 窄布局，绑定文件及录像分段请求可读取。进度每 3 秒从唯一工作单更新；连接正常不代表进度完成。"
     },
     {
-      "at": "2026-10-04T16:23:24.926930+00:00",
-      "text": "NextE 当前转场 / 重载 / 返回录像录制完成；其受影响区间随后已审阅。裁切 ON/OFF、原设置及 P3 恢复已有记录，普通重入提示重叠仍保留。"
-    },
-    {
       "at": "2026-10-05T00:13:46+08:00",
       "text": "三个消费者的共同 Kit / 签名 HAP 绑定记录完成；构建成功，之后已通过受控协议安装。此项不代表整体验收。"
     },
     {
-      "at": "2026-10-05T18:23:33+08:00",
-      "text": "Koma master 69af0c14 的新Build OHOS工作流已通过云端构建与上传；下载HAP后完成提交、Kit、SHA-256、ZIP及arm64原生库核验。"
-    },
-    {
-      "at": "2026-10-07T15:26:50+08:00",
-      "text": "三个宿主入口与共同 consumer contract 已整理；旧工作单/QA/重写指令逐字节归档，当前单一动作和未验收边界保留。自动恢复不再仅依赖异常日志；没有修改产品源码。"
+      "at": "2026-10-04T16:23:24.926930+00:00",
+      "text": "NextE 当前转场 / 重载 / 返回录像录制完成；其受影响区间随后已审阅。裁切 ON/OFF、原设置及 P3 恢复已有记录，普通重入提示重叠仍保留。"
     }
   ],
   "evidence": [
     {
+      "id": "source-policy-baseline-197",
+      "label": "197：恢复安装与源状态栏策略基线",
+      "path": "native-source-policy-recovery-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "source-status-rejected-197",
+      "label": "状态栏候选否决：完整反例与影响范围",
+      "path": "source-status-area-candidate-rejection-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "opening-reverse-N-197",
+      "label": "NextN：打开中返回/另一页重入回执",
+      "path": "n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "pending-E-197",
+      "label": "NextE：无缓存取消/原图交接回执",
+      "path": "e-online-pending-P9-current-acceptance-receipt-20261007.json",
+      "storage": "device197"
+    },
+    {
       "id": "status-intent-current",
-      "label": "当前状态栏/根层交接：源码、提交与完整录像审阅记录",
+      "label": "历史状态栏/根层交接（不覆盖此次旋转反例）",
       "path": "reader-status-intent-latest-receipt.json"
     },
     {
@@ -1020,10 +1100,10 @@
       "path": "n-online-handoff-related682531-P7-acceptance-receipt-20261007.json"
     }
   ],
-  "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
-  "stopRule": "只完成当前既有行为一致性对照中有源码因果与影响依据的缺口；有效命名结果冻结。下一动作仅针对已登记未接受入场/加载分支的证据条件，不启动新功能/性能调参/全产品重测或按时长穷举。缺证据保留，不由构建或提交代偿。",
+  "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
+  "stopRule": "保持唯一当前动作：查清状态栏策略及Shared/Legacy影响边界，再实现和验收共同缺口。有效命名结果冻结，不扩展为功能开发、性能调参或全产品穷举。",
   "excluded": "现有菜单、设置、数据、导航、根转场、默认选择与旧版回退保留；不推送/发版，独立Koma生产与其Goal暂停；当前已按用户恢复197实机，旧模拟器排除197文本不再适用。",
-  "costNote": "不显示虚构完成百分比或费用。每项工时为已记录下界、历史覆盖不完整。本次剩余两项联合源码可行性核对另记录7分钟，未精确拆分，未伪分摊到单项工时。",
+  "costNote": "不虚构完成比例、费用或工时。问题经过时间持续显示；处理时长只累计已记录区间，未知历史不回填。页面连接不等于任务持续运行。",
   "jointAssessmentHandling": {
     "recordedSeconds": 420,
     "start": "2026-10-05T06:00:45+08:00",
@@ -1062,7 +1142,8 @@
     "eForegroundCurrent": "e-foreground-handoff-current-acceptance-receipt-20261007.json",
     "eOnlinePendingCurrent": "e-online-pending-P9-current-acceptance-receipt-20261007.json",
     "nOnlinePendingCurrent": "n-online-pending-P3-current-acceptance-receipt-20261008.json",
-    "nOpeningReverse": "n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json"
+    "nOpeningReverse": "n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json",
+    "nLandscape": "n-landscape-P2-entry-return-receipt-20261008.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -1403,7 +1484,116 @@
     },
     "runtimeReceipt": "n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json",
     "disposition": "ACCEPTED only named P1moving reverse/P2reentry/normalreturn; fullmovie reviewed, scoped source85602960 positively installedeb44."
-  }
+  },
+  "landscapeBoundaryPlan": {
+    "at": "2026-10-08T01:15:21.802455+08:00",
+    "scope": "existing zero-system-top/landscape entry/return evidence only, no productcandidate yet",
+    "source": "N Index ownsWindow; prepareclose requires positiveSafeArea top when previous hiddenfullscreen. NLegacy uses sameboolean; E waitstable target has no positive-topcondition. Close captures currenttarget/root live, nocachedentryendpoint. Kit measurescurrentviewport/root.",
+    "impact": "ordinary landscape source/rootflight/body/status/chrome/currenttargetreturn, current197 original682531P2 andE4203217P3 restore. No menu/provider/preload/progress/settings/Kit source change.",
+    "disproof": "Noactuallandscape/sourceidentity makesruninvalid; earlycolor/fullscreen/sourcejump, blank/currentimage change or failuretomatchcurrentreturnsource rejects namedinterval. Positiveinset concern remains hypothesis until actualnativegeometry.",
+    "gate": "device197-nextn-landscape-source-gate-20261008-input.json",
+    "reference": "Legacy same N targetlayoutgate; E distinct existingtargetwait. REJ001-004 retained; no newgate/rectanglecache/insetmove.",
+    "sourceGateResult": "Actual197root[0,0][2720,1260] ordinary682531/P2 persisted, sourceepoch3 P2fullyvisible[1665,469][2232,957]. Two declaredrightpane discovery scrolls reachedactualpreview; noordinarymeasurementinterruption.",
+    "run": "device197-nextn-landscape-P2-entry-return-20261008-input.json",
+    "nReceipt": "n-landscape-P2-entry-return-receipt-20261008.json",
+    "nResult": "NAMED IMAGE FLIGHT/RETURN OBSERVED; SOURCE WINDOW RESTORATION REJECTED",
+    "causeRefinement": "Positive-top wait hypothesis disproved: currenttargetready/realreverse observed. Actualsourcezero->returnvisibleheaderreserve remains; N restoreAppStatusBar hardcodestrue for bothShared/Legacy. Map equivalent E/K restoration owners; noedituntilsourcebaseline and influence isolated."
+  },
+  "sourceStatusRestorationPlan": {
+    "at": "2026-10-08T01:47:42.992369+08:00",
+    "cause": "Reader显式 setSpecificSystemBarEnabled 布尔值会持续覆盖系统自动横屏隐藏策略。N Shared/Legacy 关闭硬写true；E/K Shared关闭同样硬写true，保留Legacy也有显式写入。源冷启动没有显式可见性写入；197 E/K普通源旋转实测124→0→124。当前可见状态与可恢复源策略并非同一状态。",
+    "reference": "Huawei HarmonyOS5.1.0(1): last explicit setSpecificSystemBarEnabled value remains authoritative in landscape. SDK26 and official HDS NavDestination expose no enableStatusBar reset; cold-source device baseline defines ordinary rotation behavior.",
+    "change": "Withdraw source-mode snapshot candidate. TYPE_SYSTEM actual visibility is useful evidence but not a restorable system policy; no replacement heuristic authorized by this plan.",
+    "wholeParent": "SourceWindow/chrome -> existingrootmotion/selectedImage/loading/ReaderWindowintent -> existingclose preparation/currenttargetmeasure/rootreverse -> sameSourceWindow andprogress. No root geometry/targeteligibility or statusafterreturn change.",
+    "impact": "N Shared andLegacy commonrootWindowqueue; E Shared standaloneWindowlease (LegacyE unchanged sourceforcetrue remains separatelynotpromoted); K shared embedded rootWindow and standalone helper. ExistingexplicitDebugrestoretrue/null unchanged; background/closebeforeopen/rapidreentry and currentvisible-source compat remain lifecyclefences.",
+    "unchanged": "menus/options/direction/settings/backenddefaults/provider/cache/preload/progress/rail/Image keys/geometry/animation/leaseowner order/viewport builders and pausedKoma production unchanged. Only SourceVisibility restoration differs whenactualsourcehidden.",
+    "disproof": "NativeSourceVisibility baseline conflictswithactualsource; sourcebar/color changesbeforeflight; closeorforegroundstalequeue writesafterretirement; wrongsourceimage/bodyblack/currentreverse/progressloss; visible-source restorebroken. Rotate-across-orientation mustbe checkedagainstnative sourcepolicy beforeanywhole-rotation claim; no neworientation heuristic/cachegeometry.",
+    "verification": "R1/R2 的原可见性快照验证方案已否决；新方案尚未允许进入构建/设备阶段。先完成源策略所有权与所有 Shared/Legacy 显式写入影响映射。源冷启动实际横屏0/竖屏124是已核实预期，不再使用此前被显式覆盖的E横屏positive场景作默认基准。",
+    "registry": "N/E REJ001-004 consulted: no require targetmovement, no after-returnbarrestore, no cachedentryendpoint, no unrelatedgeometry/root eligibility changes.",
+    "baselineEvidence": [
+      "n-landscape-P2-entry-return-receipt-20261008.json",
+      "device197-nexte-landscape-source-gate-20261008 actualroot[0,124][2720,1260] positivebaseline; not sameviewport reference toNzero",
+      "device197-koma-landscape-source-window-baseline-20261008 actualLibraryroot0 andunchanged02P18/95%"
+    ],
+    "rejectedCandidate": {
+      "at": "2026-10-08T02:08:22.052577+08:00",
+      "N": "5440ef3b; source root0 but native isFullScreen-derived savedvisibilitytrue; original1499 all117/4sheets raw0/96/116sourceheaderreserve changes, sameP2flight/body/currentreturn notdisputed",
+      "movie": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/device197__ALN-AL80/not-applicable/landscape-2720x1260/device197-source-status-N-landscape-export-20261008/device197-source-status-N-landscape-P2-return-20261008.mp4",
+      "cause": "OfficialWindowProperties describes app-set immersive+hidden flag; automaticlandscape status hiding is not reliably represented. Getterwasnotanactualstatusvisibilitysnapshot. RejectthreehostcandidatebeforeE/Kclaims."
+    },
+    "implementationState": "REJECTED candidates removed in all three hosts; prior signed packages restored; no replacement implemented",
+    "rejectedActualAreaCandidate": {
+      "at": "2026-10-08T02:49:41.907735+08:00",
+      "disposition": "REJECTED for the complete source-status restoration package",
+      "candidate": "035b8a85a8ffa03f12a0080af62a45424b24b229ce17be7f37cac3e6c3059106",
+      "landscapeObservation": "118 original frames and four sheets reviewed; source baseline TYPE_SYSTEM zero, saved false, current P2 flight/body/return root top0. This is only a named observation.",
+      "counterexample": "After ordinary source rotation to portrait, NextN root remains [0,0][1260,2720] and status bar hidden; prior original source root was [0,124][1260,2720]. Entire candidate rejected.",
+      "counterexampleArtifacts": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-source-status-area-N-cleanup-portrait-gate-20261008",
+      "mediaCleanup": "1500 exact deletion and exact-name query0; local original retained",
+      "causeRefinement": "Actual visibility cannot be restored as a boolean policy: writing false overrides platform temporary landscape hide and remains false after portrait rotation. Original isFullScreen-derived visible true likewise forces a landscape status reserve. Neither snapshot is a restoration policy.",
+      "hostDisposition": "N/E/K源码候选已撤除，已恢复先前留证安装包；E/K候选没有运行验收。",
+      "unchanged": "85602960 opening reversal and two existing geometry WIP files retained; no menus, settings, progress, image/session identity, target geometry or root admission edits."
+    },
+    "baselineRecovery": {
+      "receipt": "native-source-policy-recovery-receipt-20261008.json",
+      "restoredPackages": [
+        "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
+        "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
+        "b4fb2cf0560eee697b489f1c4bafd8ca86982fa8edb381936e347537e95d5182"
+      ],
+      "sourceRoots": {
+        "E-portrait-before": {
+          "bundle": "com.erosteam.nexte",
+          "bounds": "[0,124][1260,2720]"
+        },
+        "E-landscape": {
+          "bundle": "com.erosteam.nexte",
+          "bounds": "[0,0][2720,1260]"
+        },
+        "E-portrait-after": {
+          "bundle": "com.erosteam.nexte",
+          "bounds": "[0,124][1260,2720]"
+        },
+        "K-portrait-before": {
+          "bundle": "com.honjow.koma",
+          "bounds": "[0,124][1260,2720]"
+        },
+        "K-landscape": {
+          "bundle": "com.honjow.koma",
+          "bounds": "[0,0][2720,1260]"
+        },
+        "K-portrait-after": {
+          "bundle": "com.honjow.koma",
+          "bounds": "[0,124][1260,2720]"
+        },
+        "N-terminal-source": {
+          "bundle": "com.erosteam.nextn",
+          "bounds": "[0,124][1260,2720]"
+        }
+      },
+      "disposition": "BASELINE ONLY; reader return unaccepted"
+    }
+  },
+  "assessment": [
+    {
+      "label": "完全替换旧版",
+      "status": "尚未达到",
+      "kind": "open",
+      "detail": "命名路径已有验收，但状态栏恢复仍失败；没有整体验收结论。"
+    },
+    {
+      "label": "性能超过旧版",
+      "status": "未证明",
+      "kind": "open",
+      "detail": "缺少同场景帧率与性能证据，不能用构建或局部流畅推断。"
+    },
+    {
+      "label": "本轮范围",
+      "status": "一致性修复",
+      "kind": "review",
+      "detail": "当前设备197；独立Koma生产工作暂停，不推送、不发版。"
+    }
+  ]
 }
 -->
 
@@ -1469,7 +1659,7 @@ E 既有 root-owned 手法是原图不透明合成后等一个绘制帧，再撤
 
 运行 `python3 scripts/serve-reader-progress.py`，打开 `http://127.0.0.1:8765`。
 页面只读顶部 schemaVersion=1 JSON，无第二份队列。实际动作/结果/前置改变时更新，不只刷时间戳。
-工作超过15分钟更新事实；未更新页面提示过期。页面不是任务执行器，断线或空转不得说正在推进。
+工作超过15分钟更新事实；未更新页面提示过期。每次实质源码/构建/安装/实机结果同时维护 activity、nextAction、对应宿主摘要、milestones 与已登记证据，不只更新长篇历史。当前安装包与已否决候选分别列示；拒绝候选及时撤回进度结论。页面不是任务执行器，断线或空转不得说正在推进。
 
 `reportedAt` 只取核实原始消息时间，未知为 null；`firstEvidenceAt` 不冒充提出时间。
 `handling.recordedSeconds` 仅已记录区间下界；activeSince/activeUntil 最长15分钟，失去记录停止累计，
