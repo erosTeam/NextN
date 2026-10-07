@@ -452,9 +452,10 @@ export struct NextNReaderLabPage {
     this.tapZonePreviewRevision += 1
   }
 
-  @Monitor('entryPhase')
+  @Monitor('entryPhase', 'labVisibility.foreground')
   private notifyEntrySettled(): void {
-    if (this.entrySettledNotified || (this.entryPhase !== 'finished' && this.entryPhase !== 'cancelled')) return
+    if (!this.labVisibility.foreground || this.entrySettledNotified ||
+      (this.entryPhase !== 'finished' && this.entryPhase !== 'cancelled')) return
     if (this.entryPhase === 'cancelled' && this.rootOwnedEntryTarget && this.hostRouteActive() &&
       !this.closeRequested && !this.hostClosing) {
       // reader-kit can cancel after a deferred layout/asset check. Keep the
@@ -493,11 +494,11 @@ export struct NextNReaderLabPage {
     )
   }
 
-  @Monitor('rootEntryTarget', 'rootEntryPhase', 'readerThumbnailTransition.phase',
+  @Monitor('rootEntryTarget', 'rootEntryPhase', 'readerThumbnailTransition.phase', 'labVisibility.foreground',
     'externalRouteActive', 'routeActive')
   private syncRootOwnedEntryTarget(): void {
     const entry = this.entryTransition
-    if (!this.rootOwnedEntryTarget || entry === null || !this.hostRouteActive() ||
+    if (!this.labVisibility.foreground || !this.rootOwnedEntryTarget || entry === null || !this.hostRouteActive() ||
       this.closeRequested || this.hostClosing) {
       return
     }

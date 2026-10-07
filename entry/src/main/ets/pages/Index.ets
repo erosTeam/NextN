@@ -554,7 +554,9 @@ struct Index {
   @Monitor('readerEntryVisibility.foreground')
   private onReaderEntryForeground(): void {
     if (!this.readerEntryVisibility.foreground) {
-      if (this.productionReaderEntryActive()) this.retireProductionReaderEntry()
+      // Background cancels motion, not this retained route's image identity.
+      // Its terminal entry still owns loading handoff until route disappearance.
+      this.productionReaderEntryTransition?.cancel()
       this.readerEntryEpoch += 1
       if (this.readerEntryClaim !== null || this.readerEntryTransition?.phase === 'layout') this.closeReaderTrial()
       else this.readerEntryTransition?.cancel()

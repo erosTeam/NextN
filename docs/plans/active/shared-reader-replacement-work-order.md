@@ -3,38 +3,38 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T20:12:53.326360+08:00",
+  "updatedAt": "2026-10-07T20:52:17.051107+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · K切章/返回投影已提交；E自然移动取消已留证，继续原有早期后台边界",
+  "state": "OPEN · N后台入场身份窄修正已运行留证；继续现有在线交接边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "原有早期后台入场边界",
-    "detail": "P63 motion cancellation body/Back reviewed; network provenance and tuple not measured. K installed source registry/read-only library capability inspected; no eligible automatic metadata proven. Continue original unhit pending-background variant once.",
-    "startedAt": "2026-10-07T20:12:53.326360+08:00"
+    "title": "提交N后台入场身份修正并继续在线加载交接",
+    "detail": "N953d build/install positive, native entry image identity retained1 vs baseline0; ordinary P38 immediateHome/plainforeground and normal returns fully reviewed in13/9contacts. No ReaderEntry cancellation phase line in candidate; named physical path only.",
+    "startedAt": "2026-10-07T20:52:17.051107+08:00"
   },
-  "nextAction": "One bounded ordinary E thumbnail tap followed immediately by Home, then normal same-Ability foreground and Back. Determine actual interrupted phase from native events; no timing sweep/backend/cache changes or frozen settled-foreground replay. Retain originalP3.",
+  "nextAction": "Commit the exact N two-file correction plus narrow receipts; then source-bind one ordinary E online unread selected page/fast swipe/Back interval, observe actual asset/request readiness before any pending/late claim. No cache clear/delay/timing sweep or frozen menus replay.",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
       "kit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
-      "hap": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
-      "build": "Six-file N explicit Debug root reuse plus five-line initial-intent seed; signed build0. Ordinary embedded body/E/K/Kit/Legacy unchanged; geometry WIP included and not accepted. Shared dfdd signature compiled0 with current entrypoint; installed baseline remains5b.",
+      "hap": "953dca650b5e7d0908de7b641064ebe4ab8a0f4f306e517562a0c23fa3a66e00",
+      "build": "Two-file background entry ownership correction; Node26 native build failed255; bundled DevEcoNode24 signed build0. Newly packages alreadycommitted Kitdfdd; geometry WIP unchanged, not accepted.",
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion.",
       "remaining": "Natural same-request/late duplicate-progress/stale native branches unhit; zero-system-top/landscape capability unaccepted; explicit Debug cached portrait named acceptance only; Shared-and-Legacy mode gap deferred; all-layout/FPS/full replacement unproven.",
       "appHead": "4ae4cebfbcdffc578d8e06d682473ea1368d0561",
-      "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
-      "appHeadLayer": "Current six-source checkpoint; installed a895 build-source hashes are bound by n-debug-root-current-postcommit-binding.json. Documentation does not add runtime acceptance.",
+      "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
+      "appHeadLayer": "Two changed N product sources bound in n-background-entry-ownership-binding-20261007.json; commit pending; no runtime extrapolation to unhit branches.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
+      "kitDocumentation": "Installeddfdd chapter-origin checkpoint; N single-unit/no chapterNavigation path. Geometry WIP unchanged, no runtime geometric acceptance."
     },
     {
       "name": "NextE",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "K章节进度与Shared/Legacy返回投影命名路径已提交。E普通P63移动取消随后显示原图/返回已审阅，不能代替网络pending/tuple证明。原早期后台边界继续一次，不扩大产品修改。",
-      "action": "One bounded ordinary E thumbnail tap followed immediately by Home, then normal same-Ability foreground and Back. Determine actual interrupted phase from native events; no timing sweep/backend/cache changes or frozen settled-foreground replay. Retain originalP3.",
+      "detail": "N953d build/install positive, native entry image identity retained1 vs baseline0; ordinary P38 immediateHome/plainforeground and normal returns fully reviewed in13/9contacts. No ReaderEntry cancellation phase line in candidate; named physical path only.",
+      "action": "Commit the exact N two-file correction plus narrow receipts; then source-bind one ordinary E online unread selected page/fast swipe/Back interval, observe actual asset/request readiness before any pending/late claim. No cache clear/delay/timing sweep or frozen menus replay.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -488,7 +488,33 @@
         "expected": "One normal currentP3 tap then Home, normal Ability foreground. Actual pre-departure cancellation may retain source, while departed production route may retain Reader. Neither may restart stale flight/change progress or lose usable body. Foreground native source-vs-Reader decision gate determines safe return/cleanup; only actual phase is accepted.",
         "reject": "unrequested full-screen/source/status-color jump before authorized departure, background controls remain active, stale proxy/empty body or progress/source lost",
         "action": "One bounded tap/Home/same-Ability foreground interval to native source-vs-Reader decision gate; then exact observed safe Back/cleanup. No timing sweep or preference/cache mutation.",
-        "scope": "Existing stale/background/early-entry row only; no new feature/candidate/timing calibration."
+        "scope": "Existing stale/background/early-entry row only; no new feature/candidate/timing calibration.",
+        "result": {
+          "receipt": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/e-early-background-return-receipt-20261007.json",
+          "accepted": "named E ordinary P3 layout/Home/current foreground sameid6 root flight/BackDetailP3; primary1126/343 and cleanup559/232 decoded/unique frames reviewed completely",
+          "limit": "No pending network/moving background/stale callback/FPS/all-layout acceptance"
+        }
+      },
+      "nextNEarlyBackgroundPlan": {
+        "recordedAt": "2026-10-07T20:23:20.093664+08:00",
+        "sourceBasis": "N Index.onReaderEntryForeground556 retires current production transition/claim/epoch on foregroundfalse; sharedReaderBody3354–3370 then entryTransition/guard/rootOwnedTarget evaluate to null/defaultfinished. E Index708 only retires Debug, production guard checks actualdeparture. Ordinary settledHome does not observe this early pending phase.",
+        "expected": "One ordinary thumbnail Home then normal foreground must retain same page/body/source return, release background controls and never revive invalid entry or full-screen-first internal zoom. N may cancel root animation; actual lifecycle must be observed, not inferred identical to E.",
+        "scope": "Existing cross-host early-background row, no new feature/candidate/cache/preferences or forced callback.",
+        "sourceCorrection": {
+          "recordedAt": "2026-10-07T20:37:49.145235+08:00",
+          "cause": "N onReaderEntryForeground calls retireProductionReaderEntry, cancelling then nulling the transition and clearing gallery/page identity while ReaderThumbnailTransitionState remains armed. Current a895 movie shows cancelled_from=layout at20:25:24.268, foreground fallback root flight259 onward, and same P38 return. Nulling also removes ReaderEntryTransition.hasLoadingBackdrop identity and changes native entry IDs, contrary to retaining terminal motion/content handoff ownership.",
+          "reference": "NextE production transition survives background and remains until owned Reader disappearance; its current ordinary layout/Home/foreground id6 root flight and P3 return are fully reviewed. Kit hasLoadingBackdrop explicitly survives motion cancellation.",
+          "change": "N Index background calls cancel on existing production transition without retiring current route identity. N child defers cancelled-entry settlement while foreground=false, observes foreground so it runs once on return, and disallows root handoff sync during background. Debug retirement and actual route close retain current cleanup.",
+          "impact": "N ordinary Shared thumbnail entry background/foreground, loading identity and retained return. No new state/timer/writer/remount; no changes to Kit, E, K, Legacy, source capture, geometry, menus, prefs, progress or preloading.",
+          "disproof": "Any premature fullscreen/color/body reveal, background forward flight, wrong page/target, blank body/loading handoff, late reopen after Back or failure to restore source/progress rejects the candidate. Spread and natural network-pending are unhit and not inferred from cached single.",
+          "validation": "One signed N build/install, same ordinary P38 FullGrid click/Home/plain foreground/native gate and continuous video review; observed two normal returns restore DetailP38 and timeout. Then remaining existing online acceptance lane, no timing sweep.",
+          "result": {
+            "receipt": "n-background-entry-ownership-acceptance-receipt-20261007.json",
+            "state": "accepted for named ordinary cached-single P38 Home/foreground retained identity and current-target return; overall OPEN",
+            "runtimeIdentity": "baseline0 -> current1, same P38/image bounds",
+            "limits": "Current candidate logs do not contain ReaderEntry cancelled_from/phase lines, so physical Home timing is not promoted to a proven cancelled-layout or moving-background branch. Interior image pixels vary at static P38 but outer page/38 identity persists; no guest FPS/decode/content-animation claim. No natural network-pending/late/duplicate/spread/stale/fallback/native color-writer chronology/full replacement acceptance."
+          }
+        }
       }
     },
     {

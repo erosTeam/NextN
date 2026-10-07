@@ -90,3 +90,11 @@ S0–S6 仍见 [账号协议](../device-protocols/nextn-account-login-acceptance
 
 冻结行为/重开条件仍由 [UI ledger](nextn-ui-change-ledger.md) 与
 [execution integrity](../controls/nextn-execution-integrity.md) 管理；历史归档不决定当前设备或任务。
+
+本次 material physical result（2026-10-07 20:18–20:19+08）：E普通P3缩略图→立即Home命中layout后台（foregroundfalse11.639/routefalse11.691，控制释放）；普通Ability前台13.860后同id6根飞行moving14.070→waiting/revealing/finished14.611。MOV `a9c50894`20.006667s/1126帧/343种RGB、10张联排全审阅：Home前是Detail，回前台先系统Detail卡片，再从原P3位置根缩放，正文未整页黑/全屏先内部缩放。独立普通Back MOV `9c292b9f`10.026667s/559帧/232种RGB、7张联排全审阅；返回同Detail Continue3/root[0,117][1320,2232]，close ready08.788先于status restore08.791，超时30000。仅接受实际layout后台/currentclaim前台/同P3返回，moving后台/stale/fallback/FPS未命中；原缓存frame0排除。没有产品修改/构建/安装/改缓存。回执 `e-early-background-return-receipt-20261007.json`；NextN源码有现存foreground retirement差异，按唯一工作单继续同边界。
+
+本次 material physical result（2026-10-07 20:42–20:43+08）：N后台取消调用原retire会清空入场加载身份，已按编辑前因果/影响记录改为取消运动并保留当前route身份，child后台不推进root交接。仅Index/NextNReaderLabPage两文件，菜单/几何/Legacy/E/K/Kit产品未改。Node26原构建在native options.recursive失败255；相同源码用DevEcoNode24签名构建0。正向安装953d，无清数据，普通Gallery663205/P38入口。
+
+原MOV `273db57b`（20.018333s/1119帧/450种RGB、13张联排）及正常两次Back MOV `8b28e5fe`（12.081667s/685帧/299种RGB、9张联排）全部首次RGB已审阅，精确重复映射保留。原Grid→立即Home→普通Ability前台→根proxy从原P38位置缩放→同P38图片；Back原127–138缩回同Grid，下一Back原183–198回Detail Continue38。实际native入场图片ID从旧a895的0变为当前1，bounds[0,114][1320,2118]；返回root[0,117][1320,2232]，keepScreenOn读回false、超时30000恢复。
+
+纠正此前从取消日志推断“前台无动画”的结论：旧a895原录像同样有前台root fallback飞行；本次修正依据是源码清空加载身份与native ID差异，并非旧缓存单页黑帧。当前953d没有ReaderEntry取消phase行，不能称命中cancelled-layout/early-moving；只接受命名Home/前台身份保持和同P38返回。画内像素变化保留，未据此作FPS/解码/动画机制结论。原图无缓存、双页、晚到/重复/失效回调和全阅读器替换仍未验收。回执 `n-background-entry-ownership-acceptance-receipt-20261007.json`，唯一当前动作仍在工作单。
