@@ -3,36 +3,36 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T00:53:13.179659+08:00",
+  "updatedAt": "2026-10-08T01:13:02.860536+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · N开场反转源码与签名构建完成；待当前197完整运行区间",
+  "state": "OPEN · N入场反转命名区间已接受；继续原有zero-top/landscape边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "NextN Shared开场Back候选提交与实机安装",
-    "detail": "Only Index four-line existing reverseOpening branch; exact other seven host source hashes and Kit/geometryWIP match prior binding. Signed build/native libs successful; no runtime acceptance.",
-    "startedAt": "2026-10-08T00:53:13.179659+08:00"
+    "title": "197横屏/零系统顶部边界：先确认现有普通入口能力",
+    "detail": "85602960/eb44当前P1立即Back及P2重入完整406帧已审阅；1497清理query0，原682531ContinueP2恢复。下一步仅调查既有真实横屏能力/根窗口与当前目标测量，不改产品。",
+    "startedAt": "2026-10-08T01:13:02.860536+08:00"
   },
-  "nextAction": "Commit reviewed narrow Index opening-reverse source and related current documentation, then checked install current bound HAP on197. Select one ordinary fullyvisible currentlyuncached thumbnail; record immediateBack→otherpage reentry→normalreturn continuously; full original review and restore682531ContinueP2. No timing sweep/cache forcing or frozen-path replay.",
+  "nextAction": "Source-first map existing N/E landscape root/close-current-target ownership against Legacy and known197 rotation protocol; declare one ordinary197 landscape source capability gate with actualroot/layout/foreground identity. If achievable, one complete source→rootflight→body→Back/restoration interval; no repeated frozenportrait/timing/cache/FPS or apporientation edits.",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
-      "hap": "d16b07a5ad99389352799ec1d4d44ea44d6fda7c1182d307fd2aab554aac416a",
-      "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
-      "install": "Checked positive197 install currentd16b, no data clear; native version1.0.5/v7.",
+      "hap": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
+      "build": "Signed currenteb44 compilation0; narrow4-line Index existingreverse branch; other7host/3KitSHA unchanged.",
+      "install": "Checked native install bodypositive and exactlocaleb44 bound. Nativebm tailtruncated; no packageversion readback claim.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted. Physical197 initiallyuncached560948P3 pendingasset0/moving→backgroundcancelled→stored111888, samepagebody/processing/ordinarysystemreturn reviewed443originals; original682531ContinueP2 restored.",
-      "remaining": "Named197 initiallyuncached interrupted interval accepted. Source-proven Shared missingopeningreverse branch remains; earlier midprogress/spread/late/stale/FPS/fullreplacement limits retained.",
-      "appHead": "d67e7502",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted. Physical197 initiallyuncached560948P3 pendingasset0/moving→backgroundcancelled→stored111888, samepagebody/processing/ordinarysystemreturn reviewed443originals; original682531ContinueP2 restored. Currenteb44 namedP1openingreverse/P2reentry/normalBack movieb5f5c65a all406/12contacts and raw219222244331 reviewed; nofullscreenfirst/bodyblack/staleoldpage. Original682531ContinueP2/root0,124 restored;1497query0.",
+      "remaining": "Named uncachedP1 openingreverse/P2reentry accepted; zero-top/landscape currentordinary gate remains, otherlate/stale/fallback/FPS/fullreplacement limits retained.",
+      "appHead": "85602960",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
-      "appHeadLayer": "Host product-source8 SHA matches d16b binding/d67e diagnostic checkpoint; new shared predicate3468 installed, unrelated WIP retained.",
+      "appHeadLayer": "85602960 Index source SHA53ae7784; currenteb44 bound; unrelatedgeometryWIP retained.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
       "kitDocumentation": "Installed3468 current-loading guard and prior dfdd chapter-origin checkpoint; N no chapterNavigation. GeometryWIP unchanged/unaccepted."
     },
@@ -195,15 +195,15 @@
         "note": "No independently recorded effort intervals for this existing row; zero is recorded time only, not total actual time."
       },
       "remainingEvidenceConditions": {
-        "recordedAt": "2026-10-07T16:25:24.963078+08:00",
+        "recordedAt": "2026-10-08T01:13:02.860536+08:00",
         "scope": "Original five acceptance rows and existing pending/stale/geometry limits only; no new feature/audit/test queue.",
         "currentActionableDefect": "No further source-proven edit from these observations. This does not itself stop investigation or acceptance; current E normal-finished obligation was performed and accepted separately. Remaining exact preconditions/alternatives/recovery events follow.",
         "conditions": [
           {
             "boundary": "Natural same-request pending cancellation",
-            "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready. Current ordinaryP63 id2 moving-cancel16.866 and sharpbody173/3.4917s accepted only visually; network-pending/progress-panel tuple not measured, no broadened acceptance. CurrentE P87 proves selectedcachemiss/networkprogress and fullvisibleloadinghandoff; nativewaiting cancellation occurs afterstored, not simultaneouspendingtransfer/fulltuple acceptance.",
-            "disposition": "UNACCEPTED native condition; no source-proven further change. Forced delay/cache mutation/timing sweep forbidden.",
-            "unavailableAction": "Observe pending original after same-request motion cancellation without synthesizing readiness.",
+            "currentEvidence": "Current197 E P9 and N P3 exactabsent-before nativeasset0 pending/moving→backgroundcancelled→stored-after, sameimage foreground/loading/Back accepted in namedfullmovies. Same-request native latefulltuple and midprogress acrosscancellation not independently measured.",
+            "disposition": "Named interrupted pending acquisition accepted; unmeasuredlate/midprogress combinations remain limited, no new patch or forcedscene.",
+            "unavailableAction": "Full simultaneouslatecallback/midprogress tuple not yet emitted in retainednative logs; not generic executionblock.",
             "observedPrerequisite": "Current coldP3 bc286415 cancels moving but original is shown; warmP3 2c9ef292 normal-finishes. Earlier natural unread continuousP59 run00:33:46 emits layout cancellation at00:33:49.832, not bound motion-cancelled pending original.",
             "safeAlternativesConsidered": "Cold and warm current P3, ordinary beyond-neighbor unreadP59 and existing uncancelled loading receipts are distinct safe alternatives already considered; none accepts this required simultaneous native state. Cache deletion/delay/timing sweep would change the condition and is forbidden.",
             "recoveryEvent": "A naturally unresolved current original request with actual motion cancellation and bound request/slot/epoch; then capture the existing complete interval once. No claim that all other galleries cannot reach it."
@@ -219,7 +219,7 @@
           },
           {
             "boundary": "Stale/background/early-moving/fallback variants",
-            "currentEvidence": "Current request/epoch/foreground/source guards and close fences are source-mapped; E early layout Back has prior named evidence, not these variants. Current declared two Debug intervals settle normally or cancelled with body; those variants were not hit.",
+            "currentEvidence": "Current request/epoch/foreground/source guards and close fences are source-mapped; E early layout Back has prior named evidence, not these variants. Current declared two Debug intervals settle normally or cancelled with body; those variants were not hit. Current197 N eb44 P1actualmoving reverse/P2reentry/normalBack accepted406originals; N/E backgroundpending named intervals separately accepted.",
             "disposition": "SOURCE ONLY for these variants; do not relabel as runtime accepted or extend existing protocol through repeated timing guesses.",
             "unavailableAction": "Observe stale/background/early-moving/system-fallback variants at their actual guarded request lifecycle.",
             "observedPrerequisite": "Existing bounded early-Back ordinary E9e2e cancelled from layout, not the missing moving branch; current normal and moving-cancelled completed intervals do not emit stale/background/fallback cases.",
@@ -228,12 +228,12 @@
           },
           {
             "boundary": "Zero-top/landscape and all-layout/FPS/full replacement",
-            "currentEvidence": "Current emulator input left actual1320x2232 viewport unchanged, so it cannot establish zero-top/landscape. Recorded host frames/native events are different clocks. No performance superiority or all-layout proof is available.",
-            "disposition": "CAPABILITY/EVIDENCE LIMIT; real-device197 remains excluded by user, no repeated transport/rotation attempts.",
-            "unavailableAction": "Accept real zero-system-top/landscape geometry or performance superiority.",
-            "observedPrerequisite": "Existing checked display-capability22:53:28 exposes dms.hidumper.supportdebug=false;22:55:08 rotation command exited0 but retained actual1320x2232 portrait root. Host movie/native clocks are not an FPS measurement.",
-            "safeAlternativesConsidered": "Existing guest rotation input was tried/restored; command success is not changed geometry. Host cosmetic window rotation does not prove guest viewport;197 is excluded. No app orientation change just to manufacture the test.",
-            "recoveryEvent": "A different actual guest viewport/zero-top source capability verified on authorized emulator, or user-authorized appropriate capability/performance measurement; no repeated unchanged rotation command."
+            "currentEvidence": "Earlier emulator could not expose changedviewport; user restored197 physical verification2026-10-07. Known deviceprotocol uses actualDisplayManagerService motion rotation; ordinarycurrentReader landscape gate now actionable. No FPSsuperiority proof.",
+            "disposition": "OPEN actionable197 landscape capability gate; FPS/all-layout remain capability/evidence limits.",
+            "unavailableAction": "No current physicalsourceviewport evidence yet; one currentordinarygate must be executed before evidence judgment.",
+            "observedPrerequisite": "197 connected/ALN-AL80 current1260x2720; original120000/highperformance retained. Prior197 protocol motion1/motion0 offers normalorientation gate, emulatorno-op not applicable.",
+            "safeAlternativesConsidered": "Use existing197 checkedrotation and actualroot discovery once, then boundedordinaryentry; no apporientation modification, hostcosmeticwindow change or repeatedunchanged command.",
+            "recoveryEvent": "Current actual197 landscape/sourcezero-top evidence from boundedgate; if commanddoesnotchangeviewport retain exactfailure and restoreportrait."
           },
           {
             "boundary": "Layout-switch short black / system enhancement / Koma folder production",
@@ -1022,7 +1022,7 @@
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
   "stopRule": "只完成当前既有行为一致性对照中有源码因果与影响依据的缺口；有效命名结果冻结。下一动作仅针对已登记未接受入场/加载分支的证据条件，不启动新功能/性能调参/全产品重测或按时长穷举。缺证据保留，不由构建或提交代偿。",
-  "excluded": "保留现有宿主菜单、设置、数据、导航、根转场、默认选择与旧版回退；未切换默认、未推送、未操作实机。已知限制没有被标为通过。",
+  "excluded": "现有菜单、设置、数据、导航、根转场、默认选择与旧版回退保留；不推送/发版，独立Koma生产与其Goal暂停；当前已按用户恢复197实机，旧模拟器排除197文本不再适用。",
   "costNote": "不显示虚构完成百分比或费用。每项工时为已记录下界、历史覆盖不完整。本次剩余两项联合源码可行性核对另记录7分钟，未精确拆分，未伪分摊到单项工时。",
   "jointAssessmentHandling": {
     "recordedSeconds": 420,
@@ -1039,7 +1039,7 @@
     "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
     "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
     "readerSpecificWorkActive": true,
-    "state": "OPEN — 文档整理及 E 当前正常入场命名义务已完成；原条件未验收/暂挂仍保留"
+    "state": "OPEN — 命名N反转区间已接受；既有横屏能力验证继续，原暂挂不关闭"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
@@ -1061,7 +1061,8 @@
     "eForegroundFailure": "device197-nexte-initial-backdrop-P3-failure-receipt-20261007.json",
     "eForegroundCurrent": "e-foreground-handoff-current-acceptance-receipt-20261007.json",
     "eOnlinePendingCurrent": "e-online-pending-P9-current-acceptance-receipt-20261007.json",
-    "nOnlinePendingCurrent": "n-online-pending-P3-current-acceptance-receipt-20261008.json"
+    "nOnlinePendingCurrent": "n-online-pending-P3-current-acceptance-receipt-20261008.json",
+    "nOpeningReverse": "n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -1133,13 +1134,12 @@
     }
   },
   "currentPhysicalState": {
-    "recordedAt": "2026-10-07T23:12:22.125509+08:00",
+    "recordedAt": "2026-10-08T01:13:02.860536+08:00",
     "target": "192.168.50.197:12345",
-    "device": "ALN-AL80/portrait1260x2720/API26",
-    "foreground": "com.erosteam.nexte current0f8 installed; ordinary4203217/124pages/DetailContinueP3 root[0,124][1260,2720]",
+    "device": "ALN-AL80/API26/1260x2720 portrait",
+    "foreground": "com.erosteam.nextn currenteb44; ordinary682531 DetailContinueP2 root[0,124][1260,2720]",
     "timeout": "AWAKE/86400000 active; original120000 recorded",
-    "lease": "20261007-134617-46d9f948",
-    "N": "TemporaryLegacy process cleared; actualShared ordinaryContinueP2 andBack DetailContinueP2; media cleanup find0",
+    "lease": "20261007-165222-3e314448",
     "nextUnverified": "Use unique top-level nextAction only"
   },
   "nextNOnlineHandoffObservation": {
@@ -1392,8 +1392,17 @@
       "binding": "nextn-opening-reverse-current-binding-20261008.json",
       "hapSha256": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
       "buildExit": 0,
-      "scope": "Only Index changed; other7 bound host files and all3 Kit hashes unchanged; geometryWIP preserved. Not installed/accepted."
-    }
+      "scope": "85602960 narrowIndex source committed; eb44 candidatepositiveinstalled withsame7 host/source3 Kit hashes. Nativebm tailtruncated; installationbody positive, no version claim fromtruncatedtail."
+    },
+    "sourceGate": {
+      "metadata": "device197-nextn-opening-reverse-uncached-source-20261008/run-metadata.json",
+      "selected": "P1 fullyvisible[78,2077][453,2565]; exact16c337b4-d1ab4cee.img absent",
+      "reentry": "P2[479,2077][854,2565], positive122724bytes",
+      "root": "actualnextn-root-navigation[0,124][1260,2720]",
+      "manifest": "device197-nextn-opening-reverse-P1-reentry-P2-20261008-input.json"
+    },
+    "runtimeReceipt": "n-opening-reverse-P1-reentry-P2-current-acceptance-receipt-20261008.json",
+    "disposition": "ACCEPTED only named P1moving reverse/P2reentry/normalreturn; fullmovie reviewed, scoped source85602960 positively installedeb44."
   }
 }
 -->
@@ -1411,9 +1420,7 @@ QA 入口只索引当前事实，不复制下一步。历史证据完整存于
 
 ## 当前运行证据与剩余条件
 
-安装绑定：N `953dca65` / `2bfb6328`、E `d7cdffba` / `f593e88e`、K `b4fb2cf0` / `850af0c5`；具体 SHA、路径、命名接受、失败/未命中
-和工时仍在上方快照。当前 N/K 安装 Kit `dfdd2b04`，E 安装仍为 `5b9014cc`；两文件 geometry WIP 保留，不能据此宣称
-全几何验收。文档修改不生成新 HAP 或新的运行结论。
+当前安装绑定以顶部 hosts 和对应 receipt 为准：N `eb44a98b` / `85602960`、E `7e0315fd` / `1601e159`、K `b4fb2cf0` / `850af0c5`。N/E 当前安装 Kit `3468fa41`，K 仍为 `dfdd2b04`；两文件 geometry WIP 保留且未由命名入场记录接受。旧模拟器/旧包段落只描述历史，不派发当前动作。
 
 文档前置提交后，先保留冷启 `bc286415` 的 moving-cancelled 判定；再按既有同进程缓存前提，
 只做一次自然 P3 再入 `2c9ef292`。实际 id3 moving40.528→waiting41.007→revealing41.016→finished41.042，
