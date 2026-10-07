@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T23:12:22.125509+08:00",
+  "updatedAt": "2026-10-07T23:35:22.172434+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · NextN197旧入场底板命名路径接受；继续NextE共同入口",
+  "state": "OPEN · NextE前台handoff命名路径接受；继续实际未缓存加载边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "NextE197共同加载底板入口",
-    "detail": "Shared current-loading predicate3468 committed and N197 cancelled-motion/current original+preparation/Back interval reviewed; actual same-device Legacy original reference inspected. E197 original native home captured before current candidate installation. No frozen controls replay.",
-    "startedAt": "2026-10-07T23:09:41.860772+08:00"
+    "title": "197 NextE剩余在线加载/后台恢复门控",
+    "detail": "E foreground admission1601e159 committed; actual interrupted and normal root intervals reviewed all197/114 originals. Next finite action source cache/native gate for one existing ordinary uncached page; no frozen route replay.",
+    "startedAt": "2026-10-07T23:35:22.172434+08:00"
   },
-  "nextAction": "From current actual197 NextE4203217 Detail ContinueP3/source thumbnails, execute one bounded ordinary thumbnail/Home/plainforeground/processing-to-body/Back recorded interval; review actual phases and full original movie. No timing/cache forcing.",
+  "nextAction": "From current actual E4203217 Detail ContinueP3 preview, inspect existing cache/source identity for a visible page outside current cached preparation window. If actually uncached, execute one ordinary thumbnail/Home/plainforeground/loading-to-original/Back recorded interval; no clearing cache/delay/timing sweep. Classify actual tuple, then restore originalP3 via ordinary current source.",
   "hosts": [
     {
       "name": "NextN",
@@ -40,16 +40,16 @@
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
-      "hap": "0f8b60f15baec9692eb565d57114c2078abdbe38169df16b141b9aa8de1b07cf",
+      "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
       "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
       "install": "Checked positive197 current0f8 install without data clear; native same4203217/124pages/ContinueP3 Detail root[0,124][1260,2720].",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored.",
-      "remaining": "197 current common-predicate entry/original-processing/return not yet observed; previous limits retained.",
-      "appHead": "b4cf650e",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored. Physical197 current7e0315fd ordinaryP3 interrupted/cancelled/foreground and normalfinished rootflight/original/BacksameDetailContinue3 accepted in all197/114 originals, nativeactualroot0,0/1260/2720.",
+      "remaining": "Named cached197P3 interrupted/normal accepted; uncached cancelled-load/processing tuple not yet accepted, earlier limits retained.",
+      "appHead": "1601e159",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
-      "appHeadLayer": "CurrentE host product unchanged from25aa; scopedKitpinb4cf650e. Ten current source SHA recorded before installation.",
+      "appHeadLayer": "One foreground admission source file committed and positive197installed7e0315fd; ten source SHA plus unchanged geometryWIP bound.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
       "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged."
     },
@@ -1057,7 +1057,9 @@
     "statusIntent": "status-intent-current-acceptance-receipt.json",
     "postControlsRun": "e-post-controls-normal-entry-result.json",
     "postControlsWarmRun": "e-post-controls-warm-entry-result.json",
-    "initialBackdrop": "initial-backdrop-nextn-current-acceptance-receipt-20261007.json"
+    "initialBackdrop": "initial-backdrop-nextn-current-acceptance-receipt-20261007.json",
+    "eForegroundFailure": "device197-nexte-initial-backdrop-P3-failure-receipt-20261007.json",
+    "eForegroundCurrent": "e-foreground-handoff-current-acceptance-receipt-20261007.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -1185,7 +1187,7 @@
     "observed": "Diagnostic HAP727256a5, PID43277: cancelled_from=moving37.571; foreground40.211 decoding; original native slot1/asset1 success40.292; displayed observed5/rootopen40.459; enhanced asset2 success43.229. Movie1b0bfc1d all269frames/all8contacts shows panel persists after original and later resolves. Original/root-stall hypothesis rejected for this P5 interval.",
     "impact": "Previous diagnostic host logs remain observational; correction is shared predicate only.",
     "plan": {
-      "state": "Implemented shared3468; allthreecompile0; N named197 interval accepted; E exposure pending",
+      "state": "Shared3468 committed/buildthree0; N197namedguardaccepted; E197handoffgate1601 corrected/accepted but displayed-original processing branch not yet hit",
       "existingBehavior": "Ordinary source thumbnail departs through retained host root flight. While initial same request loads/decodes, keep preview and its loading backdrop. After original Image is displayed, later host enhanced/translated preparation retains that body with its own loading feedback; it must not revive initial-entry backdrop. Back returns same source and observed progress; no early system chrome change.",
       "cause": "Cancelled ReaderEntryTransition refuses publishTarget/update; its target can remain decodedReady=false. hasLoadingBackdrop currently checks phase/target/part/slot/loadRequest only. prepareVariantForSource requires phase displayed, emits preparingSourceIndexes while initial displayed frame remains request1/asset1. Paged and Continuous then mount loading stage for preparation with obsolete initial backdrop. Canonical ReaderSnapshot.isAssetLoading is false for displayed current epoch; later replacement increments request epoch and already fails entry loadRequest identity.",
       "change": "Add current frame.asset.isAssetLoading() to shared hasLoadingBackdrop predicate. Existing request/loading truth is authoritative; no new readiness flag, snapshot state, timer, remount, host branch or simulated transition. Leave stage visibility and hasDecodedFrame unchanged.",
@@ -1268,6 +1270,54 @@
         "timeout": "Active86400000; original120000 restored only when session completes; highperformance untouched"
       },
       "limits": "Named single/portrait cached original+automatic preparation after motion cancellation. No full replacement,5-minute,FPS,other layouts,uncached cancelled tuple/stale/late/fallback claims."
+    }
+  },
+  "device197EForegroundHandoff": {
+    "recordedAt": "2026-10-07T23:28:03.341188+08:00",
+    "state": "Named197P3 foreground and normal root handoff accepted",
+    "failure": {
+      "hap": "0f8b60f15baec9692eb565d57114c2078abdbe38169df16b141b9aa8de1b07cf",
+      "movieSha256": "344f2d086e456e1f97348b05672c9bc229c5ea59db2c77cc058a31ad20fd48b9",
+      "durationSeconds": 10.197,
+      "frames": 156,
+      "review": "all original RGB contacts000-004 reviewed; native Reader3/124 root[0,127][1260,2720] while pixels remain Detail preview after foreground. No Reader flight/body observed. Normal Back same Detail ContinueP3.",
+      "diagnostics": "lowercase reader-entry/reader-transition and console narrow queries absent; no exact phase chronology inferred.",
+      "cleanup": "Only newlycreated1492 locally exported then deleted; exactname query0; temp removed. Active timeout86400000, original120000 retained."
+    },
+    "plan": {
+      "existingBehavior": "E Detail actualP3 source -> root proxy with real selected-part target -> original/loading -> sameDetail return; background cannot consume departure or settle root presentation.",
+      "sourceCause": "E notifyEntrySettled monitors only entryPhase and can call startCancelledFlight/set entrySettledNotified/onEntrySettled while ReaderLabVisibility.foreground=false. E syncRootOwnedEntryTarget similarly lacks foreground guard and monitor; common sync consumes flightStarted before authorizeDeparture, while Index.authorizeProductionReaderEntryDeparture rejects false foreground and retires claim. Coordinator starts via frame callback and background scheduling may consume that one-shot flight. Returning foreground does not re-enter either monitor solely on visibility. N current guards/monitors already defer both to foreground. This isolates a source-proven bad transition; precise failed movie phase still unobserved.",
+      "change": "Add existing labVisibility.foreground to two monitors and early-return guards only. Add bounded existing-monitor console tuple observation equivalent to N to distinguish phase/root/asset/foreground; no new state or timer.",
+      "owners": "EntryAbility updates existing shared ReaderLabVisibility onForeground/onBackground in all builds. Kit owns handoff decisions; E host provides current foreground admission and existing root adapter. Keep Index authorization/epoch, coordinator phase, native image ACK/provider/preparation, status-bar writer, source snapshot/geometry/radius, layer opacity, menus/rails/preload/progress unchanged. N already has equivalent admission; K has no root entryTransition.",
+      "impact": "Direct E ordinary compact/full-preview and Debug root-owned thumbnail handoff across background/foreground; ordinary foreground and no-thumbnail terminal notification unchanged. Root cancellation/Back can still retire on actual route disappearance. No other consumers changed; preserved two geometryWIP.",
+      "disproof": "If candidate actual foreground still shows Detail while nativeReader mounted, foreground-admission mismatch is not sufficient. Also reject any early fullscreen/color change, missing true root flight, lost image/loading backdrop, wrong current part or stale Back/Continue state. Native tuple plus whole movie must distinguish actual phase; not merely pass build/layout.",
+      "validation": "One E current197 P3 ordinary interrupted interval and one ordinary foreground entry/Back sibling where impacted; entire original movies reviewed, current native roots and same source identity. No cache/forceddelay/timing sweep or replay frozen unrelated controls."
+    },
+    "result": {
+      "at": "2026-10-07T23:35:22.172434+08:00",
+      "state": "accepted for named E197 cachedP3 interrupted and ordinary root entry/return only",
+      "binding": "e-foreground-handoff-current-binding-20261007.json",
+      "commit": "1601e159e270c7bc0705cd6031e7e42500fbf1e5",
+      "sourceScope": "Existing labVisibility foreground monitor+guard in two handoff methods; 17+/4- includes equivalentN observational tuple. No Kit/writer/opacity/source/provider/progress/menu change. Two geometry WIP SHA unchanged.",
+      "baseline": "Current0f8 raw344f2d08 failed: mountedReader root[0,127] but Detail pixels. Exact historical phase not inferred.",
+      "interrupted": {
+        "movie": "e3e067d6cc8b2a16aa0a7714e84729cf34b8d66969574ad2a22ac56eedafa642",
+        "seconds": 10.389,
+        "frames": 197,
+        "uniqueFrames": 184,
+        "review": "all original RGB contacts000-005 reviewed;0-23source;24-41OSHome;78-91OSforegroundcard;92-115 real selectedP3 rootflight;116+sameP3 original;165-180normal rootreturn;181-196sameDetailContinueP3. No wholebody blank or source/status jump before rootflight.",
+        "native": "PID10508 at23:29:54.837 cancelled/rootwaitingReader/foregroundfalse/asset1decoding;54.847rootopening/foregroundtrue;55.480displayed/observed8/openProxyHandoff;55.547rootopen. Selection8 is not page8. Body rkit3/124/root[0,0][1260,2720]."
+      },
+      "ordinary": {
+        "movie": "2d516352c9101389b8d45e645284eacbbdca8433f3d32d66ed56879b04774fbd",
+        "seconds": 7.957,
+        "frames": 114,
+        "uniqueFrames": 98,
+        "review": "all three originalRGB sheets000-002;0-26sameDetail;27-55rootflight;56-83sameP3 body;84-99return;100-113sameDetailContinueP3.",
+        "native": "PID10508 entry3 layout→moving→waiting→revealing→finished;rootopen/observed8;slot1/request1/asset1displayed. ActualBody3/124/root[0,0][1260,2720]."
+      },
+      "cleanup": "New1493/1494 validlocalexported/reviewed then exactdelete/query0/tmpremove; currentDetailContinueP3. No backend/cache/settings mutation. Timeout86400000 active; original120000 retained.",
+      "limits": "No uncached pending tuple, displayed-original processing, spread, late/stale/FPS/five-minute/fullreplacement promotion. This validates foreground consumption correction; initial backdrop loading still separately bounded."
     }
   }
 }
