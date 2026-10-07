@@ -9,7 +9,7 @@
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |
 | N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回的命名区间 | 自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
-| E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载 | 自然 pending/stale/fallback、全量几何/FPS/替换 |
+| E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载、显式 Debug Home/前台 retirement 返回同DetailP3 | 普通生产连贯基本使用/后台、自然 pending/stale/fallback、全量几何/FPS/替换 |
 | K | HAP `3a32ff76`：仅原目录/章节/自动阅读/按书设置/标题/媒体面板命名证据，依赖不变才沿用 | 全量布局/FPS/替换；文件夹实际导入移回暂停的 Koma 生产工作 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
@@ -31,6 +31,8 @@ HAP/九份源码SHA相同，未重构建、安装或改缓存/等待。原 root 
 及16:00:47.084695 checked AWAKE、timeout/override=30000、keepScreenOn=false恢复，租约正常释放。
 剩余自然未命中、能力限制和用户暂挂的实际证据/安全替代/恢复条件只在唯一工作单，不复制队列。
 所有产物仍位于 ignored `.hvigor/outputs/reader-entry-statusbar-20261006/`，构建成功不代替这份运行证据。
+
+本次 material physical result（2026-10-07 16:55+08）：E同一d7 HAP的显式Debug cachedP3入场仅作setup，Home后台导致foreground=false、route=false、keepScreenOn=false恢复，普通aa前台回同DetailP3。原MOV `26cf72a2`，1011原帧中所有540种RGB首次出现均在已审阅0–767内，之后精确重复映射保留。系统启动卡片340–344保留旧Reader任务快照，实际内容345起为Detail；不把卡片误称实时Reader重入。未发出close_layout_ready，未验证音量键操作。只接受该Debug retirement区间，不能推广普通生产保持/五分钟基本使用；普通Want本身不清Lab relay，后续正式入口必须重置进程内Debug而不清数据。30秒超时已恢复，租约为继续同范围动作保持有效。未构建/安装/修改产品。
 
 ## 非 Reader 遗留边界（不自动启动）
 

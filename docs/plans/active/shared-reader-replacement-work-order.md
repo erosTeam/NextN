@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T16:25:24.963078+08:00",
+  "updatedAt": "2026-10-07T17:05:29.346725+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 文档约束已提交；E 同进程正常入场整段命名路径接受，剩余条件逐项保留",
+  "state": "OPEN · Debug后台区间留证；正在核验普通生产入口与基本使用",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "state": "waiting-for-recorded-condition",
-    "title": "当前可执行文档前置与 E 正常入场证据已完成",
-    "detail": "同源 warm P3 一次完整区间实际 finished，整段原帧/日志/显隐/隐藏返回已审阅。剩余自然未命中、能力限制及用户暂挂分别有证据与恢复条件；不重复冻结路径。",
-    "startedAt": "2026-10-07T16:25:24.963078+08:00"
+    "state": "active",
+    "title": "核验普通生产入口及连贯基本使用",
+    "detail": "自动恢复已实际读失败轮次并执行原未验收后台动作；局部Debug流程不代替普通用户基本功能。当前先清除进程内Lab意图，按正式选择与入口核对。",
+    "startedAt": "2026-10-07T17:05:29.346725+08:00"
   },
-  "nextAction": "On an actual reachable ordinary native same-request pending/late/stale/early-moving/fallback reproduction or a verified emulator viewport/capability change, select that exact existing unaccepted row, bind current source/HAP/route and execute one complete checked interval. Current cached P3 cold/warm and existing unreadP59 evidence did not establish those prerequisites; do not force delays/cache changes, repeat accepted entry, re-run unchanged records, use197, or resume user-held work. Relevant user feedback or source/dependency change reopens only its affected row. Conditions and considered safe alternatives are recorded in remainingEvidenceConditions below.",
+  "nextAction": "Resolve and execute the existing ordinary production basic-use boundary from current source and installed HAP: reset only process-local Debug rehearsal by force-stop without clearing data; normal Ability plus known ordinary gallery URI, no Lab/backend Want; fresh semantic Detail source and canonical choice, then one declared continuous basic-use interval (page swipes beyond initial window, rail/chrome and original/menu behavior, same-source progress/reentry). Reuse unaffected named receipts and do not replay frozen entry as a separate test. Record any user-visible difference against unchanged Legacy ownership before editing; no cache/delay mutation, timing sweep or unlimited loop.",
   "hosts": [
     {
       "name": "NextN",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "执行约束整理已提交并恢复实际工作；E 当前 same-process cached P3 正常入场/显隐/隐藏后返回整段命名路径接受。剩余原自然分支与能力/用户暂挂不由此推广。",
-      "action": "On an actual reachable ordinary native same-request pending/late/stale/early-moving/fallback reproduction or a verified emulator viewport/capability change, select that exact existing unaccepted row, bind current source/HAP/route and execute one complete checked interval. Current cached P3 cold/warm and existing unreadP59 evidence did not establish those prerequisites; do not force delays/cache changes, repeat accepted entry, re-run unchanged records, use197, or resume user-held work. Relevant user feedback or source/dependency change reopens only its affected row. Conditions and considered safe alternatives are recorded in remainingEvidenceConditions below.",
+      "detail": "当前命名 E Debug后台/前台 retirement 区间已审阅；普通生产基本使用未由该区间接受，继续实际可执行入口/使用边界。",
+      "action": "Resolve and execute the existing ordinary production basic-use boundary from current source and installed HAP: reset only process-local Debug rehearsal by force-stop without clearing data; normal Ability plus known ordinary gallery URI, no Lab/backend Want; fresh semantic Detail source and canonical choice, then one declared continuous basic-use interval (page swipes beyond initial window, rail/chrome and original/menu behavior, same-source progress/reentry). Reuse unaffected named receipts and do not replay frozen entry as a separate test. Record any user-visible difference against unchanged Legacy ownership before editing; no cache/delay mutation, timing sweep or unlimited loop.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -245,7 +245,7 @@
             "recoveryEvent": "Explicit user reopening of the relevant hold and its concrete capability; independent K production is not automatically resumed."
           }
         ],
-        "executionDisposition": "OPEN conditions, not full replacement acceptance or proof that all possible native routes are unavailable. Existing permitted finite cold/warm/unread/rotation alternatives are recorded; do not repeat them to wait for a different outcome. User holds remain distinct from native unhit and platform evidence limits."
+        "executionDisposition": "Unhit native branches are unaccepted evidence, not generic waits or execution blocks. One original Debug background action actually completed; ordinary production basic-use boundary is now actionable. Existing explicit holds and observed platform limits remain separate."
       },
       "executionRecovery": {
         "recordedAt": "2026-10-07T14:56:27+08:00",
@@ -275,6 +275,72 @@
           "review": "Cold bc286415 moving-cancelled retained separately; distinct warm2c9ef292 normal-finished branch accepted for full named interval after raw review.",
           "distinctRemainingAction": "Completed once with actual finished; freeze this cached portrait row. Remaining native/capability prerequisites are classified below, no repeated warm/cold route."
         }
+      },
+      "backgroundForegroundPlan": {
+        "recordedAt": "2026-10-07T16:53:44.011875+08:00",
+        "sourceBasis": "E EntryAbility150/162 -> ReaderLabVisibility.foreground; Index706 onReaderEntryEnvironment closes request when foreground false after claim cleared; closeReaderTrial retires guard/epoch and window before clear. Child1043 activity gates keepScreenOn/volume; no new source edit.",
+        "expected": "Home retires explicit Debug request and releases active controls; foreground sameAbility restores sameDetailP3 and source window, no stale admission/Reader resurrection; terminal timeout30000/keepScreenOn false.",
+        "reject": "wrong source/progress, retained stale Reader overlay, late fullscreen/colors, active background controls or failed restoration",
+        "scope": "Explicit Debug cached portrait background retirement only; other variants are not accepted by this run."
+      },
+      "backgroundForegroundReceipt": {
+        "receipt": "e-background-foreground-result-20261007.json",
+        "movieSha256": "26cf72a2f7b5a7db058d22054ec1509c8e44cfd8564d17cf03c12121bb30ec91",
+        "state": "NAMED ACCEPTANCE ONLY",
+        "scope": "Explicit Debug E cached P3 portrait settled entry as setup, Home background retires Debug route, same Ability foreground returns DetailP3. Not ordinary production Reader background retention or five-minute basic-use acceptance.",
+        "native": {
+          "entryId": 5,
+          "pid": 31472,
+          "foregroundFalse": "16:55:19.907",
+          "routeFalse": "16:55:19.941",
+          "keepScreenOnRestored": "16:55:19.951 restored_readback=false expected=false",
+          "closingTrue": "16:55:19.966",
+          "statusPropertiesRestored": "16:55:21.912",
+          "closeLayoutReady": "not emitted; not claimed",
+          "volume": "release log only; no key interaction performed"
+        },
+        "review": {
+          "reviewedContactSheets": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "coverage": "Original frames0–767 visually reviewed in contact sheets1–16; every full RGB first occurrence is included, last744; subsequent frames768–1010 exact duplicates of reviewed originals. Original PNG/PTS and full RGB equivalence map retained.",
+          "uniqueDecodedRGB": 540,
+          "exactMap": "host-recording/e-background-foreground-frames-20261007/exact-frame-equivalence.json",
+          "setup": "Source remains through104, root enlargement105–119, settled original120 onward. Entry is reused setup, not new entry acceptance.",
+          "background": "Reader shrinks in ordinary system Home animation207–222; Home223–339.",
+          "foreground": "System launch card340–344 initially contains the outgoing Reader task snapshot; its shrinking card is not a live Reader re-admission. Actual content switches to DetailP3 at345 and remains through1010. No full-screen Reader resurrection observed.",
+          "limit": "No elapsed input-latency/FPS conclusion; recorder clock/native log are separate. No ordinary production background-retention, stale late decode or volume key press acceptance."
+        },
+        "terminal": {
+          "bundle": "com.erosteam.nexte",
+          "root": "[0,117][1320,2232]",
+          "text": "继续 P3",
+          "power": "AWAKE, normal/override timeout30000 restored",
+          "artifact": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/emulator__PHEMU-FD00/not-applicable/portrait-1320x2232/e-background-foreground-whole-20261007",
+          "lease": "20261007-085223-29be839d retained/renewed for next ordinary route; not claimed released"
+        }
+      },
+      "ordinaryBasicUsePlan": {
+        "recordedAt": "2026-10-07T17:05:29.346725+08:00",
+        "sourceBasis": "captureReaderLabWant absent parameters returns without clearing installed ReaderTrialEntryRelay; ordinary aa foreground after Debug alone cannot prove production route. Force-stop without data clear resets process-local relay/override. Production tryOpenProductionThumbnail/openSharedTransition and GalleryDetail Continue resolve canonical persisted backend through resolveNextEReaderBackendSelection.",
+        "purpose": "Existing basic-use behavior table and latest user five-minute ordinary-use expectation, not new feature or all-product audit. First establish real ordinary route, then continuous actions according to current layout/source without Debug overrides.",
+        "failureRule": "Visible wrong backend/menus/page/black/loading/rail/entry/window/progress difference rejects the interval; local successful pieces never accept whole basic-use route.",
+        "editRule": "Only source-proven differing owner/caller transition permits narrow change; compare Legacy and affected consumers first."
       }
     },
     {
@@ -737,9 +803,10 @@
     "automationId": "automation",
     "intervalMinutes": 15,
     "status": "ACTIVE",
-    "scope": "Resume a safe authorized recorded action whenever unfinished work is idle, including premature turn endings; do not require abnormal-interruption evidence. Verify exact blockers instead of inheriting an agent-authored generic no-action conclusion; no frozen replay, real-device retry, paused Koma Goal resume, push or release.",
-    "correctedAt": "2026-10-07T14:56:27+08:00",
-    "failureCause": "The old abnormal-only recovery predicate plus the agent-authored generic no-action nextAction excluded idle unfinished work. Repeated triggers read unchanged records rather than advance or establish a specific blocking condition."
+    "scope": "Mandatory read recent thread status/error/human instructions/unfinished physical action before dispatch. The heartbeat own active state is not another executor; unchanged files do not imply no recovery. Recover safe unfinished original action without new bug reports; no frozen repeats,197,paused Koma Goal,push/release.",
+    "correctedAt": "2026-10-07T16:53:44.011875+08:00",
+    "failureCause": "Prior executions skipped conversation failure records and treated agent-authored unhit conditions and unchanged hashes as grounds to exit. Actual failed429 turns01a11522/01a11562 were read through read_thread; fresh heartbeat01a1158d reads them and executes pending original scope.",
+    "currentVerification": "16:49:39 heartbeat first used read_thread including failed429 turns, then executed checked Home/foreground lifecycle16:55:17–25 with full original MOV review. This proves real resumed execution for this trigger, not guaranteed future429 recovery or whole Reader acceptance."
   },
   "history": {
     "workOrder": "../archive/shared-reader-work-order-through-20261007.md",
@@ -800,14 +867,13 @@
     }
   },
   "currentPhysicalState": {
-    "observedAt": "2026-10-07T16:00:47.084695+08:00",
+    "observedAt": "2026-10-07T16:55:25.675537+08:00",
     "target": "127.0.0.1:5555",
-    "app": "NextE Detail4203217 after Reader hidden-area Back",
+    "app": "NextE Detail4203217 after Debug Home/foreground retirement",
     "root": "[0,117][1320,2232]",
-    "sourceTile": "page2 [673,745][947,1131] / ContinueP3; discovery/current interval only",
-    "cleanup": "AWAKE; ScreenOffTimeout and OverrideTimeout30000 restored, keepScreenOn=false restored, lease20261007-075848-76e5ad3d released normally. Normal-finished named warm route accepted; no all-layout/FPS/full replacement.",
-    "evidenceRoot": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/emulator__PHEMU-FD00/not-applicable/portrait-1320x2232",
-    "receipt": "e-post-controls-warm-entry-result.json"
+    "sourceTile": "page2 [673,745][947,1131] / ContinueP3; fresh source required before next input",
+    "cleanup": "timeout30000 restored; keepScreenOn=false restored; active renewed lease20261007-085223-29be839d",
+    "receipt": "e-background-foreground-result-20261007.json"
   }
 }
 -->
@@ -815,7 +881,7 @@
 ## 当前任务与权威
 
 本单是三个宿主的唯一 Reader 执行队列。用户最新指令优先。执行文档前置已完成，
-Reader 结果仍 OPEN，E 正常入场的当前命名区间已完成；剩余动作按顶部明确条件恢复。独立 Koma 生产 Goal
+Reader 结果仍 OPEN，E 正常入场的当前命名区间已完成；剩余原边界按顶部唯一动作继续；未命中不是等待它自行发生的理由。独立 Koma 生产 Goal
 保持 PAUSED。租约、归档、构建与自动任务不创建授权。
 
 执行规范见 [NextN integrity](../../controls/nextn-execution-integrity.md)、
@@ -841,8 +907,10 @@ E 既有 root-owned 手法是原图不透明合成后等一个绘制帧，再撤
 
 未改变 HAP/九份源码、等待、缓存或产品。原 Detail4203217/root `[0,117][1320,2232]`、ContinueP3
 和30秒超时、keepScreenOn均恢复，租约正常释放。自然 pending/late/stale/fallback、zero-top/landscape
-仍未接受；顶部 remainingEvidenceConditions 分列被阻止动作、已有实际证据、安全替代和恢复事件。
+仍未接受；顶部 remainingEvidenceConditions 保留未接受条件及平台/用户暂挂，不能把未命中当成禁止安全调查/验收。
 系统增强、布局大改与独立 Koma 生产仍沿原用户暂挂，不能以“没有代码可修”或这次命名通过替代。
+
+本次16:55连续 Home/同Ability前台区间实际执行并整段审阅：foreground=false→route=false→keepScreenOn=false恢复，系统卡片后回到同DetailP3。原MOV `26cf72a2`、1011原帧/PTS/RGB映射留存，只有显式Debug后台retirement命名接受，不接受普通生产后台或五分钟基本使用。
 
 ## 验收方法
 
