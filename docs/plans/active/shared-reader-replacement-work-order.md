@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T23:35:22.172434+08:00",
+  "updatedAt": "2026-10-07T23:51:04.647025+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · NextE前台handoff命名路径接受；继续实际未缓存加载边界",
+  "state": "OPEN · E197未缓存入场命名路径留证；继续N对应原未验边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "197 NextE剩余在线加载/后台恢复门控",
-    "detail": "E foreground admission1601e159 committed; actual interrupted and normal root intervals reviewed all197/114 originals. Next finite action source cache/native gate for one existing ordinary uncached page; no frozen route replay.",
-    "startedAt": "2026-10-07T23:35:22.172434+08:00"
+    "title": "197 NextN剩余pending原图一致性",
+    "detail": "E initiallyuncachedP9 Home/cancelled request1asset0, foregroundsameimage100%background/clear/Back accepted named full206originals; originalP3 and cleanup restored. N exact197 pending acquisition currentguard still unaccepted.",
+    "startedAt": "2026-10-07T23:51:04.647025+08:00"
   },
-  "nextAction": "From current actual E4203217 Detail ContinueP3 preview, inspect existing cache/source identity for a visible page outside current cached preparation window. If actually uncached, execute one ordinary thumbnail/Home/plainforeground/loading-to-original/Back recorded interval; no clearing cache/delay/timing sweep. Classify actual tuple, then restore originalP3 via ordinary current source.",
+  "nextAction": "Recover current197 NextN ordinary Detail and read current original-cache source once using supported physical mapping. Choose one existing ordinary source outside current actual cached window for the still-unaccepted N197 pending-original cancellation/foreground boundary; no cache clearing, forced delay or timing sweep. Preserve N originalContinueP2 and E restoredP3.",
   "hosts": [
     {
       "name": "NextN",
@@ -42,11 +42,11 @@
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
       "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
-      "install": "Checked positive197 current0f8 install without data clear; native same4203217/124pages/ContinueP3 Detail root[0,124][1260,2720].",
+      "install": "Checked positive197 current7e0315fd install without data clear; foreground admission1601e159 bound. Native4203217/124pages originalContinueP3 restored, Detail root[0,124][1260,2720].",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored. Physical197 current7e0315fd ordinaryP3 interrupted/cancelled/foreground and normalfinished rootflight/original/BacksameDetailContinue3 accepted in all197/114 originals, nativeactualroot0,0/1260/2720.",
-      "remaining": "Named cached197P3 interrupted/normal accepted; uncached cancelled-load/processing tuple not yet accepted, earlier limits retained.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored. Physical197 current7e0315fd ordinaryP3 interrupted/cancelled/foreground and normalfinished rootflight/original/BacksameDetailContinue3 accepted in all197/114 originals, nativeactualroot0,0/1260/2720. Physical197 initiallyuncachedP9 exactabsent-before/stored402586after: asset0 pending/moving→backgroundcancelled, foreg100%panelretainsbackground then sameimage/BackDetailP9 accepted full206originals; originalP3restored.",
+      "remaining": "Named E197 initiallyuncached interrupted interval accepted; sharp-image/100% adjacentframe95->96 nativephase unobserved, no zero-overlap guarantee; processing/spread/late/stale/FPS/fullreplacement limits retained.",
       "appHead": "1601e159",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "appHeadLayer": "One foreground admission source file committed and positive197installed7e0315fd; ten source SHA plus unchanged geometryWIP bound.",
@@ -1059,7 +1059,8 @@
     "postControlsWarmRun": "e-post-controls-warm-entry-result.json",
     "initialBackdrop": "initial-backdrop-nextn-current-acceptance-receipt-20261007.json",
     "eForegroundFailure": "device197-nexte-initial-backdrop-P3-failure-receipt-20261007.json",
-    "eForegroundCurrent": "e-foreground-handoff-current-acceptance-receipt-20261007.json"
+    "eForegroundCurrent": "e-foreground-handoff-current-acceptance-receipt-20261007.json",
+    "eOnlinePendingCurrent": "e-online-pending-P9-current-acceptance-receipt-20261007.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -1318,6 +1319,34 @@
       },
       "cleanup": "New1493/1494 validlocalexported/reviewed then exactdelete/query0/tmpremove; currentDetailContinueP3. No backend/cache/settings mutation. Timeout86400000 active; original120000 retained.",
       "limits": "No uncached pending tuple, displayed-original processing, spread, late/stale/FPS/five-minute/fullreplacement promotion. This validates foreground consumption correction; initial backdrop loading still separately bounded."
+    }
+  },
+  "device197EOnlinePendingSourceGate": {
+    "native": "currentP9 source8 bounds[832,2078][1180,2569]/Detailroot[0,124][1260,2720]",
+    "key": "reader:v1:4203217:ff4ccabae3:9:resampled -> 89d3ef7c-f6377d16.img",
+    "exactBefore": "No such file or directory, while P3 hash69a7aff6-8ea2ac10 exists62382bytes23:31",
+    "sourceRecord": "device197-nexte-online-pending-P9-exact-cache-gate-20261007/run-metadata.json",
+    "failedAlternative": "shell -b/-m private forms time out25seconds (cache/moduleDB/baseDB); source-supported physical mapping reader-image-file-cache succeeds; large listing truncated, not used for absence; exact selected read thereafter.",
+    "action": "One P9 existing ordinary source interrupted interval, actual cancellation/acquisition tuple classified; return originalP3 via current retained source. No modified cache, delay, backend or settings.",
+    "result": {
+      "at": "2026-10-07T23:51:04.647025+08:00",
+      "state": "accepted for named physical197 E4203217/P9 initiallyuncached interrupted entry/loading/original/normalreturn",
+      "binding": "e-foreground-handoff-current-binding-20261007.json",
+      "commit": "1601e159",
+      "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
+      "sourceGate": "ActualDetail source8/P9 reader-thumb-gallery-detail-1-page-8 [832,2078][1180,2569]; exact original resampled hash89d3ef7c-f6377d16.img absent-before, positiveP3 cache62382bytes; after P9 stored402586bytes. Private shell failed25s; physical map succeeded; large truncated list not used to infer absence.",
+      "movie": {
+        "sha256": "2c1b5d297caab3b5205718ecf866919bc452590319582541b4c06270fdf5170c",
+        "seconds": 14.805,
+        "decodedFrames": 206,
+        "uniqueFrames": 181,
+        "review": "all six originalRGB sheets000-005 reviewed and raw91/95/96 checked. Initialsource0-20;rootflight21+;Home28+;plainforegroundOScard82+;sameP9 preview and dark100% panel91-95;96 removes feedback while sameimage remains;103+sameoriginal fullbody;175-192normalrootreturn;193-205sameDetailContinueP9. No wholebodyblack or loadingpanel loses background during the recorded foreground feedback.",
+        "rawGates": "ffmpeg select91/95/96 noFPSresampling; first legacy-vsync flag unsupported, corrected fps_mode passthrough; output DTS warning retained but sequentialthree PNG present and reviewed.",
+        "native": "PID10508 entry5 request1/asset0 phaseasset whilemoving11.913;foregroundfalse12.087;cancelled/routeinactive12.175 whileassetstillpending. Body actualrkit/P9/root0,0,1260,2720. Narrowlog readback after6500ms absent; full late current asset/root chronology not claimed. livecollector ran measurement only, captured original pending/background beforepostflight."
+      },
+      "restoration": "Checked current retained source2P3 -> normalBack; actualDetailContinueP3/root0,124,1260,2720 restored.",
+      "cleanup": "Only newlycreated1495 locally exportedvalid/fullreview then exactdelete/query0/tempremove; all local movie/raw evidence retained. Active86400000 and original120000 remain recorded; no settings/backend/cache reset.",
+      "limits": "Percentage interval observed at100%, no47%/midprogress cancellation claim. Sharp image and100% indicator coexist on raw95 immediately beforefeedback clears96; no native phase tuple during those two frames and no atomiczero-overlap guarantee. No enhanced-original preparation/spread/late/stale/FPS/five-minute or fullreplacement claim."
     }
   }
 }
