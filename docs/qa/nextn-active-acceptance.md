@@ -50,6 +50,8 @@ P12–14原帧313–394确有黑底加载，不接受为缓存/下载性能。�
 
 checked cleanup原生恢复Shared及Terra upper1、原Library Catalogue102 P1/100%、超时30000；终态native bundle/root确认。九份源码SHA与安装包构建输入、提交Index blob一致；此前55c黑卡片录像和c504进度失败保留。只接受上述普通Shared/Legacy返回路径，不声称框架颜色泄漏机制已证实、全部主题/布局/性能/替换通过。详情在 `koma-progress-projection-return-receipt-20261007.json`，原未验收边界仍由唯一工作单调度。
 
+本次 material physical result（2026-10-07 20:00–20:04+08）：E安装d7/Kit5b保持不变。普通画廊4203217当前预览P63→立即快速水平滑动，日志id2/source62 moving16.789→cancelled16.866；MOV `8dba385b`22.1s/1235帧/412种RGB、12张联排全部审阅，旧K缓存frame0排除。模糊缩略图连续保留到原172，原173(3.4917s)开始同P63清晰图片，直到Back；没有整页黑帧或图片消失。返回同Grid、Detail Continue63，checked cleanup原生恢复Continue3与超时30000。这里只接受命名移动取消后的可见正文与返回；没有selected request/asset/slot/epoch tuple或网络未就绪来源，不能称网络pending提示、晚到重复回调或FPS通过。不得以这次未测得的前提作补丁/缓存清除/时序穷举。回执 `e-natural-pending-motion-cancel-receipt-20261007.json`；原早期后台行由唯一工作单继续调度。
+
 ## 非 Reader 遗留边界（不自动启动）
 
 文档整理不对无关产品作新的通过判断。账号 P0 的历史 2026-09-04 named candidate 已有

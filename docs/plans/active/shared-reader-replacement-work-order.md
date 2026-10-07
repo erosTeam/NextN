@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T19:40:42.395231+08:00",
+  "updatedAt": "2026-10-07T20:12:53.326360+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · K切章进度/返回投影命名路径已提交；继续横屏能力边界",
+  "state": "OPEN · K切章/返回投影已提交；E自然移动取消已留证，继续原有早期后台边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "核查模拟器实际横屏能力",
-    "detail": "K host projection source checkpoint850af0c5 accepted only named Shared/Legacy returns. Source hashes bind installedb4fb; original Shared/upper1/Library restored. Inspect actual guest orientation capability instead of replaying failed commands.",
-    "startedAt": "2026-10-07T19:40:42.395231+08:00"
+    "title": "原有早期后台入场边界",
+    "detail": "P63 motion cancellation body/Back reviewed; network provenance and tuple not measured. K installed source registry/read-only library capability inspected; no eligible automatic metadata proven. Continue original unhit pending-background variant once.",
+    "startedAt": "2026-10-07T20:12:53.326360+08:00"
   },
-  "nextAction": "Inspect existing emulator rotation controls/capability and host orientation ownership once; if guest viewport can actually change, declare one zero-top/landscape affected interval. Do not repeat unchanged guest rotation commands or alter app orientation/cache to manufacture evidence.",
+  "nextAction": "One bounded ordinary E thumbnail tap followed immediately by Home, then normal same-Ability foreground and Back. Determine actual interrupted phase from native events; no timing sweep/backend/cache changes or frozen settled-foreground replay. Retain originalP3.",
   "hosts": [
     {
       "name": "NextN",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "E/N普通生产命名基本行为留证；K章节进度及Shared/Legacy退出投影命名路径接受并提交。既有横屏/zero-top能力边界仍未验收，先调查真实视口能力，不扩大产品修改。",
-      "action": "Inspect existing emulator rotation controls/capability and host orientation ownership once; if guest viewport can actually change, declare one zero-top/landscape affected interval. Do not repeat unchanged guest rotation commands or alter app orientation/cache to manufacture evidence.",
+      "detail": "K章节进度与Shared/Legacy返回投影命名路径已提交。E普通P63移动取消随后显示原图/返回已审阅，不能代替网络pending/tuple证明。原早期后台边界继续一次，不扩大产品修改。",
+      "action": "One bounded ordinary E thumbnail tap followed immediately by Home, then normal same-Ability foreground and Back. Determine actual interrupted phase from native events; no timing sweep/backend/cache changes or frozen settled-foreground replay. Retain originalP3.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -201,7 +201,7 @@
         "conditions": [
           {
             "boundary": "Natural same-request pending cancellation",
-            "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready.",
+            "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready. Current ordinaryP63 id2 moving-cancel16.866 and sharpbody173/3.4917s accepted only visually; network-pending/progress-panel tuple not measured, no broadened acceptance.",
             "disposition": "UNACCEPTED native condition; no source-proven further change. Forced delay/cache mutation/timing sweep forbidden.",
             "unavailableAction": "Observe pending original after same-request motion cancellation without synthesizing readiness.",
             "observedPrerequisite": "Current coldP3 bc286415 cancels moving but original is shown; warmP3 2c9ef292 normal-finishes. Earlier natural unread continuousP59 run00:33:46 emits layout cancellation at00:33:49.832, not bound motion-cancelled pending original.",
@@ -445,6 +445,50 @@
           "commit": "850af0c574265794ac3308872d942eeb19ec0bc3",
           "receipt": "koma-progress-projection-return-receipt-20261007.json"
         }
+      },
+      "emulatorLandscapeCapabilityInvestigation": {
+        "recordedAt": "2026-10-07T19:49:29.990523+08:00",
+        "source": "K production EntryAbility AUTO_ROTATION_UNSPECIFIED; N/E persisted system-managed mode only. No source change.",
+        "oldAlternative": "Guest hidumper motion already exited0 without actual1320x2232 change; not repeated.",
+        "newAlternatives": "FreshCG4419window/94993process; CUA path/name/windowId cannot bind unbundled Emulator. Local vendor Emulator26.0.0.400 -help advertises instance rotation; exact lease-wrapped right call denied before execution by project whitelist.",
+        "blockedAction": "Send actual host-side rotation to current Pura X View instance through approved lease/protocol path; then accept actual changed guestviewport.",
+        "actualEvidence": "host-right exit2: lease run accepts only checked protocol runner or explicit transport probes; official vendor CLI never executed. Subsequent checked native layouts Kroot[0,117][1320,2232], systemtop117, both protocol0 and timeout30000. These are recovery/unchanged-state evidence, not rotation capability failure.",
+        "safeAlternativesConsidered": "Existing guest diagnostic input; native CUA host toolbar; advertised vendor CLI under lease. Do not bypass whitelist, extend protocol tooling in Reader fix scope, use197, pin app orientation, or rotate only captured pixels.",
+        "recoveryCondition": "Existing approved host-rotation binding or checked protocol support becomes available. No user action requested; other safe Reader actions proceed.",
+        "executionReceipt": "emulator-host-rotation-capability-execution-20261007.json"
+      },
+      "existingKomaAutomaticSequenceCapability": {
+        "recordedAt": "2026-10-07T19:53:48.199758+08:00",
+        "action": "Read-only receive existing native Library and ReaderSessionStore files; inspect automatic sequence eligibility, no mutations",
+        "librarySha256": "c61706a3883c8e7c03854aea6f2bf0583ece8018778d17637e62644dafbf4f2e",
+        "readerSha256": "a95cd0689291cf8cb1b75a8167ca728875999a2a0d0318509c66417cb18ef1b8",
+        "result": "10persisted books, no chapter with readingGroup or continuationEligible true. LongCatalogue103, MemeGirls284 numeric descriptors have no verified group. SourceHistory oneTerra identity only, no chapter descriptors by deliberate schema. Cannot infer fresh remote metadata or accept eligible automatic native branch from these files.",
+        "source": "ReaderChapterSequence requires >1 same explicit readingGroup/eligible/numericorder; source History resolves metadata fresh, cached singleton proof does not create contract.",
+        "safeAlternatives": "Existing eligible library readback attempted; prior ordinary Terra unverified boundary already reviewed. New import/handwritten metadata/source creation or fallback relabel would manufacture this condition and is excluded.",
+        "remaining": "Native verified previous-end/next-start remains unaccepted; needs ordinary source-provided eligible metadata. Core start/end algorithm remains named source-only.",
+        "installedSourceContract": {
+          "recordedAt": "2026-10-07T20:14:10.966446+08:00",
+          "receipt": "koma-installed-source-sequence-capability-receipt-20261007.json",
+          "actual": "Registry onlyTerra0.1.0enabled,Webtoon0.1.1disabled. Bothreceived Wasm literal/no group/no eligibility corroborate local chapter serializers; no rebuild-binary equality claim. Current10books lacktrustedcontract.",
+          "blockedAction": "Native trusted automatic previous-end/next-start needs >1samegroup/eligible/numeric chapters which current persisted data and installed source serializers do not supply.",
+          "safeAlternatives": "Existing localmultiChapterLibrary/numeric Webtoon metadata, actual Terra History, currentregistry and serializers. Forced fixture/manualgroup/sourcepackagefeature/disabledsourceactivation would manufacture or expand condition; excluded.",
+          "recoveryCondition": "Ordinary enabled source data with explicit trusted group/eligibility contract, or user reopening corresponding source development; not this heartbeat auto-resuming independent production."
+        }
+      },
+      "ordinaryPendingMotionCancellation": {
+        "recordedAt": "2026-10-07T20:12:53.326360+08:00",
+        "receipt": "e-natural-pending-motion-cancel-receipt-20261007.json",
+        "movingCancel": "id2 source62 moving16.789->cancelled16.866; ordinary currentP63 fast swipe",
+        "review": "8dba385b MOV22.1s/1235decoded/412unique/12contacts all reviewed, stale0excluded; blurred through172, sharp173 onward to Back; no body black; native DetailContinue63, cleanup native Continue3",
+        "limits": "No measured request/asset/slot/epoch tuple or transport-pending provenance; cache/decode distinction retained; no loading-panel/late-duplicate/FPS/full guarantee."
+      },
+      "earlyBackgroundPlan": {
+        "recordedAt": "2026-10-07T20:12:53.326360+08:00",
+        "sourceBasis": "Production ReaderOverlay route persists independently of Debug request. Index environment monitor explicitly retires Debug claim/request; production current-claim authorization runs via existing entryDepartureGuard. Existing settled production Home accepted, but pending entry Home not observed. No code defect inferred without ordering.",
+        "expected": "One normal currentP3 tap then Home, normal Ability foreground. Actual pre-departure cancellation may retain source, while departed production route may retain Reader. Neither may restart stale flight/change progress or lose usable body. Foreground native source-vs-Reader decision gate determines safe return/cleanup; only actual phase is accepted.",
+        "reject": "unrequested full-screen/source/status-color jump before authorized departure, background controls remain active, stale proxy/empty body or progress/source lost",
+        "action": "One bounded tap/Home/same-Ability foreground interval to native source-vs-Reader decision gate; then exact observed safe Back/cleanup. No timing sweep or preference/cache mutation.",
+        "scope": "Existing stale/background/early-entry row only; no new feature/candidate/timing calibration."
       }
     },
     {
