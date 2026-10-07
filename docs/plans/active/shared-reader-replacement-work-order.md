@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T17:46:57.956984+08:00",
+  "updatedAt": "2026-10-07T18:28:31.171783+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · E普通基本动作留证；继续N普通生产使用",
+  "state": "OPEN · N普通动作留证；继续既有章节边界源码对照",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "核验NextN普通生产基本使用",
-    "detail": "E原图/rail/快滑/原菜单/设置/进度/cold/后台已执行留证；P12–14黑底加载反观察保留，不推广五分钟/FPS/下载。",
-    "startedAt": "2026-10-07T17:46:57.956984+08:00"
+    "title": "核查Koma既有章节末端与进度语义",
+    "detail": "N实际306.524秒命令链已执行，MOV仅217.063秒且只到P35；短补拍覆盖末段，不能接受完整五分钟画面。K旧版章节边界显式start/end，Shared现统一restore，需要先完成因果与影响评估。",
+    "startedAt": "2026-10-07T18:28:31.171783+08:00"
   },
-  "nextAction": "Execute existing NextN ordinary production basic-use boundary with installed a895 HAP: force-stop no data clear, normal EntryAbility/gallery663205 no Lab/backend override, fresh native source/canonical choice; continuous page/rail/chrome/native menu/original/settings/progress/reentry/background chain, restore P38/settings. Frozen entry/choice receipts are setup, not separate replay. Compare observations against unchanged Legacy source before editing; no cache/delay mutation,timing sweep or unlimited loop.",
+  "nextAction": "Resolve the existing Koma chapter-edge/persistence gap by comparing Legacy user boundary intent against current Shared host/Kit request semantics and current installed3a32 source binding. Preserve frozen chapter-menu acceptance. Establish one native ordinary baseline before a narrow cause-backed change; no production feature work, new source/import,cache/delay mutation or repeated entry checks.",
   "hosts": [
     {
       "name": "NextN",
@@ -28,7 +28,7 @@
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee.",
       "remaining": "Natural same-request/late duplicate-progress/stale native branches unhit; zero-system-top/landscape capability unaccepted; explicit Debug cached portrait named acceptance only; Shared-and-Legacy mode gap deferred; all-layout/FPS/full replacement unproven.",
       "appHead": "4ae4cebfbcdffc578d8e06d682473ea1368d0561",
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "E普通基本使用/后台留证；继续N普通连贯使用，不接受全量替换。",
-      "action": "Execute existing NextN ordinary production basic-use boundary with installed a895 HAP: force-stop no data clear, normal EntryAbility/gallery663205 no Lab/backend override, fresh native source/canonical choice; continuous page/rail/chrome/native menu/original/settings/progress/reentry/background chain, restore P38/settings. Frozen entry/choice receipts are setup, not separate replay. Compare observations against unchanged Legacy source before editing; no cache/delay mutation,timing sweep or unlimited loop.",
+      "detail": "E/N普通生产命名基本行为留证；N五分钟完整视觉覆盖缺口保留；不接受全量替换。继续既有K章节末端/持久化边界源码对照。",
+      "action": "Resolve the existing Koma chapter-edge/persistence gap by comparing Legacy user boundary intent against current Shared host/Kit request semantics and current installed3a32 source binding. Preserve frozen chapter-menu acceptance. Establish one native ordinary baseline before a narrow cause-backed change; no production feature work, new source/import,cache/delay mutation or repeated entry checks.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -370,6 +370,24 @@
             "source": "Rolling depth2 per-navigation file preload reached16; transport ready is not decoded bitmap. Legacy also original-only ordinary body/loading stage, native warmers vs Kit filewarm differs. Online transport-unready sample does not establish a decode regression; no patch solely from this sample."
           },
           "limit": "Separate named ordinary portrait single/LTR intervals, not continuous five minutes or all-settings/layout/FPS/full replacement. No product edit/build/install/cache/delay mutation."
+        },
+        "nextNDeclaredInterval": {
+          "recordedAt": "2026-10-07T17:51:00.326320+08:00",
+          "basis": "Installed a895 matches six committed source hashes; no-data-clear force-stop+native ordinary Gallery663205 confirmed ContinueP38; actual rkit Shared single/LTR and same retained host-mode builder. Original button absent by NextN capability; no invented E parity or super-resolution test.",
+          "actions": "One continuous ordinary session: railON,12 fast previous swipes P38→26, native four-direction menu open/dismiss,12 next swipes with normal reading dwell P26→38, own settings open/close,Home/ordinary foreground,railOFF,Back/Continue/Back sameP38. Original setting values unchanged.",
+          "readingDwell": "23 seconds between each ordinary forward page is user reading cadence; no provider/network/asset delay,cache change or fault injection. Expected continuous session exceeds5minutes, not hours of loops.",
+          "failure": "Wrong native controls/options/page, blank persisted image or stuck loader, source/status/color change before entry, lost foreground session/progress, rail rebuild disruption or unusable interaction reject observed boundary; not scoped away.",
+          "limits": "Named portrait single/LTR online existing gallery only; no arbitrary-user five-minute guarantee orFPS/download/all-layout claim. No product edit driven by test iterations.",
+          "result": {
+            "recordedAt": "2026-10-07T18:28:31.171783+08:00",
+            "receipt": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/n-ordinary-basic-use-receipt-20261007.json",
+            "actualProtocolSeconds": 306.523784,
+            "movieDurationSeconds": 217.063333,
+            "movieEndsAt": "P35; missing final3pages/railOFF/exit/reentry",
+            "supplement": "Short independent Continue38→35→38/Back/reentry/Back movie75645822; does not retroactively accept continuous5minute visuals.",
+            "acceptedBoundary": "Named actual ordinary single/LTR rail/page/native menu/settings/background retention/progress38 exit/reentry intervals only",
+            "unaccepted": "Full five-minute visual coverage/arbitrary-user no-bug guarantee/FPS/download/all-layout/full replacement"
+          }
         }
       }
     },

@@ -8,7 +8,7 @@
 
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |
-| N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回的命名区间 | 自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
+| N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回、普通生产菜单/设置/翻页/rail/后台保持及同P38往返的命名区间 | 完整五分钟视觉覆盖、自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
 | E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载、显式 Debug Home/前台 retirement 返回同DetailP3 | 连续五分钟/下载预载/自然 pending/stale/fallback、全量几何/FPS/替换 |
 | K | HAP `3a32ff76`：仅原目录/章节/自动阅读/按书设置/标题/媒体面板命名证据，依赖不变才沿用 | 全量布局/FPS/替换；文件夹实际导入移回暂停的 Koma 生产工作 |
 
@@ -37,6 +37,10 @@ HAP/九份源码SHA相同，未重构建、安装或改缓存/等待。原 root 
 本次 material physical result（2026-10-07 17:08–17:36+08）：E d7 HAP经无清数据force-stop清除进程内Lab，普通Ability+原画廊URI进入production Shared。七段原MOV/SHA/PTS、全部不同RGB首次帧及精确重复映射已审阅，见 `e-ordinary-basic-use-receipt-20261007.json`。实际rail开关、P3→15→9快滑、原四方向菜单、P9原图反复切换、P9→3、原生设置、退出重入、cold Detail ContinueP3、Home/前台保持P3后P4→P3并退出。后台/退出keepScreenOn=false、超时30000恢复；生产保持与Debug retirement分别判定。
 
 P12–14原帧313–394确有黑底加载，不接受为缓存/下载性能。日志depth2逐页滚动到16；file ready不等于decoder ready，Legacy也有原图loading stage但native warm路径不同。保留反观察，不依网络未就绪样本打补丁。已缓存P9原图切回本段未黑屏。分段命名动作不等于连续五分钟、全部设置/布局/FPS/替换。未产品编辑/构建/安装/改缓存，唯一下一动作由工作单派发。
+
+本次 material physical result（2026-10-07 17:51–17:56、18:17补拍+08）：N a895 普通生产同Gallery663205/single/LTR，连续受控命令链306.524秒，实际railON、P38→26快滑、原四方向菜单、P26→32、宿主设置、Home/普通Ability回同ReaderP32、P32→38、railOFF、Back/Continue/Back同DetailP38。没有改设置/缓存/数据/后端或产品源码。见 `n-ordinary-basic-use-receipt-20261007.json`。
+
+原MOV `d3ba0ee9`实际媒体217.063秒、12319帧/2693种RGB；57张全首次RGB联排和原图门控已审阅，只录到P35。最后P36–38及退出重入没有该录像覆盖，日志/终点不补足画面。短例外补拍MOV `75645822`的972帧/832种RGB、18张联排/原图门控覆盖Continue38→35→38→Back→Continue38→Back；原图710实际38/40，终态Detail继续P38、root0,117、超时30000和退出keep=false恢复。两段不能拼成完整五分钟视觉接受；宿主录像帧率不能作为guestFPS。只接受已观察的命名普通菜单/设置/翻页/rail/后台保持/同P38进度往返，完整替换和五分钟普通用户无明显bug承诺仍无证据。
 
 ## 非 Reader 遗留边界（不自动启动）
 
