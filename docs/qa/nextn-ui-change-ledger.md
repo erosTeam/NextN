@@ -13390,3 +13390,11 @@ Correction to the provisional page-counter finding: diagnostic60 recording and l
 - Acceptance: exact installed E P3 interrupted and ordinary foreground sibling routes, source/root/native tuple and entire original movies. Reject Detail pixels behind nativeReader, early systembar/color change, imitated internal flight, blank/lost loading or wrong Back/ContinueP3. Build/logs alone do not accept it.
 
 - Named result: E1601e159/positive7e0315fd197. Interrupted e3e067d6 all197/six and ordinary2d516352 all114/three reviewed; nativebackground rootwaitingReader -> trueforegroundopening -> displayed/rootopen, both actualP3 root[0,0][1260,2720], realrootflight and sameDetailContinueP3 return. No early source/systembar change or bodyblank in these intervals; cleanup1493/1494query0. No pending-network/processing/FPS/generalreplacement claim.
+
+### N-OPENING-BACK — 2026-10-08 existing root reversal omission
+
+- Instruction: continue authorized cross-host/shared-vs-Legacy consistency, source causality/impact before edit, no new states/remount/timing-driven patches.
+- Cause/reference: Legacy startReaderCloseTransition tries reverseOpening first after existinghostprepare. Shared prepare admits openingCanReverse but finishShared calls normalclose only (requiresOPEN). E already usesrootreverse; K has no entryTransition.
+- Change: one Index.finishSharedReaderDestinationClose branch reusing existingCoordinator/context/currentclosecallback. No API/Kit/Lab/session/window/progress/sourcegeometry/menu/rail changes; normalOPEN falsepredicate and clippedsource fallback stay.
+- Parent: existingDetail/FullPreview/sourcevisibility→Index rootproxy→sameReader destination/back preparation→windowrestore/progressflush→same source. Current197uncachedP3 whole443frames retained; clippedsourcepop not relabeled thumbnailclose.
+- Disproof/acceptance: one ordinaryfullyvisible currentlyuncachedthumbnail rapidBack/reenter anotherpage; retain realreverse/sourcewindow and fenceoldcallbacks. Source/build/install only until fullcurrentoriginalvideo review. Existingfrozenpaths not replayed.

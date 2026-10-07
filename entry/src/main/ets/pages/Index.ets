@@ -2256,6 +2256,10 @@ struct Index {
   private finishSharedReaderDestinationClose(params: ReaderRouteParams, context: ReaderCloseContext | null,
     image: NhGalleryPage | null, targetReady: boolean): void {
     const galleryId = params.galleryId.toString()
+    if (targetReady && ReaderThumbnailTransitionCoordinator.reverseOpening(
+      this.getUIContext(), galleryId, context?.captureComponentId ?? '', context?.contentAspectRatio ?? 0, 1,
+      (animated: boolean): void => this.finishReaderDestinationClose(animated),
+    )) return
     if (targetReady && context !== null && image !== null && context.unit.scope === 'nh' &&
       context.unit.work === galleryId && context.contentAspectRatio > 0 &&
       ReaderThumbnailTransitionCoordinator.close(

@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T23:51:04.647025+08:00",
+  "updatedAt": "2026-10-08T00:53:13.179659+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · E197未缓存入场命名路径留证；继续N对应原未验边界",
+  "state": "OPEN · N开场反转源码与签名构建完成；待当前197完整运行区间",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "197 NextN剩余pending原图一致性",
-    "detail": "E initiallyuncachedP9 Home/cancelled request1asset0, foregroundsameimage100%background/clear/Back accepted named full206originals; originalP3 and cleanup restored. N exact197 pending acquisition currentguard still unaccepted.",
-    "startedAt": "2026-10-07T23:51:04.647025+08:00"
+    "title": "NextN Shared开场Back候选提交与实机安装",
+    "detail": "Only Index four-line existing reverseOpening branch; exact other seven host source hashes and Kit/geometryWIP match prior binding. Signed build/native libs successful; no runtime acceptance.",
+    "startedAt": "2026-10-08T00:53:13.179659+08:00"
   },
-  "nextAction": "Recover current197 NextN ordinary Detail and read current original-cache source once using supported physical mapping. Choose one existing ordinary source outside current actual cached window for the still-unaccepted N197 pending-original cancellation/foreground boundary; no cache clearing, forced delay or timing sweep. Preserve N originalContinueP2 and E restoredP3.",
+  "nextAction": "Commit reviewed narrow Index opening-reverse source and related current documentation, then checked install current bound HAP on197. Select one ordinary fullyvisible currentlyuncached thumbnail; record immediateBack→otherpage reentry→normalreturn continuously; full original review and restore682531ContinueP2. No timing sweep/cache forcing or frozen-path replay.",
   "hosts": [
     {
       "name": "NextN",
@@ -28,8 +28,8 @@
       "install": "Checked positive197 install currentd16b, no data clear; native version1.0.5/v7.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted.",
-      "remaining": "Earlier unhit pending/stale/late/spread/FPS/full replacement limits retained. Named staleinitialprocessing backdrop accepted; E197 exposure still in progress.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted. Physical197 initiallyuncached560948P3 pendingasset0/moving→backgroundcancelled→stored111888, samepagebody/processing/ordinarysystemreturn reviewed443originals; original682531ContinueP2 restored.",
+      "remaining": "Named197 initiallyuncached interrupted interval accepted. Source-proven Shared missingopeningreverse branch remains; earlier midprogress/spread/late/stale/FPS/fullreplacement limits retained.",
       "appHead": "d67e7502",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "appHeadLayer": "Host product-source8 SHA matches d16b binding/d67e diagnostic checkpoint; new shared predicate3468 installed, unrelated WIP retained.",
@@ -1060,7 +1060,8 @@
     "initialBackdrop": "initial-backdrop-nextn-current-acceptance-receipt-20261007.json",
     "eForegroundFailure": "device197-nexte-initial-backdrop-P3-failure-receipt-20261007.json",
     "eForegroundCurrent": "e-foreground-handoff-current-acceptance-receipt-20261007.json",
-    "eOnlinePendingCurrent": "e-online-pending-P9-current-acceptance-receipt-20261007.json"
+    "eOnlinePendingCurrent": "e-online-pending-P9-current-acceptance-receipt-20261007.json",
+    "nOnlinePendingCurrent": "n-online-pending-P3-current-acceptance-receipt-20261008.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -1347,6 +1348,51 @@
       "restoration": "Checked current retained source2P3 -> normalBack; actualDetailContinueP3/root0,124,1260,2720 restored.",
       "cleanup": "Only newlycreated1495 locally exportedvalid/fullreview then exactdelete/query0/tempremove; all local movie/raw evidence retained. Active86400000 and original120000 remain recorded; no settings/backend/cache reset.",
       "limits": "Percentage interval observed at100%, no47%/midprogress cancellation claim. Sharp image and100% indicator coexist on raw95 immediately beforefeedback clears96; no native phase tuple during those two frames and no atomiczero-overlap guarantee. No enhanced-original preparation/spread/late/stale/FPS/five-minute or fullreplacement claim."
+    }
+  },
+  "device197NOnlinePendingSourceGate": {
+    "priorCached": "Actual6825317 original keys/extensions all positive. Longdirectory output truncated not used for absence; exactwebpP2/4/5 positive63548/69184/79738bytes.",
+    "source": "Actualordinary560948/26pages/currentthumbepoch3 source2 bounds[880,2077][1221,2565]; mainDB publicselectedrow id560948/media3267881/pages26 parsed immutable only.",
+    "key": "reader:v2:560948:3267881:3:webp ->1b6d88f6-fe040f6c.img",
+    "exactBefore": "Selected originalfamily *.img No such file; supportedphysicalmap positiveknownP2 63548bytes.",
+    "commandFailures": "Initialsandboxprobe got0Connectedrows, samecheckedprotocol fullaccess completed. PublicdetailDB transfer8073216bytes positive; WAL transfer0, overallartifactvalidator rejected0WAL, retained; immutablemain selectedcurrentrow stillpositive. Recordingdryrun disallowed rawHDC in measurement, noUIexecute; correctedsameonechain movesAA/capturespostflight, recordingcontinuous butlivehiloginitialmeasurementonly. No runner/product edit.",
+    "recording": "device197-nextn-pending-related560948-P3-current-20261008/run-metadata.json",
+    "binding": "n-initial-backdrop-current-binding-20261007.json",
+    "result": {
+      "schemaVersion": 1,
+      "at": "2026-10-08T00:18:35.715598+08:00",
+      "state": "accepted for named197 N560948/P3 initiallyuncached interrupted entry, samepage presentation and ordinary systemreturn; not thumbnail-close-flight",
+      "binding": "n-initial-backdrop-current-binding-20261007.json",
+      "hap": "d16b07a5ad99389352799ec1d4d44ea44d6fda7c1182d307fd2aab554aac416a",
+      "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
+      "source": "Actualcompact epoch3 page2/P3[880,2077][1221,2565], public560948/media3267881/26pages; exact1b6d88f6-fe040f6c family absent-before, positive682531P2 63548bytes; after111888bytes",
+      "native": "PID56832 entry1 moving00:05:54.616 request1asset0/assetphase/observed0; cancelled54.787foregroundfalse; rootopenProxyHandoff54.831; selectedstored11188856.157. Postforegroundring onlyasset2 presentation success5120x6656 at00:06:02.420/.684; no asset1 presentation/rootopen native chronology inferred. Body actualP3/26 and root0,0,1260,2720.",
+      "movie": {
+        "sha256": "0096f4115c6350b3f64bc601f52969c120f8f21bb38e0943683f25f5cb86e490",
+        "duration": 14.313322,
+        "decodedFrames": 443,
+        "review": "All13originalframecontact sheets001-013 reviewed; raw90/92/95 reviewed. Detail0-21; realrootflight22-27; OSHome28-81; plainforeground OSanimation82-105 with retainedsamepage, temporary preparationfeedback92-97; samepage original/P3 stable106-403 including enhancementbadge change374+. No wholebodyblack, stale roundedinitialbackdrop over subsequentoriginal/preparation, or wrongpage. NormalBack systemslide404-419; sameDetailContinueP3 420-442.",
+        "returnLimit": "Compactthirdthumb clipped: width341 vs earlierfull375. normalCloseReadyFor explicitly requires fullyVisibleSourceIds; current partialsource does not authorize thumbnailclose. Systempop observed and not relabeled rootzoom; afterBack layoutroot431 captured duringpop, separatepixels/remainingmovie settle."
+      },
+      "restore": "Checked cleanup1496/query0/tmpremove and ordinary682531 actualDetailContinueP2/root0,124 restored. E originalP3 remains untouched.",
+      "limits": "Asset pending while background but stored beforeforeground. No midnetworkprogress foreground guarantee. No asset1 native tuple alignment/atomiczerooverlap, spread, stale/late, FPS/five-minute or complete replacement claim. MainpublicDB positive8073216bytes; zeroWAL artifactvalidator rejected and retained. RawHDCmeasurement dryrun rejection beforephysicalexec; correctedtoolform does not alterapp/scenario."
+    }
+  },
+  "nextNOpeningReversePlan": {
+    "at": "2026-10-08T00:18:35.715598+08:00",
+    "cause": "LegacyReaderPage.startReaderCloseTransition tries Coordinator.reverseOpening then normalclose; currentShared Index.prepareReaderDestinationClose returnsready foropeningCanReverse but finishShared only calls Coordinator.close, whose normalCloseReadyFor requires phaseOPEN. It cannot exercise the admitted reversing branch.",
+    "reference": "N samehost Legacy aftersameprepare and existingE rootrequestReverse/onTryReverseOpening; both useexisting Coordinator reverse.",
+    "owner": "HostIndex closes sameownedproxy; ReaderPagedSession/request/provider generations unchanged. Lab closeRequested already fences syncRootOwnedEntryTarget/notifyEntrySettled; Coordinator forward/reverse callbacks guard currentphase.",
+    "change": "Index.finishSharedReaderDestinationClose first attempt reverseOpening only whenexistingtargetReady; currentcontext capture ID/aspect plus same existingfinishReaderDestinationClose callback. Then retain currentnormalclose/systemfallback.",
+    "impact": "N productionShared Back duringopening/openProxyHandoff/waitingReaderContent/openHandoff; normalOPEN close reversepredicatefalse unchanged. N Legacy/E/K/Kit no sourceedit; K no rootentryTransition. Sourcewindowrestore/progressflush/sourcevisibility/no-thumbnailfallback unchanged.",
+    "wholeParent": "Current GalleryDetail/FullPreview source IDs/visibility, Index rootnavigation/proxy, sameReader destination/back ownership, originalprovider/sharedsession/progressflush, windowrestore, menus/rail/chrome/sibling nodes remain; no UI assembly/remount. ExistingN Legacy source sameclosepreparation is baseline, current197P3 partialsource return systempop explicitly acceptedonlyasfallback.",
+    "disproof": "EarlyBack systempop despitecurrentreverseableproxy; sourcewindow prematurely changes; original/processing callbacks reopenclosedReader; otherpage reentry displaysoldrequest; normalclose/fallback/progresschanges. One boundedcurrent fullyvisible ordinary source rapidBack/reentry run required; buildsnotacceptance.",
+    "rejectedRegistry": "Queried currentIndex/finishSharedReaderDestinationClose/prepareReaderDestinationClose/reverseOpening and Lab closeTrial/requestReverse; no matchingREJECTED entry. No new prohibition registration.",
+    "candidate": {
+      "binding": "nextn-opening-reverse-current-binding-20261008.json",
+      "hapSha256": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
+      "buildExit": 0,
+      "scope": "Only Index changed; other7 bound host files and all3 Kit hashes unchanged; geometryWIP preserved. Not installed/accepted."
     }
   }
 }
