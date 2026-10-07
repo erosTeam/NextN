@@ -3,10 +3,10 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T05:34:58.876575+08:00",
+  "updatedAt": "2026-10-08T06:44:11.328567+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 共同源窗口策略已安装；N/K显栏、E隐栏命名路径留证",
+  "state": "OPEN · 三应用Shared源策略命名路径留证；补齐保留旧版受影响边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
@@ -14,10 +14,10 @@
   "activity": {
     "state": "active",
     "title": "补齐源状态栏策略的三应用运行证据",
-    "detail": "N/K当前显栏返回/旋转已留证。E原生阅读设置实际为左右/无反转，排除Kindle配置；根open日志已到达，中心未显栏的具体门控尚未隔离。只读文件查询权限拒绝，未把空输出当默认配置。",
+    "detail": "E35f8普通显栏/横屏返回旋转及竖屏缩略图入场/当前反向返回已审阅完整原始区间；实际工具栏出现，原源栏/颜色入场门禁保留。正补保留旧版受影响源策略边界，无新功能。",
     "startedAt": "2026-10-08T01:19:00+08:00"
   },
-  "nextAction": "在NextE现有点按resolver、显栏准备与窗口observer补充只读诊断，构建单个E诊断包；用普通ContinueP3无缩略图系统入场的一次完整显栏/返回路径区分输入与窗口门控。该系统入场与已冻结缩略图飞行路径不同，不改门控或点按功能。",
+  "nextAction": "先映射并执行E保留Legacy普通P3入场/实际显栏后横屏返回源0→竖屏124的受影响路径；沿同一已改写入边界补N/K，保留未证明的FPS/整体替换限制。",
   "hosts": [
     {
       "name": "NextN",
@@ -45,7 +45,7 @@
         "sha256": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-N-hidden-ready-20261008.hap",
         "binding": "source-policy-N-hidden-ready-binding-20261008.json",
-        "status": "已安装更新候选；命名运行验证进行中"
+        "status": "positive native install; previously named Shared source-policy interval accepted; Legacy remains OPEN"
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage"
     },
@@ -55,11 +55,11 @@
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
       "build": "签名候选构建通过；N/E 保留原 debug 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
-      "install": "197 已安装更新候选 79386f57；构建/安装不能替代运行验收。",
+      "install": "197当前35f8窄候选安装成功；两条受影响运行区间已留证，整体未验收。",
       "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored. Physical197 current7e0315fd ordinaryP3 interrupted/cancelled/foreground and normalfinished rootflight/original/BacksameDetailContinue3 accepted in all197/114 originals, nativeactualroot0,0/1260/2720. Physical197 initiallyuncachedP9 exactabsent-before/stored402586after: asset0 pending/moving→backgroundcancelled, foreg100%panelretainsbackground then sameimage/BackDetailP9 accepted full206originals; originalP3restored.",
-      "remaining": "当前显栏后返回分支未命中，保留旧版仍未验收；不推广为全量替换或FPS。",
+      "runtime": "当前35f8：普通P3实际chrome/Back横屏源0→竖屏124；竖屏缩略图P3源栏颜色保持→根缩放→原位图片交接→实际chrome→当前P3反向返回。261/134原帧、7/4联排及15关键原图均已审阅。仅接受这些命名区间。旧7938隐藏栏结果及诊断反例仍保留，不推广到本包其他分支。",
+      "remaining": "保留Legacy及委托/Debug、其他加载/布局/FPS/整体替换仍未验收；本次两段不是五分钟全功能保证。",
       "appHead": "1601e159",
       "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0 + 本轮未提交源策略候选",
       "appHeadLayer": "One foreground admission source file committed and positive197installed7e0315fd; ten source SHA plus unchanged geometryWIP bound.",
@@ -69,13 +69,13 @@
         "hap": "021aea893f1066d01ea90655c0be18c07c26358a839e9cbbe2d734873c31c46f",
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
-      "installedHap": "79386f57af3be4f8884cf7ca2de1913a714d21c8f6e363a138901ac32ec3ae41",
-      "progressSummary": "当前7938原P3入场/隐藏工具栏返回/旋转命名路径接受；232原帧审阅。显栏分支未命中。",
+      "installedHap": "35f8769d72df004c18a1453f6eb0ef9bf337b31d2d38e69504bb938bdabf4cc6",
+      "progressSummary": "35f8普通显栏返回旋转、竖屏缩略图入场/当前反向返回命名路径接受；临时诊断已撤除。",
       "installedPackage": {
-        "sha256": "79386f57af3be4f8884cf7ca2de1913a714d21c8f6e363a138901ac32ec3ae41",
-        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-E-hidden-ready-20261008.hap",
-        "binding": "source-policy-E-hidden-ready-binding-20261008.json",
-        "status": "已安装更新候选；命名运行验证进行中"
+        "sha256": "35f8769d72df004c18a1453f6eb0ef9bf337b31d2d38e69504bb938bdabf4cc6",
+        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-E-window-color-owner-20261008.hap",
+        "binding": "source-policy-E-window-color-owner-binding-20261008.json",
+        "status": "positive native install; named ordinary and thumbnail intervals accepted; broader boundaries remain OPEN"
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage"
     },
@@ -104,7 +104,7 @@
         "sha256": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-K-hidden-ready-20261008.hap",
         "binding": "source-policy-K-hidden-ready-binding-20261008.json",
-        "status": "已安装更新候选；命名运行验证进行中"
+        "status": "positive native install; previously named Shared source-policy interval accepted; Legacy remains OPEN"
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage"
     }
@@ -113,20 +113,20 @@
     {
       "id": "source-status-restoration",
       "title": "源页面状态栏：横屏返回与竖屏恢复",
-      "status": "候选已安装 · N/K命名显栏路径接受",
+      "status": "三应用Shared命名路径接受 · 保留旧版边界OPEN",
       "kind": "review",
-      "detail": "R1/R2快照候选已否决撤除。共同Ability方向源策略三应用构建/安装完成；N与K命名显栏后横屏源0→竖屏124留证，E隐藏栏同范围留证。E显栏与保留旧版仍OPEN。",
-      "action": "完成显栏后恢复隐藏 Source 的原生布局就绪影响复核，并补齐 E/K 及保留旧版受影响路径；不重复已冻结区间，不延伸到新功能。",
+      "detail": "共同方向源策略：N/K显栏后横屏源0→竖屏124已留证；E35f8解决独立导航颜色写入导致显栏失败的命名路径，同时确认缩略图源栏/根飞行/当前返回保持。旧版受影响关闭策略尚需有限验收。",
+      "action": "仅补三应用保留旧版受影响源策略路径；已接受命名区间冻结，不重复全量测试。",
       "reportedAt": null,
       "reportedAtSource": "此次具体旋转缺口由实机发现，未冒充原始用户消息时间。",
       "firstEvidenceAt": "2026-10-08T01:19:00+08:00",
       "closedAt": null,
       "handling": {
         "trackingSince": "2026-10-08T03:23:03.448303+08:00",
-        "recordedSeconds": 2508.57661,
-        "activeSince": "2026-10-08T05:24:49+08:00",
+        "recordedSeconds": 5208.57661,
+        "activeSince": "2026-10-08T06:44:11.328567+08:00",
         "note": "此前工时未完整分段，不能由墙钟经过时间回填。",
-        "activeUntil": "2026-10-08T05:39:49+08:00"
+        "activeUntil": "2026-10-08T06:59:11.328567+08:00"
       }
     },
     {
@@ -839,6 +839,10 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-08T06:44:11.328567+08:00",
+      "text": "NextE35f8实际工具栏已出现；普通返回旋转与缩略图源栏/根飞行/当前反向返回命名路径接受。261/134原帧全审阅；1507/1508 exact cleanup0。"
+    },
+    {
       "at": "2026-10-08T05:26:23.430393+08:00",
       "text": "Koma6e1d原书架02話/P18普通入场、显栏、返回横屏源0→竖屏124命名路径接受；221原帧全审阅，进度18/95%保持；1504已清理。"
     },
@@ -926,9 +930,65 @@
     {
       "at": "2026-10-04T16:23:24.926930+00:00",
       "text": "NextE 当前转场 / 重载 / 返回录像录制完成；其受影响区间随后已审阅。裁切 ON/OFF、原设置及 P3 恢复已有记录，普通重入提示重叠仍保留。"
+    },
+    {
+      "at": "2026-10-08T06:18:16.391829+08:00",
+      "text": "定位E导航颜色与Window显隐双写：官方主窗口合成规则可丢失ENABLE_SETTING；记录窄修复/反证/影响范围，未把原生setter返回作为显栏验收。"
+    },
+    {
+      "at": "2026-10-08T06:21:09.315965+08:00",
+      "text": "E35f8769d窄窗口颜色候选签名构建/原生安装成功；V1 inventory0，几何WIP与共享源策略原字节保留。正在执行实际显栏路线。"
     }
   ],
   "evidence": [
+    {
+      "id": "nextn-current-source-policy-binding",
+      "label": "NextN：当前安装9af69d41精确源码/包绑定",
+      "path": "source-policy-N-hidden-ready-binding-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "nexte-current-source-policy-binding",
+      "label": "NextE：当前安装35f8769d精确源码/包绑定",
+      "path": "source-policy-E-window-color-owner-binding-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "koma-current-source-policy-binding",
+      "label": "Koma：当前安装6e1d043d精确源码/包绑定",
+      "path": "source-policy-K-hidden-ready-binding-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "e-window-owner-runtime",
+      "label": "NextE：当前35f8普通显栏及缩略图入场完整回执",
+      "path": "source-policy-E-window-owner-current-acceptance-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "e-window-owner-ordinary-movie",
+      "label": "NextE：普通P3显栏/返回横屏与竖屏录屏",
+      "path": "device197__ALN-AL80/not-applicable/landscape-2720x1260/device197-source-policy-E-window-owner-ordinary-export-20261008/device197-source-policy-E-window-owner-ordinary-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "e-window-owner-thumbnail-movie",
+      "label": "NextE：缩略图P3源状态栏/根飞行/当前反向返回录屏",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-source-policy-E-window-owner-thumbnail-export-20261008/device197-source-policy-E-window-owner-thumbnail-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "e-native-writer-diag-binding",
+      "label": "NextE：实际原生写入诊断包绑定",
+      "path": "source-policy-E-native-writer-diagnostic-binding-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "source-policy-e-diag-binding",
+      "label": "NextE：仅日志诊断包源码/签名绑定",
+      "path": "source-policy-E-chrome-diagnostic-binding-20261008.json",
+      "storage": "device197"
+    },
     {
       "id": "source-policy-k-current-return",
       "label": "Koma：当前显栏/返回/旋转命名回执",
@@ -956,19 +1016,19 @@
     },
     {
       "id": "source-policy-k-binding-197",
-      "label": "Koma：当前安装候选源码/签名包绑定",
+      "label": "Koma：历史源策略候选源码/签名包绑定",
       "path": "source-policy-K-hidden-ready-binding-20261008.json",
       "storage": "device197"
     },
     {
       "id": "source-policy-e-binding-197",
-      "label": "NextE：当前安装候选源码/签名包绑定",
+      "label": "NextE：历史源策略候选源码/签名包绑定",
       "path": "source-policy-E-hidden-ready-binding-20261008.json",
       "storage": "device197"
     },
     {
       "id": "source-policy-n-binding-197",
-      "label": "NextN：当前安装候选源码/签名包绑定",
+      "label": "NextN：历史源策略候选源码/签名包绑定",
       "path": "source-policy-N-hidden-ready-binding-20261008.json",
       "storage": "device197"
     },
@@ -1200,6 +1260,12 @@
       "id": "nextn-online-P7-20261007",
       "label": "NextN真实在线P7入场/加载/原图交接及返回回执",
       "path": "n-online-handoff-related682531-P7-acceptance-receipt-20261007.json"
+    },
+    {
+      "id": "e-window-owner-binding",
+      "label": "E窗口颜色候选35f8绑定",
+      "path": "source-policy-E-window-color-owner-binding-20261008.json",
+      "storage": "device197"
     }
   ],
   "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
@@ -1317,10 +1383,10 @@
     }
   },
   "currentPhysicalState": {
-    "recordedAt": "2026-10-08T05:34:58.876575+08:00",
+    "recordedAt": "2026-10-08T06:44:11.328567+08:00",
     "target": "192.168.50.197:12345",
     "device": "ALN-AL80/API26/1260x2720 portrait",
-    "foreground": "com.erosteam.nexte current7938; nativeReaderSettings root[0,124][1260,2720]; paged tap 左右/无反转; no selections changed",
+    "foreground": "com.erosteam.nexte current35f8; same4203217 Detail/ContinueP3 portraitroot[0,124][1260,2720] clean after Recorder stop; actual visible chrome previously observed in both named recordings",
     "timeout": "AWAKE/86400000 active; original120000 recorded",
     "lease": "20261007-195848-f8f3a5bd",
     "nextUnverified": "Use unique top-level nextAction only"
@@ -1623,7 +1689,7 @@
       "movie": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/device197__ALN-AL80/not-applicable/landscape-2720x1260/device197-source-status-N-landscape-export-20261008/device197-source-status-N-landscape-P2-return-20261008.mp4",
       "cause": "OfficialWindowProperties describes app-set immersive+hidden flag; automaticlandscape status hiding is not reliably represented. Getterwasnotanactualstatusvisibilitysnapshot. RejectthreehostcandidatebeforeE/Kclaims."
     },
-    "implementationState": "IMPLEMENTED IN SOURCE; N/K named visible-chrome source return accepted; E visible chrome and retained Legacy remain OPEN",
+    "implementationState": "IMPLEMENTED IN SOURCE; N/K/E named Shared source return accepted; retained Legacy remains OPEN",
     "rejectedActualAreaCandidate": {
       "at": "2026-10-08T02:49:41.907735+08:00",
       "disposition": "REJECTED for the complete source-status restoration package",
@@ -1700,7 +1766,7 @@
         "cause": "N applyReaderStatusBar resolves after native visibility setter, while target-frame gate only has a positive-top predicate; when restoring hidden Source from visible Reader chrome, old positive native area may still exist at target measurement. K retained Legacy likewise has only setter completion. E Shared/Legacy already waits for expected native area. Existing N hidden-chrome recording had area zero before close and does not disprove this gap.",
         "change": "Only Source-hidden restore awaits actual TYPE_SYSTEM top zero via native avoidAreaChange before completion. Native visibility writes remain serialized, but area readiness is outside the native write tail so a superseding admitted Reader request is not blocked. Current revision/admission cancels obsolete readiness; existing two-second failure bound is a failure, never successful delay.",
         "unchanged": "No positive-source/body writer behavior, no target movement/geometry/entry gate, no forced timing/cache, no UI state/remount or post-return initial restore. Existing host target layout and color owners retained.",
-        "verification": "Current candidates N9af6/E7938/K6e1d built and positively installed. N/K named visible-chrome Source0→portrait124 accepted; E only hidden-chrome interval accepted. Retained Legacy and E visible branch remain open. Previous bindings retained."
+        "verification": "Current N9af6/K6e1d named visible-chrome source return accepted. E35f8 named ordinary visible-chrome/source return/rotation and portrait thumbnail flight/current reverse now accepted with complete original review. Retained Legacy remains OPEN; previous failures/bindings retained."
       },
       "previousBindings": [
         "source-policy-N-device-binding-20261008.json",
@@ -1717,7 +1783,49 @@
         "change": "Read-only console diagnostics in E host only: current resolver guards/action, before-show admission/current/readiness/topAvoid, existing window observer. No decisions/gates/queues/geometry/source policy changed. No shared signature or N/K source change.",
         "impact": "E diagnostic package changes logging only on existing events. Does not modify current selection/default/cache or force timing; all real production state guards retained. Diagnostic removed after isolation before final source package.",
         "disproof": "If resolver reports menu but before-show readiness fails, input/config cause is rejected. If no host resolver call is observed in complete narrow window, no window-preparation cause may be claimed. Success/failure must match complete movie/native state, not click command status.",
-        "verification": "One distinct ordinary ContinueP3 no-thumbnail system entry/center/Back/rotation, preserveP3 and native settings; same current source candidate baseline/debug flags. No repeated frozen rootflight path or polling patch loop."
+        "verification": "One distinct ordinary ContinueP3 no-thumbnail system entry/center/Back/rotation, preserveP3 and native settings; same current source candidate baseline/debug flags. No repeated frozen rootflight path or polling patch loop.",
+        "observation": "efbc ContinueP3 current253originals/7contacts reviewed: ordinary system entry/sameP3 body/currentreturn/source0→portrait127whileRecorder observed, no actualchrome. Live filter unquoted | became remote shell pipeline and failed; immediate narrow ring returned empty. No tap-delivery/guard/window failure cause may be inferred; logs/identity prerequisite failed, so this is not Shared visible branch acceptance.",
+        "recoveredObservation": {
+          "at": "2026-10-08T05:58:53.279588+08:00",
+          "movie": "d966dbe04c0d89904974ba31782f3570372a2140ecc9fc113466a908743d5eee",
+          "duration": 18.304,
+          "decoded": 258,
+          "contactsReviewed": "all7",
+          "nativeImplementation": "rkit-reading-surface / rkit-native-pager / rkit-entry-image-0-1-1, 3 /124 actualbundleE root0",
+          "log": "restore=applied, menu, current=true, entryReady=true, managed=true; status_visibility_requested visible=true then succeeded. Live capture stops900ms after input, before2000ms completion bound; empty postring not cause.",
+          "boundary": "Shared identity and tap/initial write accepted as observation only. Nochrome; completion/resultofnativearea wait remainsunobserved."
+        },
+        "nativeWriterObservationPlan": {
+          "at": "2026-10-08T06:02:27.585073+08:00",
+          "sourceCause": "Current writer resolves both skipped-revision/obsolete-intent branch and actualnative setter branch, but TrialWindow logs both as succeeded. E no-recorder literal log proves current entry/menu → visibletrue receipt →2000ms TYPE_SYSTEM timeout/nativeReadyfalse whilecurrenttrue. Need distinguish whether native setter actuallyran before any product edit.",
+          "change": "Temporary E-copy console diagnostics inside existing ReaderSourceWindowPolicy: revision/current skip vs native dispatch/completion + actualwindow id/type and TYPE_SYSTEM top. No queues, returnvalues, guards, native calls or state decisions changed; no N/K change.",
+          "impact": "Read-only diagnostics can affect logvolume only; remove after isolation. Source lifecyclecandidate unchanged, currentShared identityobserved.",
+          "disproof": "An actualnative dispatch/completion with samewindowid and no laterop rejects skipped-intent hypothesis; then inspect officialWindow/HDS behavior, do not bypass native/layoutadmission.",
+          "verification": "One existing ordinaryContinueP3 with complete readiness-bound log interval; actualbody/nativewindow evidence. No cachedelay/injection/no patchloop."
+        },
+        "nativeWriterObservation": {
+          "at": "2026-10-08T06:08:00.497007+08:00",
+          "package": "3c291850b7716813f043d3de90bf5bc754f2796d239e4f50ae0008764fa5f2d7",
+          "nativeDispatch": "Mainwindow104/type1 visibletrue reader=true revision6/latest6; explicit setter completion top0, no laterwriter duringmeasuredinterval",
+          "settledResult": "2000ms prepare_system_avoid_area_failed timeout / nativeReadyfalse,currenttrue,topAvoid0",
+          "disposition": "Skipped-intent hypothesis REJECTED; actualvisibility/layout mismatch established, specificplatform/navigationcause not yetestablished."
+        },
+        "navigationOwnershipCandidatePlan": {
+          "at": "2026-10-08T06:18:16.391829+08:00",
+          "sourceEvidence": "OpenHarmony WindowSceneSessionImpl GetCurrentActiveSystemBarProperty: if navigation content color is visited before an enable owner, isUseNavigationColor becomes true; final settingFlag becomes COLOR_SETTING, discarding ENABLE_SETTING. SetStatusBarColorForNavigation writes a new navigation color owner. E TrialWindow publishes desiredStatus.visible=true before the native preparation; its managed HdsNavDestination projects that trace into systemBarStyle, an independent native color writer. Official source explains observed native true receipt with landscape area remaining0; target API mismatch rejected (N/E26, K23). Installed proprietary HDS correspondence is not directly inspectable; bounded candidate runtime must establish practical result.",
+          "change": "E managed TrialWindow destination no longer supplies a separate reactive systemBarStyle; existing gated serialized Window colors/visibility remain authoritative, matching retained Legacy Window ownership. Unmanaged delegated style stays. Remove only temporary E console diagnostics and restore identical common SourceWindowPolicy bytes.",
+          "impact": "E managed production ordinary/thumbnail entry, chrome show/hide and same-target close/rotation. No menu, setting, cache, gestures, geometry WIP, root flight, proxy, handoff or readiness gate change; N/K and delegated path unchanged.",
+          "disproof": "Same center request still has no actual chrome; status/color changes before root flight/handoff; loading/backdrop/return/rotation regression; delegated path source altered. Any observation rejects candidate; no readiness bypass.",
+          "verification": "One current ordinary E production entry/show/hide/Back and one affected thumbnail root flight/show/current reverse/rotation with original recording and actual identity; finite routes only. Existing unchanged N/K evidence not replayed.",
+          "observedResult": {
+            "at": "2026-10-08T06:44:11.328567+08:00",
+            "receipt": "source-policy-E-window-owner-current-acceptance-receipt-20261008.json",
+            "package": "35f8769d72df004c18a1453f6eb0ef9bf337b31d2d38e69504bb938bdabf4cc6",
+            "ordinary": "261 originals/246 distinct/all7contacts: actualChrome95-113, sameSource0 then portrait124clean",
+            "thumbnail": "134 originals/125distinct/all4contacts+15raw: retainedSource bars/colors/rootflight before fullscreen, sameP3body/chrome/currentreverse",
+            "boundary": "Only named managed production intervals; not Legacy/delegated/debug/FPS/all replacement"
+          }
+        }
       }
     }
   },
@@ -1740,7 +1848,14 @@
       "kind": "review",
       "detail": "当前设备197；独立Koma生产工作暂停，不推送、不发版。"
     }
-  ]
+  ],
+  "heartbeatRecovery": {
+    "at": "2026-10-08T05:54:52.625964+08:00",
+    "interruption": "Previous turn failed: Error running remote compact task: exceeded retry limit, last status: 429 Too Many Requests",
+    "latestHuman": "Maintain ongoing work and progress in existing local page",
+    "resumedAction": "E failed log and reader identity observation, currentefbc ordinary ContinueP3",
+    "state": "executing"
+  }
 }
 -->
 
