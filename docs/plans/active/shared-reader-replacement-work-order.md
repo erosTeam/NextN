@@ -3,99 +3,117 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T03:23:03.448303+08:00",
+  "updatedAt": "2026-10-08T04:42:25.786161+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 状态栏恢复方案未通过；已撤除候选并恢复设备基线",
+  "state": "OPEN · 共同源窗口策略已安装；仅 NextN 命名路径接受",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "查清三个应用的状态栏恢复策略",
-    "detail": "两个可见性快照方案均已否决，相关源码已撤除。197 已安装回上一版留证包；NextE/Koma 冷启动源页面实测竖屏保留状态栏、横屏自动隐藏、转回竖屏恢复。正在整理共享窗口与各宿主的策略所有权，尚未开始新修复候选。",
+    "title": "补齐源状态栏策略的三应用运行证据",
+    "detail": "共同 Source-hidden 原生就绪修正已完成，三应用同基准构建并正向安装。NextN 显栏后返回横屏的单次完整录制正在执行；不重跑已冻结隐栏区间。",
     "startedAt": "2026-10-08T01:19:00+08:00"
   },
-  "nextAction": "依据已有原生自动隐藏证据，完成源窗口策略、显式写入与 Shared/Legacy 关闭路径的影响映射；确定能保持旋转与入退场顺序的共同方案后才修改源码。",
+  "nextAction": "完成当前 NextN 显栏后返回横屏的完整录像/原生源根审阅；再按已有普通入口补齐 E/K 和保留旧版受影响路径。",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
-      "build": "Signed currenteb44 compilation0; narrow4-line Index existingreverse branch; other7host/3KitSHA unchanged.",
-      "install": "197已通过install -r恢复此前留证包 eb44a98b；安装输出成功，未执行清数据。",
+      "build": "签名候选构建通过；N/E 保留原 debug 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
+      "install": "197 已安装更新候选 9af69d41；构建/安装不能替代运行验收。",
       "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted. Physical197 initiallyuncached560948P3 pendingasset0/moving→backgroundcancelled→stored111888, samepagebody/processing/ordinarysystemreturn reviewed443originals; original682531ContinueP2 restored. Currenteb44 namedP1openingreverse/P2reentry/normalBack movieb5f5c65a all406/12contacts and raw219222244331 reviewed; nofullscreenfirst/bodyblack/staleoldpage. Original682531ContinueP2/root0,124 restored;1497query0.",
-      "remaining": "当前状态栏恢复未通过；性能/完整替换未验收。此前保留边界：Named uncachedP1 openingreverse/P2reentry accepted; zero-top/landscape currentordinary gate remains, otherlate/stale/fallback/FPS/fullreplacement limits retained.",
+      "remaining": "共同源策略整体尚未验收。本次只接受横屏 P2 隐栏入退场及返回后竖屏；显栏后返回、保留旧版仍未验收。 性能超越和完全替换旧版均未证明。",
       "appHead": "85602960",
-      "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
+      "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0 + 本轮未提交源策略候选",
       "appHeadLayer": "85602960 Index source SHA53ae7784; currenteb44 bound; unrelatedgeometryWIP retained.",
-      "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "Installed3468 current-loading guard and prior dfdd chapter-origin checkpoint; N no chapterNavigation. GeometryWIP unchanged/unaccepted.",
+      "kitWorkingTree": "共同源策略候选未提交；原几何 WIP f715588a/ac0c8c90 保留",
+      "kitDocumentation": "已安装候选基于共同 Kit 3468fa41，加本轮源窗口策略。历史回执仅覆盖原绑定版本与命名范围；几何 WIP 未由这次结果接受。",
       "rejectedCandidate": {
         "hap": "035b8a85a8ffa03f12a0080af62a45424b24b229ce17be7f37cac3e6c3059106",
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
-      "installedHap": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
-      "progressSummary": "已留证：设置单选、真实在线加载、后台回前台、打开中返回与另一页重入。当前缺口：横屏源返回及再转竖屏的状态栏策略。"
+      "installedHap": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
+      "progressSummary": "先前 fb25 隐栏路径已留证；当前 9af6 显栏后返回路径正在验证。",
+      "installedPackage": {
+        "sha256": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
+        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-N-hidden-ready-20261008.hap",
+        "binding": "source-policy-N-hidden-ready-binding-20261008.json",
+        "status": "已安装更新候选；命名运行验证进行中"
+      }
     },
     {
       "name": "NextE",
       "checkout": "/Users/honjow/git/NextE",
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
-      "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
-      "install": "197已通过install -r恢复此前留证包 7e0315fd；安装输出成功，未执行清数据。",
+      "build": "签名候选构建通过；N/E 保留原 debug 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
+      "install": "197 已安装更新候选 79386f57；构建/安装不能替代运行验收。",
       "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored. Physical197 current7e0315fd ordinaryP3 interrupted/cancelled/foreground and normalfinished rootflight/original/BacksameDetailContinue3 accepted in all197/114 originals, nativeactualroot0,0/1260/2720. Physical197 initiallyuncachedP9 exactabsent-before/stored402586after: asset0 pending/moving→backgroundcancelled, foreg100%panelretainsbackground then sameimage/BackDetailP9 accepted full206originals; originalP3restored.",
-      "remaining": "当前状态栏恢复未通过；性能/完整替换未验收。此前保留边界：Named E197 initiallyuncached interrupted interval accepted; sharp-image/100% adjacentframe95->96 nativephase unobserved, no zero-overlap guarantee; processing/spread/late/stale/FPS/fullreplacement limits retained.",
+      "remaining": "共同源策略整体尚未验收。本应用 Shared/Legacy 受影响运行路径仍未验收。 性能超越和完全替换旧版均未证明。",
       "appHead": "1601e159",
-      "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
+      "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0 + 本轮未提交源策略候选",
       "appHeadLayer": "One foreground admission source file committed and positive197installed7e0315fd; ten source SHA plus unchanged geometryWIP bound.",
-      "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged.",
+      "kitWorkingTree": "共同源策略候选未提交；原几何 WIP f715588a/ac0c8c90 保留",
+      "kitDocumentation": "已安装候选基于共同 Kit 3468fa41，加本轮源窗口策略。历史回执仅覆盖原绑定版本与命名范围；几何 WIP 未由这次结果接受。",
       "rejectedCandidate": {
         "hap": "021aea893f1066d01ea90655c0be18c07c26358a839e9cbbe2d734873c31c46f",
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
-      "installedHap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
-      "progressSummary": "已留证：设置单选、后台前台交接、真实无缓存加载底板与返回。当前缺口：共同状态栏恢复；冷启动源页面旋转基线已取得。"
+      "installedHap": "79386f57af3be4f8884cf7ca2de1913a714d21c8f6e363a138901ac32ec3ae41",
+      "progressSummary": "共同 Source-hidden 就绪更新候选已安装；本应用运行尚未验收。",
+      "installedPackage": {
+        "sha256": "79386f57af3be4f8884cf7ca2de1913a714d21c8f6e363a138901ac32ec3ae41",
+        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-E-hidden-ready-20261008.hap",
+        "binding": "source-policy-E-hidden-ready-binding-20261008.json",
+        "status": "已安装更新候选；命名运行验证进行中"
+      }
     },
     {
       "name": "Koma",
       "checkout": "/private/tmp/koma-production-20261005",
       "kit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0",
       "hap": "9b85a661b0c68ba34d80c6ce198d0c9a25c14b6aef006336c889f9448f2f2b68",
-      "build": "Current shared predicate signed compilation0; exact common3468 + unchanged geometryWIP. Existing state-owner suites39/39 are supporting only.",
-      "install": "197已通过install -r恢复此前留证包 b4fb2cf0；安装输出成功，未执行清数据。",
+      "build": "签名候选构建通过；Koma 保留原 default release 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
+      "install": "197 已安装更新候选 6e1d043d；构建/安装不能替代运行验收。",
       "verdict": "命名路径留证 · 总体未验收",
       "verdictKind": "open",
       "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored. Currentb4fb Shared ordinaryHistory1->3->Back and nativeLegacy3->4->Back complete RGB reviews14/17contacts: all Today/Yesterday remain white, rowupdates3/4; publication follows ownedOnDisappear exactly once. RestoredShared/upper1/Library102P1/timeout30000. Earlier55c dark return retained as rejected baseline.",
-      "remaining": "当前状态栏恢复未通过；性能/完整替换未验收。此前保留边界：Changed optional entry predicate unreachable in K consumer (no entryTransition); current3468 signedcompile0 only. Existing automatic chapter/alllayout/FPS/independentproduction limits retained.",
+      "remaining": "共同源策略整体尚未验收。本应用 Shared/Legacy 受影响运行路径仍未验收。 性能超越和完全替换旧版均未证明。",
       "appHead": "26815685",
-      "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
-      "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
-      "kitDocumentation": "dfdd chapter origin/initial-edge product checkpoint; N/E compile0 only, not installed runtime. Geometry WIP unchanged.",
+      "installedKit": "3468fa41d837f0bece0ac73b51706d7b5bff86d0 + 本轮未提交源策略候选",
+      "kitWorkingTree": "共同源策略候选未提交；原几何 WIP f715588a/ac0c8c90 保留",
+      "kitDocumentation": "已安装候选基于共同 Kit 3468fa41，加本轮源窗口策略。历史回执仅覆盖原绑定版本与命名范围；几何 WIP 未由这次结果接受。",
       "rejectedCandidate": {
         "hap": "86a4fe112980f5b5832c724fbe4c11cbf041e8bff0b6304ced9b77d2bd505c6f",
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
-      "installedHap": "b4fb2cf0560eee697b489f1c4bafd8ca86982fa8edb381936e347537e95d5182",
-      "progressSummary": "已留证：本书设置、章节/网络阅读、共享/旧版进度返回命名路径。当前安装为此前b4fb进度投影包；共同状态栏恢复未验收，独立生产工作暂停。"
+      "installedHap": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
+      "progressSummary": "共同 Source-hidden 就绪更新候选已安装；本应用运行尚未验收。",
+      "installedPackage": {
+        "sha256": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
+        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-K-hidden-ready-20261008.hap",
+        "binding": "source-policy-K-hidden-ready-binding-20261008.json",
+        "status": "已安装更新候选；命名运行验证进行中"
+      }
     }
   ],
   "gaps": [
     {
       "id": "source-status-restoration",
       "title": "源页面状态栏：横屏返回与竖屏恢复",
-      "status": "方案否决 · 正在查共同恢复策略",
-      "kind": "bad",
-      "detail": "硬写true破坏横屏默认隐藏；按当前可见性写false又导致回竖屏仍隐藏。两个完整反例留存，源码已撤除并恢复旧安装包。",
-      "action": "依据已有原生自动隐藏证据，完成源窗口策略、显式写入与 Shared/Legacy 关闭路径的影响映射；确定能保持旋转与入退场顺序的共同方案后才修改源码。",
+      "status": "候选已安装 · 仅 N 命名路径接受",
+      "kind": "review",
+      "detail": "快照方案 R1/R2 已否决并撤除。新方案由 UIAbility 方向事件维护共同源策略，三应用构建/安装完成；N 命名横屏返回顶部 0、转竖屏 124 已留证。尚不等于整体修复通过。",
+      "action": "完成显栏后恢复隐藏 Source 的原生布局就绪影响复核，并补齐 E/K 及保留旧版受影响路径；不重复已冻结区间，不延伸到新功能。",
       "reportedAt": null,
       "reportedAtSource": "此次具体旋转缺口由实机发现，未冒充原始用户消息时间。",
       "firstEvidenceAt": "2026-10-08T01:19:00+08:00",
@@ -103,8 +121,9 @@
       "handling": {
         "trackingSince": "2026-10-08T03:23:03.448303+08:00",
         "recordedSeconds": 0,
-        "activeSince": null,
-        "note": "此前工时未完整分段，不能由墙钟经过时间回填。"
+        "activeSince": "2026-10-08T04:36:00.917141+08:00",
+        "note": "此前工时未完整分段，不能由墙钟经过时间回填。",
+        "activeUntil": "2026-10-08T04:51:00.917141+08:00"
       }
     },
     {
@@ -817,6 +836,31 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-08T04:40:23.963728+08:00",
+      "text": "共同 Source-hidden 就绪候选三应用构建、安装完成：N9af6/E7938/K6e1d。仅源码/构建/安装证据，当前运行路径仍在验证。"
+    },
+    {
+      "at": "2026-10-08T04:24:28.472106+08:00",
+      "title": "NextN 命名源策略路径接受",
+      "detail": "216原帧全审阅；横屏返回顶部0→返回后竖屏124，同P2。E/K与Legacy未推广。",
+      "kind": "pass",
+      "text": "NextN 命名源策略路径接受：216原帧全审阅；横屏返回顶部0→返回后竖屏124，同P2。E/K与Legacy未推广。"
+    },
+    {
+      "at": "2026-10-08T04:07:09.453206+08:00",
+      "title": "三个宿主候选构建通过",
+      "detail": "N/E debug与原基准一致，K非debug release；安装与完整入退场验证尚未接受。",
+      "kind": "review",
+      "text": "三个宿主候选构建通过：N/E debug与原基准一致，K非debug release；安装与完整入退场验证尚未接受。"
+    },
+    {
+      "at": "2026-10-08T03:56:19.962217+08:00",
+      "title": "共同源窗口策略源码候选",
+      "detail": "UIAbility方向事件与Shared/Legacy关闭读取同一策略；保留原入场门禁。未安装、未运行验收。",
+      "kind": "review",
+      "text": "共同源窗口策略源码候选：UIAbility方向事件与Shared/Legacy关闭读取同一策略；保留原入场门禁。未安装、未运行验收。"
+    },
+    {
       "at": "2026-10-08T03:01:36.429881+08:00",
       "text": "197：NextE/Koma冷启动源竖屏→横屏→竖屏，状态栏空间124→0→124；NextN终态竖屏124、继续P2。仅源策略基线，不是阅读器返回验收。"
     },
@@ -870,6 +914,31 @@
     }
   ],
   "evidence": [
+    {
+      "id": "source-policy-n-landscape-portrait",
+      "title": "197 NextN源策略完整路径（仅fb25命名区间）",
+      "path": "source-policy-N-landscape-portrait-receipt-20261008.json",
+      "storage": "device197",
+      "label": "197 NextN源策略完整路径（仅fb25命名区间）"
+    },
+    {
+      "id": "source-policy-k-binding-197",
+      "label": "Koma：当前安装候选源码/签名包绑定",
+      "path": "source-policy-K-hidden-ready-binding-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "source-policy-e-binding-197",
+      "label": "NextE：当前安装候选源码/签名包绑定",
+      "path": "source-policy-E-hidden-ready-binding-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "source-policy-n-binding-197",
+      "label": "NextN：当前安装候选源码/签名包绑定",
+      "path": "source-policy-N-hidden-ready-binding-20261008.json",
+      "storage": "device197"
+    },
     {
       "id": "source-policy-baseline-197",
       "label": "197：恢复安装与源状态栏策略基线",
@@ -991,22 +1060,22 @@
     },
     {
       "id": "nextn-binding",
-      "label": "NextN 源码 / HAP 绑定 · 当前入口候选",
+      "label": "历史绑定：NextN 源码 / HAP 绑定",
       "path": "ordinary-first-image-nextn-binding.json"
     },
     {
       "id": "nexte-binding",
-      "label": "NextE 源码 / HAP 绑定 · 当前入口候选",
+      "label": "历史绑定：NextE 源码 / HAP 绑定",
       "path": "ordinary-first-image-nexte-binding.json"
     },
     {
       "id": "koma-binding",
-      "label": "Koma 源码 / HAP 绑定 · 当前入口候选",
+      "label": "历史绑定：Koma 源码 / HAP 绑定",
       "path": "ordinary-first-image-koma-binding.json"
     },
     {
       "id": "ordinary-postcommit-binding",
-      "label": "三宿主提交后源码 / HAP 等价绑定",
+      "label": "历史绑定：三宿主提交后源码 / HAP 等价绑定",
       "path": "ordinary-first-image-postcommit-source-binding.json"
     },
     {
@@ -1572,6 +1641,39 @@
         }
       },
       "disposition": "BASELINE ONLY; reader return unaccepted"
+    },
+    "policyCandidate": {
+      "at": "2026-10-08T03:52:05.991970+08:00",
+      "state": "N NAMED HIDDEN-CHROME PATH ACCEPTED; OTHER EXPOSED PATHS OPEN",
+      "evidence": "HarmonyOS5.1.0(1) changelog: explicit status visibility persists; SDK Ability.onConfigurationUpdate receives direction; ApplicationContext environment does not. 197 cold E/K source124→0→124; R1/R2 snapshot rejected.",
+      "owner": "UIAbility owns main window and authoritative direction. Reusable native window bridge tracks whether Reader has made an explicit visibility write; Source-only direction events do not write colors, geometry, or Reader state. Before any Reader visibility override, native source behavior remains untouched.",
+      "mapping": {
+        "N": "Index existing readerSystemBarWork/applyReaderStatusBar; Shared/Legacy same restoreAppStatusBar; positive-top close gate must depend on current source policy. Existing admission and generations retained.",
+        "E": "Shared production NextEReaderLabPage owns ReaderTrialWindow; Legacy ReaderPage direct status writer/close wait; both restore same source policy. Debug explicit true/null preserved, source direction events additionally affected after an explicit Reader write.",
+        "K": "Shared Index window close before native pop; Legacy ReaderPage epoch queue restores source. Standalone debug fixed lease remains fixed; direction events after return share source ownership."
+      },
+      "influence": "Each Ability binds its own main window and subscribes onConfigurationUpdate; all Reader native visibility writers mark Reader ownership only after existing admission. Close marks Source ownership at native restore before existing return. Source config events use current bound window and only after a Reader override, never thumbnail click. Phone landscape policy follows official change/baseline; other device types keep existing restore-visible behavior, not accepted as equivalent.",
+      "unchanged": "No thumbnail capture/wait, source geometry snapshot, post-return initial restore, targetmovement requirement, entry admission weakening, Reader/session/rail rebuild, menus/preferences/cache/load/preload/progress/backup edits. Existing geometry WIP preserved.",
+      "disproof": "Ordinary source landscape root0 after return and portrait124 on subsequent rotation; current body/thumbnail/loading/colors/target/progress continuous. Direction event during Reader must not override Reader visibility. Source colors must not change on click. A failed interval rejects the whole candidate; no FPS/full replacement claim.",
+      "nativeDispatch": "Shared source direction and all mapped Shared/Legacy native status writes use one guarded native-visibility queue; existing host color/admission queues retained. E Legacy uses existing route epoch/closing guards at lookup and dispatch.",
+      "bindings": [
+        "source-policy-N-hidden-ready-binding-20261008.json",
+        "source-policy-E-hidden-ready-binding-20261008.json",
+        "source-policy-K-hidden-ready-binding-20261008.json"
+      ],
+      "NRuntimeReceipt": "source-policy-N-landscape-portrait-receipt-20261008.json",
+      "hiddenSourceReadiness": {
+        "at": "2026-10-08T04:36:00.917141+08:00",
+        "cause": "N applyReaderStatusBar resolves after native visibility setter, while target-frame gate only has a positive-top predicate; when restoring hidden Source from visible Reader chrome, old positive native area may still exist at target measurement. K retained Legacy likewise has only setter completion. E Shared/Legacy already waits for expected native area. Existing N hidden-chrome recording had area zero before close and does not disprove this gap.",
+        "change": "Only Source-hidden restore awaits actual TYPE_SYSTEM top zero via native avoidAreaChange before completion. Native visibility writes remain serialized, but area readiness is outside the native write tail so a superseding admitted Reader request is not blocked. Current revision/admission cancels obsolete readiness; existing two-second failure bound is a failure, never successful delay.",
+        "unchanged": "No positive-source/body writer behavior, no target movement/geometry/entry gate, no forced timing/cache, no UI state/remount or post-return initial restore. Existing host target layout and color owners retained.",
+        "verification": "Rebuild three consumers and bind new HAPs; preserve fb25 receipt for its exact previous source. One visible-chrome landscape return is a distinct exposed source transition, not a replay of hidden-chrome frozen path. E/K/Legacy remain open."
+      },
+      "previousBindings": [
+        "source-policy-N-device-binding-20261008.json",
+        "source-policy-E-device-binding-20261008.json",
+        "source-policy-K-device-binding-20261008.json"
+      ]
     }
   },
   "assessment": [
@@ -1579,7 +1681,7 @@
       "label": "完全替换旧版",
       "status": "尚未达到",
       "kind": "open",
-      "detail": "命名路径已有验收，但状态栏恢复仍失败；没有整体验收结论。"
+      "detail": "已有命名运行证据；共同源窗口策略正在补齐三应用与保留旧版的受影响验收，不能推广为整体替换。"
     },
     {
       "label": "性能超过旧版",
@@ -1610,7 +1712,7 @@ QA 入口只索引当前事实，不复制下一步。历史证据完整存于
 
 ## 当前运行证据与剩余条件
 
-当前安装绑定以顶部 hosts 和对应 receipt 为准：N `eb44a98b` / `85602960`、E `7e0315fd` / `1601e159`、K `b4fb2cf0` / `850af0c5`。N/E 当前安装 Kit `3468fa41`，K 仍为 `dfdd2b04`；两文件 geometry WIP 保留且未由命名入场记录接受。旧模拟器/旧包段落只描述历史，不派发当前动作。
+当前安装绑定唯一读取顶部 hosts 与对应 receipt。原 N `fb25af8d` 的横屏 P2 隐栏路径仅绑定当时源码；Source-hidden 就绪更新后的三宿主运行证据仍需各自取得。保留旧版受影响路径与整体替换边界保持开放。两文件 geometry WIP 保留，旧模拟器/旧包段落只供历史证据，不派发当前动作。
 
 文档前置提交后，先保留冷启 `bc286415` 的 moving-cancelled 判定；再按既有同进程缓存前提，
 只做一次自然 P3 再入 `2c9ef292`。实际 id3 moving40.528→waiting41.007→revealing41.016→finished41.042，
