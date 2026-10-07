@@ -1,5 +1,6 @@
 import { AbilityConstant, Configuration, UIAbility, Want } from '@kit.AbilityKit'
-import { captureReaderLabWant, updateReaderLabForeground } from '@reader-kit/ui'
+import { captureReaderLabWant, updateReaderLabForeground, bindReaderSourceWindow, unbindReaderSourceWindow,
+  updateReaderSourceConfiguration } from '@reader-kit/ui'
 import { window } from '@kit.ArkUI'
 import { webview } from '@kit.ArkWeb'
 import {
@@ -159,6 +160,7 @@ export default class EntryAbility extends UIAbility {
     let mainWindow: window.Window | null = null
     try {
       mainWindow = windowStage.getMainWindowSync()
+      bindReaderSourceWindow(this.context, mainWindow)
       mainWindow.setWindowLayoutFullScreen(true)
       mainWindow.setWindowSystemBarProperties({
         statusBarColor: TRANSPARENT_COLOR,
@@ -327,7 +329,12 @@ export default class EntryAbility extends UIAbility {
     this.mainWindow.setPreferredOrientation(orientation).catch((): void => {})
   }
 
+  onConfigurationUpdate(config: Configuration): void {
+    updateReaderSourceConfiguration(config)
+  }
+
   onDestroy(): void {
+    unbindReaderSourceWindow()
     DiagnosticLogger.info('lifecycle', 'session_end', 'application destroyed')
     DiagnosticLogger.closePersistentSink()
     MotionHandStateService.stop()

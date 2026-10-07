@@ -2,7 +2,7 @@ import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow,
-  readerEntryWindowReady, readerEntryStatusBarStyle, applyReaderStatusBar } from '@reader-kit/ui'
+  readerEntryWindowReady, readerEntryStatusBarStyle, applyReaderStatusBar, readerSourceStatusBarVisible } from '@reader-kit/ui'
 import { ReaderEntryTransition, ReaderEntryPhase, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility, ReaderCloseContext } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
@@ -2117,22 +2117,22 @@ struct Index {
    * later chrome reveal or route close. This is the lifecycle boundary the
    * child Reader cannot own because Index owns its private overlay stack.
    */
-  private requestReaderStatusBar(visible: boolean, lightIcons: boolean): Promise<void> {
+  private requestReaderStatusBar(visible: boolean, lightIcons: boolean, restoringSource: boolean = false): Promise<void> {
     const generation: number = this.readerSystemBarGeneration + 1
     this.readerSystemBarGeneration = generation
     const contentColor: string = lightIcons ? STATUS_BAR_LIGHT_CONTENT : STATUS_BAR_DARK_CONTENT
     const work: Promise<void> = this.readerSystemBarWork
       .catch((): void => {})
       .then(async (): Promise<void> => {
-        if (generation !== this.readerSystemBarGeneration || !this.readerWindowWriteAllowed(visible)) {
+        if (generation !== this.readerSystemBarGeneration || !this.readerWindowWriteAllowed(restoringSource || visible)) {
           return
         }
         await applyReaderStatusBar(this.context(), visible, {
             statusBarContentColor: contentColor,
             isStatusBarLightIcon: lightIcons,
           }, (): ReaderEntryTransition | null => this.currentWindowEntry(),
-          (): boolean => this.readerWindowRootSettled(visible),
-          (): boolean => generation === this.readerSystemBarGeneration)
+          (): boolean => this.readerWindowRootSettled(restoringSource || visible),
+          (): boolean => generation === this.readerSystemBarGeneration, restoringSource)
       })
       .catch((error: Error): void => {
         if (generation === this.readerSystemBarGeneration) {
@@ -2144,7 +2144,7 @@ struct Index {
   }
 
   private restoreAppStatusBar(): Promise<void> {
-    return this.requestReaderStatusBar(true, !this.appUsesDarkIcons())
+    return this.requestReaderStatusBar(readerSourceStatusBarVisible(), !this.appUsesDarkIcons(), true)
   }
 
   /**
@@ -2233,7 +2233,7 @@ struct Index {
     if (context !== null && image !== null && context.unit.work === readerGalleryId) {
       this.readerThumbnailTransition.updateCurrent(readerGalleryId, context.part.sourceIndex, image)
     }
-    const requireVisibleStatusBarInset: boolean = this.readerPresentationPending &&
+    const requireVisibleStatusBarInset: boolean = readerSourceStatusBarVisible() && this.readerPresentationPending &&
       this.readerPresentationFullscreen && !this.readerPresentationChromeVisible
     this.readerDestinationClosing = true
     this.clearRecordedReaderPresentation()
