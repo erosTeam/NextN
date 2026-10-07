@@ -3,10 +3,10 @@ import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow,
   readerEntryWindowReady, readerEntryStatusBarStyle, applyReaderStatusBar } from '@reader-kit/ui'
-import { ReaderEntryTransition, ReaderEntryPhase, ReaderEntryPreviewSource, ReaderEntryRect,
+import { ReaderEntryTransition, ReaderEntryPhase, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility, ReaderCloseContext } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
-import { ReaderTrialEntryRelay, ReaderTrialEntrySource, ReaderTrialEntryProbe } from 'shared'
+import { ReaderTrialEntryRelay, ReaderTrialEntrySource } from 'shared'
 import {
   GalleryChromeState,
   GalleryCommentsPage,
@@ -512,43 +512,6 @@ class ReaderEntryClaim {
   }
 }
 
-/** Pending feedback belongs to the retained source, never to captured pixels or the hidden reader. */
-@ComponentV2
-struct IndexReaderEntryPendingOverlay {
-  @Require @Param sourceRect: ReaderEntryRect
-  @Event onViewportChanged: () => void = () => {}
-  @Local private originX: number = 0
-  @Local private originY: number = 0
-  @Local private measured: boolean = false
-
-  build() {
-    Stack({ alignContent: Alignment.TopStart }) {
-      if (this.measured) {
-        Stack({ alignContent: Alignment.Center }) {
-          LoadingProgress().width(20).height(20).color(ThemeTokens.TEXT_TERTIARY)
-            .id('rkit-entry-source-loading')
-        }
-        .width(this.sourceRect.width).height(this.sourceRect.height)
-        .position({ x: this.sourceRect.x - this.originX, y: this.sourceRect.y - this.originY })
-        .backgroundBlurStyle(BlurStyle.BACKGROUND_THIN)
-        .borderRadius(ThemeTokens.THUMB_RADIUS).clip(true)
-        .hitTestBehavior(HitTestMode.None)
-      }
-    }
-    .width('100%').height('100%').clip(true)
-    .backgroundColor(Color.Transparent).hitTestBehavior(HitTestMode.Block)
-    .id('rkit-entry-source-pending')
-    .onAreaChange((): void => {
-      if (this.measured) { this.onViewportChanged(); return }
-      const context = this.getUIContext()
-      const rect = context.getComponentUtils().getRectangleById('rkit-entry-source-pending')
-      this.originX = context.px2vp(rect.windowOffset.x)
-      this.originY = context.px2vp(rect.windowOffset.y)
-      this.measured = true
-    })
-  }
-}
-
 /**
  * Entry owns the one Navigation/`NavPathStack` pair and only passes callback
  * intents into feature HARs. Browse, Favorites, History, and Settings remain
@@ -571,7 +534,6 @@ struct Index {
   private readerTrialLaunchEpoch: number = 0
   private readerTrialHostAlive: boolean = true
   @Local private readerEntryTransition: ReaderEntryTransition | null = null
-  @Local private readerEntryPreview: ReaderEntryPreviewSource | null = null
   private readerEntryToken: number = 0
   private readerEntryEpoch: number = 0
   @Local private readerEntryClaim: ReaderEntryClaim | null = null
@@ -613,8 +575,7 @@ struct Index {
   private finishSourceEntryPending(): void {
     const phase = this.readerEntryPhase
     if (this.readerEntryTransition !== null && phase !== 'layout') {
-      const claim = this.readerEntryClaim
-      if (claim !== null && !this.authorizeReaderEntryDeparture(claim, claim.epoch)) return
+      // Root already authorized before intentionally hiding this source.
       this.releaseReaderEntryClaim()
     }
   }
@@ -798,6 +759,7 @@ struct Index {
   @Monitor('readerEntryPhase', 'readerEntryVisibility.foreground', 'readerThumbnailTransition.presentationEpoch')
   private syncReaderTrialWindow(): void {
     const phase = this.readerEntryPhase
+    if (!this.readerTrialHostAlive || this.readerTrialClosing !== null) return
     const claim = this.readerEntryClaim
     if (claim !== null && phase === 'cancelled' &&
       !this.authorizeReaderEntryDeparture(claim, claim.epoch)) return
@@ -806,7 +768,7 @@ struct Index {
       this.readerTrialRequest === null || !this.readerTrialRequest.readingChrome ||
       !this.readerEntryVisibility.foreground ||
       !readerEntryWindowReady(this.readerEntryTransition, this.readerTrialRootPresentationSettled())) return
-    if (!this.readerTrialRequest.thumbnailEntry && !this.readerTrialDestinationShown) return
+    if (this.readerEntryTransition === null && !this.readerTrialDestinationShown) return
     const context = this.context()
     if (!context.applicationInfo.debug) return
     this.readerTrialWindowOpened = true
@@ -823,9 +785,12 @@ struct Index {
   }
 
   private readerTrialRootPresentationSettled(): boolean {
+    const request = this.readerTrialRequest
+    if (!this.readerTrialHostAlive || this.readerTrialCloseRequested || this.readerTrialClosing !== null ||
+      request === null || !request.readingChrome || !this.readerEntryVisibility.foreground ||
+      (this.readerEntryTransition === null && !this.readerTrialDestinationShown)) return false
     const root = this.readerThumbnailTransition
-    const galleryId = this.readerTrialRequest?.work ?? ''
-    return root.galleryId !== galleryId || !root.active() || root.presentationSettledFor(galleryId)
+    return root.galleryId !== request.work || !root.active() || root.presentationSettledFor(request.work)
   }
 
   private prepareReaderTrialWindow(): void {
@@ -836,19 +801,32 @@ struct Index {
     this.readerTrialWindowEpoch = this.readerTrialEpoch
     this.readerTrialWindowOpened = false
     this.readerTrialDestinationShown = false
+    const request = this.readerTrialRequest
+    const epoch = this.readerTrialEpoch
+    this.readerTrialWindow.setStatusBarVisible(!connectReaderPresentation().fullscreen, (): boolean =>
+      this.readerTrialHostAlive && !this.readerTrialCloseRequested &&
+      this.readerTrialRequest === request && this.readerTrialEpoch === epoch)
     // A pending entry captures colors only; presentation is fenced inside the lease.
     this.readerTrialWindow.open(this.context())
     this.syncReaderTrialWindow()
   }
 
-  private closeReaderTrial(): Promise<void> | null {
+  private closeReaderTrial(context: ReaderCloseContext | null = null,
+    image: NhGalleryPage | null = null): Promise<void> | null {
     if (this.readerTrialClosing !== null) return this.readerTrialClosing
     this.readerTrialCloseRequested = true
     const opened = this.readerTrialWindowOpened
     const request = this.readerTrialRequest
     const trialEpoch = this.readerTrialEpoch
     const windowLease = this.readerTrialWindow
-    const sourceId = this.readerEntryClaim?.source.snapshotComponentId ?? 'nextn-reader-entry-host'
+    const galleryId = request?.work ?? ''
+    if (context !== null && image !== null && context.unit.work === galleryId) {
+      this.readerThumbnailTransition.updateCurrent(galleryId, context.part.sourceIndex, image)
+    }
+    const sourceId = request?.thumbnailEntry === true && context !== null && image !== null
+      ? ReaderThumbnailTransitionCoordinator.sourceId(this.readerThumbnailTransition.sourceScope, context.part.sourceIndex)
+      : this.readerEntryClaim?.source.snapshotComponentId ?? 'nextn-reader-entry-host'
+    let targetReady = true
     const restoration = this.retireReaderTrialWindow(async (): Promise<boolean> => {
       if (windowLease?.getCloseSystemAvoidAreaResult() !== 'ready') return true
       const layoutReady = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
@@ -858,21 +836,35 @@ struct Index {
       }, (): boolean => this.readerTrialHostAlive && this.readerTrialRequest === request &&
         this.readerTrialEpoch === trialEpoch)
       console.info('[ReaderTrialHost] close_layout_ready=' + layoutReady)
+      targetReady = layoutReady
       return layoutReady
     })
     this.releaseReaderEntryClaim()
     this.retireReaderTrialEntryGuard()
     this.readerEntryEpoch += 1
     if (!opened || restoration === null || request === null) {
-      // Hidden layout/capture never acquired colors: clear before cancel can expose it.
       this.clearReaderTrial()
       return null
     }
-    // Keep the actual reading surface until its previous window properties are restored.
-    const closing = restoration.then((): void => {
-      if (this.readerTrialHostAlive && this.readerTrialClosing === closing &&
-        this.readerTrialRequest === request && this.readerTrialEpoch === trialEpoch) this.clearReaderTrial()
-    }).finally((): void => {
+    // Retain the actual body until system area/colors and current root return settle.
+    const closing = restoration.then((): Promise<void> => new Promise<void>((resolve: () => void): void => {
+      if (!this.readerTrialHostAlive || this.readerTrialClosing !== closing ||
+        this.readerTrialRequest !== request || this.readerTrialEpoch !== trialEpoch) {
+        resolve()
+        return
+      }
+      const finish = (): void => {
+        if (this.readerTrialHostAlive && this.readerTrialClosing === closing &&
+          this.readerTrialRequest === request && this.readerTrialEpoch === trialEpoch) this.clearReaderTrial()
+        resolve()
+      }
+      if (targetReady && request.thumbnailEntry && context !== null && image !== null &&
+        context.unit.scope === 'nh' && context.unit.work === galleryId && context.contentAspectRatio > 0 &&
+        ReaderThumbnailTransitionCoordinator.close(this.getUIContext(), galleryId, context.part.sourceIndex,
+          image, true, context.captureComponentId, context.contentAspectRatio, 1,
+          (_animated: boolean): void => finish())) return
+      finish()
+    })).finally((): void => {
       if (this.readerTrialClosing === closing) this.readerTrialClosing = null
     })
     this.readerTrialClosing = closing
@@ -898,14 +890,12 @@ struct Index {
     this.readerEntryTransition?.cancel()
     this.readerTrialStack.clear(false)
     this.readerEntryTransition = null
-    this.readerEntryPreview = null
+    this.readerThumbnailTransition.reset()
   }
 
-  private async openThumbnailTrial(request: ReaderLabRequest, source: ReaderTrialEntrySource): Promise<void> {
+  private openThumbnailTrial(request: ReaderLabRequest, source: ReaderTrialEntrySource): void {
     const epoch = ++this.readerEntryEpoch
-    const navigation = this.rootNavigationEpoch
     if (!source.isCurrent()) return
-    // Keep the synchronous click guard through the trial, including geometry-free fallback and the first frame.
     this.readerTrialEntryGuardToken = ReaderTrialEntryRelay.holdPending(source.galleryId)
     let sourceRect: ReaderEntryRect = new ReaderEntryRect()
     let viewport: ReaderEntryRect = new ReaderEntryRect()
@@ -913,49 +903,29 @@ struct Index {
       sourceRect = this.readerEntryRect(source.snapshotComponentId)
       viewport = this.readerEntryRect('nextn-reader-entry-host')
     } catch (_) {}
-    if (!sourceRect.valid() || !viewport.valid()) {
-      // A live source whose geometry cannot be measured still opens the optional reader, without a flight.
-      this.presentThumbnailTrial(request, source, null, epoch)
-      return
+    if (sourceRect.valid() && viewport.valid()) {
+      this.readerEntryClaim = new ReaderEntryClaim(epoch, this.rootNavigationEpoch, source, sourceRect, viewport)
     }
-    const claim = new ReaderEntryClaim(epoch, navigation, source, sourceRect, viewport)
-    this.readerEntryClaim = claim
-    const probe = request.entryProbe === 'delay-once'
-    if (probe) ReaderTrialEntryProbe.recordAccepted(epoch)
-    let preview: ReaderEntryPreviewSource | null = null
-    preview = await NextNReaderEntryPreviewCapture.capture(this.getUIContext(), source.snapshotComponentId,
-      (entryId: number): boolean => this.authorizeReaderEntryDeparture(claim, entryId))
-    if (probe) {
-      request.entryProbe = ''
-      ReaderTrialEntryProbe.recordDelayedPreview(epoch, preview !== null)
-      await new Promise<void>((resolve): void => { setTimeout(resolve, 2500) })
-    }
-    if (epoch !== this.readerEntryEpoch || navigation !== this.rootNavigationEpoch || !this.readerEntryVisibility.foreground ||
-      this.readerOverlay.visible || this.safeMode.restricted()) {
-      if (probe) ReaderTrialEntryProbe.recordDiscarded(epoch, navigation !== this.rootNavigationEpoch)
-      if (this.readerEntryClaim === claim) this.closeReaderTrial()
-      preview?.release(); return
-    }
-    if (!this.authorizeReaderEntryDeparture(claim, epoch)) {
-      if (probe) ReaderTrialEntryProbe.recordDiscarded(epoch, navigation !== this.rootNavigationEpoch)
-      preview?.release(); return
-    }
-    if (probe) ReaderTrialEntryProbe.recordHandoff(epoch)
-    this.presentThumbnailTrial(request, source, preview, epoch)
+    this.presentThumbnailTrial(request, source, epoch)
   }
 
-  private presentThumbnailTrial(request: ReaderLabRequest, source: ReaderTrialEntrySource,
-    preview: ReaderEntryPreviewSource | null, epoch: number): void {
+  private presentThumbnailTrial(request: ReaderLabRequest, source: ReaderTrialEntrySource, epoch: number): void {
     this.retireReaderTrialWindow()
     request.pageIndex = source.pageIndex
-    this.readerEntryPreview = preview
-    this.readerEntryTransition = preview === null ? null : new ReaderEntryTransition(epoch,
+    this.readerEntryTransition = this.readerEntryClaim === null ? null : new ReaderEntryTransition(epoch,
       new ReaderDisplayPart(new ReaderUnitKey('nh', request.work, request.work), null, source.pageIndex))
-    if (preview === null) this.releaseReaderEntryClaim()
-    this.readerTrialStack.clear(false)
-    this.readerTrialRequest = request
-    this.readerTrialEpoch += 1
-    this.prepareReaderTrialWindow()
+    // Reuse ordinary root snapshot/flight; never await a second preview in Reader.
+    ReaderThumbnailTransitionCoordinator.open(this.getUIContext(), source.sourceScope(), request.work,
+      source.pageIndex, source.page, (_animated: boolean): void => {
+        if (!this.readerThumbnailTransition.waitingReader()) {
+          this.readerEntryTransition = null
+          this.releaseReaderEntryClaim()
+        }
+        this.readerTrialStack.clear(false)
+        this.readerTrialRequest = request
+        this.readerTrialEpoch += 1
+        this.prepareReaderTrialWindow()
+      })
   }
 
   @Builder
@@ -964,19 +934,28 @@ struct Index {
       // The destination owns its launch request through teardown; the host clears its active pointer first.
       NextNReaderLabPage({ request: _param as ReaderLabRequest, labRequest: _param as ReaderLabRequest,
         managesTrialWindow: false,
+        delegatedSystemBarStyle: this.readerTrialNavigationSystemBarStyle(),
         onShown: (): void => {
           if (this.readerTrialRequest !== _param) return
           this.readerTrialDestinationShown = true
+          if (this.readerEntryTransition === null) {
+            ReaderThumbnailTransitionCoordinator.startOpening(this.getUIContext(), (_param as ReaderLabRequest).work)
+          }
           this.syncReaderTrialWindow()
         },
         hostClosing: this.readerTrialCloseRequested,
         prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareReaderTrialChrome(isCurrent),
         onStatusBarVisible: (visible: boolean): void => { this.readerTrialWindow?.setStatusBarVisible(visible, (): boolean =>
           this.readerTrialRequest === _param && this.readerTrialHostAlive &&
-          !this.readerTrialCloseRequested && this.readerEntryVisibility.foreground) },
-        entryTransition: this.readerEntryTransition, entryPreview: this.readerEntryPreview,
+          !this.readerTrialCloseRequested) },
+        entryTransition: this.readerEntryTransition,
+        rootOwnedEntryTarget: this.readerEntryTransition !== null,
+        entryDepartureGuard: (entryId: number): boolean => this.readerEntryClaim !== null &&
+          this.authorizeReaderEntryDeparture(this.readerEntryClaim, entryId),
         entryPhase: this.readerEntryTransition?.phase ?? 'finished',
-        onClose: (): void => { this.closeReaderTrial() } })
+        onClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null): void => {
+          this.closeReaderTrial(context, image)
+        } })
     }
   }
 
@@ -1005,7 +984,7 @@ struct Index {
       this.readerEntryToken = ReaderTrialEntryRelay.install(request.work, (source: ReaderTrialEntrySource): boolean => {
         if (!this.readerTrialHostAlive || launchEpoch !== this.readerTrialLaunchEpoch ||
           this.readerOverlay.visible || this.readerTrialRequest !== null || this.safeMode.restricted()) return false
-        void this.openThumbnailTrial(request, source)
+        this.openThumbnailTrial(request, source)
         return true
       })
       this.pushGallery(Number(request.work))
@@ -3377,7 +3356,6 @@ struct Index {
           this.productionReaderEntryTransition : null,
         // Root proxy owns the sole source snapshot. Authorize against the live
         // claim directly, without capturing a second image or mounting a flight.
-        entryPreview: null,
         entryDepartureGuard: this.productionReaderEntryMatches(params) ?
           (entryId: number): boolean => this.productionReaderEntryClaim !== null &&
             this.authorizeProductionReaderEntryDeparture(this.productionReaderEntryClaim, entryId) : null,
@@ -5001,24 +4979,19 @@ struct Index {
         })
         .id('reader-overlay-navigation')
       }
-      IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
       if (this.readerTrialRequest !== null) {
         ForEach([this.readerTrialEpoch], (_epoch: number) => {
           HdsNavigation(this.readerTrialStack) { Column() {} }
             .navDestination(this.readerTrialRouter).hideNavBar(true)
             .systemBarStyle(this.readerTrialNavigationSystemBarStyle(), this.readerTrialNavigationSystemBarStyle())
-            .width('100%').height('100%').backgroundColor(Color.Black)
-            .opacity(this.readerEntryTransition?.phase === 'layout' ? 0 : 1)
-            .animation({ duration: this.readerEntryTransition === null ? 0 : 140, curve: Curve.Linear })
+            .width('100%').height('100%').backgroundColor(Color.Transparent)
+            .opacity(this.readerThumbnailTransition.overlayOpacity)
             .hitTestBehavior(this.readerEntryTransition?.phase === 'layout' ? HitTestMode.None : HitTestMode.Default)
             .onAppear((): void => { this.readerTrialStack.pushPathByName('ReaderTrial', this.readerTrialRequest as ReaderLabRequest, false) })
             .id('rkit-trial-navigation')
         }, (epoch: number): string => `${epoch}`)
       }
-      if (this.readerEntryClaim !== null) {
-        IndexReaderEntryPendingOverlay({ sourceRect: this.readerEntryClaim.sourceRect,
-          onViewportChanged: (): void => { if (this.readerEntryClaim !== null) this.closeReaderTrial() } })
-      }
+      IndexReaderThumbnailTransitionProxy({ state: this.readerThumbnailTransition })
     }
     .width('100%')
     .height('100%')

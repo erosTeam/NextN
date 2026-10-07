@@ -1,10 +1,11 @@
 import { ReaderTrialLayoutCommit, ReaderKeepScreenOn, ReaderTapAction, ReaderTapPolicy, ReaderTapZonePreviewRegion, ReaderRuntimePolicyIntent,
   ReaderCloseContext, ReaderModeControlParams } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
+import { window } from '@kit.ArkUI'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
   ReaderObservedPosition, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
-import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase, ReaderEntryPreviewSource,
+import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase,
   ReaderRootEntryHandoff, ReaderRootEntryHandoffHost } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
@@ -90,12 +91,13 @@ export struct NextNReaderLabPage {
   @Param labRequest: ReaderLabRequest | null = null
   @Param entryTransition: ReaderEntryTransition | null = null
   @Param entryPhase: string = 'finished'
-  @Param entryPreview: ReaderEntryPreviewSource | null = null
-  /** Production root departure is authorized by the host's current live claim. */
+  /** Root departure is authorized by the host's current live claim. */
   @Param entryDepartureGuard: ((entryId: number) => boolean) | null = null
-  /** Production root proxy lands on reader-kit's actual selected image part. */
+  /** Root proxy lands on reader-kit's actual selected image part. */
   @Param rootOwnedEntryTarget: boolean = false
   @Param managesTrialWindow: boolean = true
+  /** Non-owned destination reads its sole parent Window owner. */
+  @Param delegatedSystemBarStyle: window.SystemBarStyle | undefined = undefined
   /** The production overlay already owns HdsNavDestination and its lifecycle. */
   @Param embedded: boolean = false
   @Param externalRouteActive: boolean = false
@@ -103,7 +105,7 @@ export struct NextNReaderLabPage {
   @Param prepareChrome: ((isCurrent: () => boolean) => Promise<boolean>) | null = null
   @Param hostSettingsAvailable: boolean = false
   @BuilderParam settingsSheetContent: (dismiss: () => void) => void = this.EmptySettingsSheetContent
-  @Event onClose: () => void = () => {}
+  @Event onClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null) => void = () => {}
   @Event onShown: () => void = () => {}
   @Event onStatusBarVisible: (visible: boolean) => void = () => {}
   @Event onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void =
@@ -515,7 +517,7 @@ export struct NextNReaderLabPage {
     if (this.embedded) this.onRegisterBackRequest(null)
     void this.finishProgressWrites()
     this.keepScreenOn?.close()
-    this.entryTransition?.cancel(); this.entryPreview?.release()
+    this.entryTransition?.cancel()
     this.originalProbeHostClosed = true
     this.originalProbe?.close()
     if (this.originalProbeEpoch !== 0) ReaderTrialOriginalProbe.detachFacts(this.originalProbeEpoch)
@@ -592,11 +594,11 @@ export struct NextNReaderLabPage {
     }).then(async (): Promise<void> => {
       const saved = await progressFlush
       if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
-      if (this.hostRouteActive() || (initializationFailed && !this.volumeDisposed)) this.onClose()
+      if (this.hostRouteActive() || (initializationFailed && !this.volumeDisposed)) this.onClose(context, image)
     })
     else void progressFlush.then((saved: boolean): void => {
       if (!saved) console.warn(`[NextNReaderLab] progress_flush_failed gallery=${this.request.work}`)
-      this.onClose()
+      this.onClose(context, image)
     })
   }
 
@@ -1189,7 +1191,7 @@ export struct NextNReaderLabPage {
               preferenceSink: new ReaderPreferenceSink(
                 (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
                 (enabled, policy): void => { this.persistCrop(enabled, policy) }),
-              entryTransition: this.entryTransition, entryPreview: this.entryPreview,
+              entryTransition: this.entryTransition,
               // The root proxy and the Reader-owned opening placeholder keep the selected image
               // visible until the state machine starts its image handoff.  Do not expose the
               // live pager (or its decode feedback) merely because the root route mounted.
@@ -1243,10 +1245,12 @@ export struct NextNReaderLabPage {
       HdsNavDestination() {
         this.readerContent()
       }.titleBar(nextNHdsTitle($r('app.string.rkit_lab_title')))
-      .systemBarStyle(readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
-        this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF', this.trialWindow.statusBarVisible()),
-        readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
-          this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF', this.trialWindow.statusBarVisible()))
+      .systemBarStyle(this.ownsTrialWindow() ? readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
+        this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF', this.trialWindow.statusBarVisible())
+          : this.delegatedSystemBarStyle,
+        this.ownsTrialWindow() ? readerEntryStatusBarStyle(this.entryTransition, this.rootWindowPresentationSettled(),
+          this.themeDisplay.effectiveDark ? '#FFFFFFFF' : '#FF000000', '#FFFFFFFF', this.trialWindow.statusBarVisible())
+          : this.delegatedSystemBarStyle)
       .hideTitleBar(this.request.readingChrome)
       .onBackPressed((): boolean => {
         if (!this.request.readingChrome) return false

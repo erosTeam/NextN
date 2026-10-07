@@ -164,13 +164,51 @@
 > E four-file checkpointf593e88e matches installed d7 source hashes; N receipt
 > receipt checkpoint preserves unrelated K WIP. Existing five behavior rows
 > now carry named acceptance or native-unhit dispositions individually.
-> N explicit Debug retains awaited capture/entryPreview/optional2500ms probe,
-> black navigation above root proxy, child-default style and an eager parent
-> admission callback; ordinary direct embedded route does not use that branch.
-> Source-only finding remains unresolved: map its actual NhGalleryPage facts
-> and close context/lifetime before any narrow edit; no blind E patch replay.
-> Unhit pending/stale/fallback, zero-top/FPS/all-layout/whole replacement remain
-> unaccepted; no timing sweep, frozen replay, new capability queue or K resume.
+> N explicit Debug now reuses the ordinary root Coordinator/RootEntryHandoff:
+> six-source source map removes awaited second capture/internal app preview,
+> delegates the sole parent style and returns actual current close context.
+> Root proxy follows the transparent Debug navigation; source is authorized
+> before intentional hide. Ordinary direct embedded body and E/K/Kit/Legacy
+> callers are unchanged. Parent lease records canonical fullscreen intent
+> before open; current request/epoch/alive/close and root admission guards remain.
+> c09 no-thumbnail715b9c04 is REJECTED: all originals show white icons at81,
+> hidden82; default-visible lease opens before initial_policy. It is retained
+> as the counterexample, not substituted for current acceptance.
+> Current signed Na89534c2 source SHA matches all six installed build inputs.
+> Thumbnaild1780924 full0–669/all19 sheets reviewed, cached0–2 excluded:
+> source3–101/root102+/proxy through122/original123; icons176 before tools179,
+> hidden249; body298–299/source icons300/reverse301–315/same FullPreview316–669.
+> Native moving07:46:28.033/waiting28.584/revealing28.596/finished28.738;
+> chrome29.773true/31.232false; hidden Back32.146/ready32.189/colors32.190.
+> Same-HAP no-thumbnail0912038e full0–670/all19, cached0 excluded: source1–77,
+> black loader78–82/spinner83–103/progress104–109/original110; prior one-frame
+> white flash absent throughout current hidden loading/body. Icons207 before
+> tools210, hidden286, body332/same FullPreview333–670; native onShown52.884,
+> initial_policy52.905, chrome55.657true/57.255false, Back58.171/ready58.227/
+> restored58.229. Backdrop remained through loading and retained thumbnail
+> to original had no whole-body gap in these observed routes.
+> Both terminate at current com.erosteam.nextn FullPreviewP38 root
+> [0,117][1320,2232], tile[475,807][845,1367], original Shared/P38 preserved;
+> checked AWAKE/ScreenOffTimeout30000/Override30000 read back07:47:40.
+> Receipt status-intent-current-acceptance-receipt.json binds movies/build/source.
+> Scoped six-source + three existing records checkpoint saved; actual current
+> commit and six committed SHA256 are recorded in ignored
+> n-debug-root-current-postcommit-binding.json. No source bytes changed after
+> the installed a895 build. Unrelated K history UI record and common geometry
+> WIP remain outside this checkpoint; nothing pushed or released.
+> Accept only these cached portrait explicit Debug routes; no-thumbnail is the
+> explicit nonanimated trial route, not ordinary system animation. Native logs
+> and host frames are separate clocks. c09 source tile differed by17px, so no
+> matched geometry/latency claim. Unhit natural pending/late-progress/stale/
+> fallback, zero-top/FPS/all-layout/whole replacement remain unaccepted.
+> No timing sweep, frozen replay, new capability queue, push or K production resume.
+> Remaining conditions reconciled in the existing work-order row: cached runs
+> do not hit natural pending or late duplicate-progress; unchanged guards have
+> source evidence only for stale/background/early-moving/fallback. Actual
+> emulator viewport did not rotate. There is no new source-proven defect or
+> safe further product edit from these unhit rows; they stay OPEN until a
+> reachable bounded native condition or relevant source change exists. Deferred
+> layout-switch/unsupported enhancement and paused K production stay excluded.
 
 
 > Earlier physical boundary (2026-10-06; later source finding above supersedes

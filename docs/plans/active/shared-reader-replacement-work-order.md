@@ -3,34 +3,34 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T07:20:02.775195+08:00",
+  "updatedAt": "2026-10-07T08:03:26.659266+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "ACTIVE · 三应用既有阅读行为一致性复核",
+  "state": "OPEN · 有限一致性修复已留证；原未验收边界等待条件",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "state": "checkpoint",
-    "title": "E修复已提交，原有验收五行已对账",
-    "detail": "当前两条E实验入口与N普通入口接受范围分别留证；未触发分支保持未验收。N显式实验入口仍有源码差异，需要先完成现有DTO与退出链的影响图，禁止直接照搬E补丁。",
+    "state": "awaiting-evidence",
+    "title": "N/E实验入口根转场与状态栏接入已修复并提交",
+    "detail": "当前N两条完整区间已审阅，六源已提交且与安装HAP一致；剩余原生未触发/模拟器能力不足项保留OPEN，没有新增修补或重复测试队列。",
     "startedAt": "2026-10-06T23:10:00.397131+08:00"
   },
-  "nextAction": "Existing N explicit Debug discrepancy only: map actual NhGalleryPage facts at retained thumbnail source callers and current close context/lifetime into already accepted ordinary root bridge; record narrow theory/impact/unchanged geometry before any source edit. E current receipts frozen. No new capability queue, forced delay/cache mutation, production replay, push, real device or K production resume.",
+  "nextAction": "No currently reachable, source-proven further edit in this finite consistency lane. OPEN rows are natural same-request pending/late duplicate-progress/stale/early-moving/fallback (not emitted by bound cached samples), zero-top/landscape (actual emulator viewport unchanged), and separate deferred/user-held layout/enhancement/K production. Resume only on the recorded reachable native condition, relevant source change or capability change; do not repeat frozen routes, force delay/cache mutation, widen a queue, use197, resume paused K Goal, push or release.",
   "hosts": [
     {
       "name": "NextN",
       "checkout": "/Users/honjow/.codex/worktrees/b744/NextN",
       "kit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
-      "hap": "16c1f40729819ef5db513b460b9a7f76933f444a255373d36e54c90ea69dda94",
-      "build": "Sole N embedded actual-area gate signed build0; common/E/K bytes unchanged. Geometry WIP included, no full replacement.",
+      "hap": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
+      "build": "Six-file N explicit Debug root reuse plus five-line initial-intent seed; signed build0. Ordinary embedded body/E/K/Kit/Legacy unchanged; geometry WIP included and not accepted.",
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route.",
-      "remaining": "Natural same-request/late duplicate-progress/stale native branches unhit; zero-system-top/landscape capability unaccepted; explicit Debug old preview/probe/native-style/close adapter source discrepancy unresolved; Shared-and-Legacy mode gap deferred; all-layout/FPS/full replacement unproven.",
-      "appHead": "1b447ff40f778e3d95c0efe00a9376c7128b0d75",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted.",
+      "remaining": "Natural same-request/late duplicate-progress/stale native branches unhit; zero-system-top/landscape capability unaccepted; explicit Debug cached portrait named acceptance only; Shared-and-Legacy mode gap deferred; all-layout/FPS/full replacement unproven.",
+      "appHead": "e85e855a58f15e89ae504527750ad11b226a4ec3",
       "titleConsumerBuild": {
         "hapSha256": "e7d7b4d9d58973000224edb9fe8605bf5c25f415a5dde1b4f2bc77955a0716b8",
         "buildExit": 0,
@@ -38,7 +38,7 @@
         "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/nextn-koma-title-r4-consumer-signed.binding.json"
       },
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
-      "appHeadLayer": "Current source candidate includes sole embedded gate correction; checkpoint binding records exact committed source after scoped commit.",
+      "appHeadLayer": "Historical pre-build HEAD only; final current six-source checkpoint is in reader-status-intent-latest-receipt.json / n-debug-root-current-postcommit-binding.json. Committed source hashes equal installed a895.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90"
     },
     {
@@ -83,10 +83,10 @@
     {
       "id": "reader-validation-strategy",
       "title": "验证策略与完整行为基准",
-      "status": "ACTIVE · 尚未完成要求的核验",
-      "kind": "active",
-      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。 N旧blur/spinner根因已由原帧和旧Index分支建立；当前残留清理的warmFullGrid/原38恢复已观察，源连续性仅命名路径。 K title leaf同页/同章/实际翻页/Legacy提取与同Shared直接返回重入现有命名路径接受。 当前N普通入口与同源Legacy几何参考、E实验缩略图/无缩略图完整区间已逐帧审阅；E窄修复f593e88e已提交。五个行为行分别标明命名接受或原生路径未触发；N显式实验旧截图/预览路径源码差异仍未关闭。 本复核行没有独立工时记录；下方零仅是已记录数，不代表实际耗时为零。",
-      "action": "继续原有N显式实验入口DTO/退出链影响图；禁止直接套补丁、以Debug证据替代普通入口、冻结路径重复测试、扩大新功能或恢复独立Koma生产。",
+      "status": "命名一致性修复已留证；原未验收边界OPEN",
+      "kind": "open",
+      "detail": "N/E单value公用choice行命名即时/重开/冷启实际route已接受并提交。K58a2e303现有按书Store在两host接入，c168144c own-sheet/底栏、本书/Legacy/另一书/global/Reset/cold命名链与原Library恢复接受；源缩略图模糊/中断加载等原未接受边界不由此关闭。 N旧blur/spinner根因已由原帧和旧Index分支建立；当前残留清理的warmFullGrid/原38恢复已观察，源连续性仅命名路径。 K title leaf同页/同章/实际翻页/Legacy提取与同Shared直接返回重入现有命名路径接受。 当前N普通入口与同源Legacy几何参考、E实验缩略图/无缩略图完整区间已逐帧审阅；E窄修复f593e88e已提交。五个行为行分别标明命名接受或原生路径未触发；N显式实验改为复用普通根转场，当前a895缩略图/无缩略图全区间已审阅；旧c09隐藏意图闪现反例保留为失败。 本复核行没有独立工时记录；下方零仅是已记录数，不代表实际耗时为零。 N当前六源已形成窄提交，与安装a895源码一致；余项已按可达证据条件对账，无新的源码证实可修缺口。",
+      "action": "No currently reachable, source-proven further edit in this finite consistency lane. OPEN rows are natural same-request pending/late duplicate-progress/stale/early-moving/fallback (not emitted by bound cached samples), zero-top/landscape (actual emulator viewport unchanged), and separate deferred/user-held layout/enhancement/K production. Resume only on the recorded reachable native condition, relevant source change or capability change; do not repeat frozen routes, force delay/cache mutation, widen a queue, use197, resume paused K Goal, push or release.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -245,7 +245,7 @@
         "impact": "Direct: common canonical cancelled-readiness predicate/RootEntryHandoff and N/E snapshot argument; N Index terminal cleanup now reuses E route lifetime. Indirect: N normal/cancelled image content IDs ReaderPagedViewport726/730 use entryId, so clearing causes identity replacement; keeping existing object prevents remount. N currentWindowEntry sees terminal transition rather than null: readerEntryWindowReady pending=false remains equivalent, and independent root-settled admission unchanged. Source claim still released at settle; close/disappear/background/safe-mode/navigation retire existing transition. E already retains object; K no RootEntryHandoff caller/compile dependency. N observation callback directly exposed: same-page delivered original acknowledgement no longer depends on progress-save dedupe; progress mapper/store/write queue unchanged. Existing Surface canonical position requires current selection/visible original; no metadata/commanded-anchor notification. No menu/rail/provider/preload/Legacy change.",
         "reject": "No actual motion cancellation or no pending same request does not accept the row; backdrop loss during loading or premature window presentation rejects the route.",
         "limits": "Rotation capability sample rejected because actual viewport unchanged. Cached continuous sample is a current lost-readiness counterexample, not delayed-loading backdrop proof. Whole Window writer chronology/full replacement/FPS remain unaccepted.",
-        "nextAction": "Existing N explicit Debug discrepancy only: map actual NhGalleryPage facts at retained thumbnail source callers and current close context/lifetime into already accepted ordinary root bridge; record narrow theory/impact/unchanged geometry before any source edit. E current receipts frozen. No new capability queue, forced delay/cache mutation, production replay, push, real device or K production resume.",
+        "nextAction": "No currently reachable, source-proven further edit in this finite consistency lane. OPEN rows are natural same-request pending/late duplicate-progress/stale/early-moving/fallback (not emitted by bound cached samples), zero-top/landscape (actual emulator viewport unchanged), and separate deferred/user-held layout/enhancement/K production. Resume only on the recorded reachable native condition, relevant source change or capability change; do not repeat frozen routes, force delay/cache mutation, widen a queue, use197, resume paused K Goal, push or release.",
         "capabilityObservation": "Checked rotation command returned no size change; N root remained1320x2232; not an accepted cancellation sample. Native CUA unavailable but scoped host-window capture independently works and contains current native Library.",
         "selectedAlternative": "Existing continuous List onDidScroll cancels entry while pendingPosition=false and positionInFlight=false, with no provider/session mutation. Use native continuous mode temporarily, ordinary current Gallery thumbnail, one fast within-image swipe during loading, Back and exact original LTR/P38 restoration. No forced delay/cache clear or timing sweep.",
         "declaredRun": {
@@ -283,7 +283,7 @@
             "reject": "pre-flight fullscreen/color jump/internal zoom/black frame/early proxy removal/menu or geometry regression",
             "disposition": {
               "state": "NAMED ACCEPTANCE ONLY",
-              "evidence": "N current ordinarya258 and same-source Legacyfcdb pair; E partial73af normal finish has incomplete chrome route, so no full normal-finished E receipt. No all-layout/FPS acceptance."
+              "evidence": "N current ordinarya258 and same-source Legacyfcdb pair; E partial73af normal finish has incomplete chrome route, so no full normal-finished E receipt. No all-layout/FPS acceptance. Current Na895/d178 explicit Debug normal-finished cached single/LTR whole interval also reviewed; it is a separately named route, not universal geometry."
             }
           },
           {
@@ -292,7 +292,7 @@
             "reject": "late forward readiness during reverse, blank/incorrect return or preference/progress loss",
             "disposition": {
               "state": "NAMED ACCEPTANCE ONLY",
-              "evidence": "N ordinary same FullPreviewP38; E current Debuge4 thumbnail and0c no-thumbnail same DetailP3/current-target return. Unhit fallback/stale/early-moving returns remain source only."
+              "evidence": "N ordinary same FullPreviewP38; E current Debuge4 thumbnail and0c no-thumbnail same DetailP3/current-target return. Unhit fallback/stale/early-moving returns remain source only. Current Na895/d178 thumbnail and091 no-thumbnail explicit Debug restore same FullPreviewP38 with ready before colors; unhit rows unchanged."
             }
           },
           {
@@ -319,7 +319,7 @@
         },
         "temporaryDiagnosticDisposition": "8fffa161 IDs demonstrated captured=current initial native request and rootwaiting sync; all temporary ReaderEntryProof logs removed. Formal0c011a3c compiled from currenthashboundsource. Reviewer429 finite originalmovie review failed without result; primary reviews actual original intervals, no independentUI acceptance asserted.",
         "receipt": "ignored reader-entry-statusbar-20261006/cancelled-readiness-current-acceptance-receipt.json",
-        "acceptanceDisposition": "Original five rows reconciled without promoting unhit paths: N cached continuous cancelled-readiness handoff accepted narrowly; natural same-request pending and late duplicate-progress native paths remain unhit. Current N16c1f407/a258c835 ordinary portrait source/root/body/show-hide/hidden-area return accepted; same-source retained Legacyfcdb0531 accepts cached geometry/reverse only. E ordinary moving cancellation is source-mapped metadata refinement, not normal-finished. Current Ed7cdffba/e4a626f5 Debug cancelled-entry root/body/chrome/current-target reverse and 0c1c5719 no-thumbnail loading/body/chrome/current-root return accepted narrowly, same DetailP3. Current N zero-top capability rejected because viewport did not rotate. Unhit stale/early-moving/fallback and universal Window chronology/FPS/all-layout/full replacement remain unaccepted; frozen K evidence retains only identical dependencies.",
+        "acceptanceDisposition": "Original five rows reconciled without promoting unhit paths: N cached continuous cancelled-readiness handoff accepted narrowly; natural same-request pending and late duplicate-progress native paths remain unhit. Current N16c1f407/a258c835 ordinary portrait source/root/body/show-hide/hidden-area return accepted; same-source retained Legacyfcdb0531 accepts cached geometry/reverse only. E ordinary moving cancellation is source-mapped metadata refinement, not normal-finished. Current Ed7cdffba/e4a626f5 Debug cancelled-entry root/body/chrome/current-target reverse and 0c1c5719 no-thumbnail loading/body/chrome/current-root return accepted narrowly, same DetailP3. Current Na89534c2/d1780924 explicit Debug cached normal root flight/body/chrome/current-target reverse and0912038e no-thumbnail hidden loader/body/chrome/current-root return accepted narrowly, same FullPreviewP38; c09 initial-flash counterexample retained as rejected. Current N zero-top capability rejected because viewport did not rotate. Unhit stale/early-moving/fallback and universal Window chronology/FPS/all-layout/full replacement remain unaccepted; frozen K evidence retains only identical dependencies.",
         "sourceReviewDisposition": "Independent terminal lifetime and late canonical observation reviews find no concrete source blocker; coordinator only completes WAITING_READER_CONTENT, reverse cannot complete forward handoff. Malformed/debug work-scope edge has no production path. Prior independent movie review429 has no result; primary original PTS review retained.",
         "continuousMountWaitPlan": {
           "recordedAt": "2026-10-07T00:46:52.986856+08:00",
@@ -485,13 +485,13 @@
           }
         },
         "statusIconHandoffInvestigation": {
-          "state": "Named current portrait N ordinary gate and E Debug thumbnail/no-thumbnail handoffs accepted; zero-top input, unhit asynchronous rows and whole replacement remain separate.",
+          "state": "Current portrait N ordinary and explicit Debug, E Debug thumbnail/no-thumbnail and frozen K named intent handoffs accepted narrowly; native-unhit/zero-top/full replacement remain separate.",
           "evidence": [
             "E73190831 whole0–436: white icons175–176/196; Nfae1afad whole0–456: white icons151–153 after finished. One root flight and same source return in both."
           ],
           "established": "N ordinary root-owned Window visibility queue and native .systemBarStyle both have finish admission. E ordinary uses child ReaderTrialWindow and dynamic page style. Native style backups and Window color writes coexist; official Navigation explicitly warns against mixing them. E discards initial chrome=false event while entry pending, so TrialWindow desiredStatus stays default=true until late republish. N actual-area diagnostic proves setter-only preparation returns at top0; current scoped gate reads native TYPE_SYSTEM plus existing canonical inset and stable native clip.",
-          "notEstablished": "Current named N portrait geometry/Window gate and E Debug thumbnail/no-thumbnail intent/backdrop/return have narrow receipts. Universal geometry/Window chronology, landscape/zero-top, natural pending/stale and standalone N Debug remain unaccepted; no full replacement/FPS claim.",
-          "nextAction": "Existing N explicit Debug discrepancy only: map actual NhGalleryPage facts at retained thumbnail source callers and current close context/lifetime into already accepted ordinary root bridge; record narrow theory/impact/unchanged geometry before any source edit. E current receipts frozen. No new capability queue, forced delay/cache mutation, production replay, push, real device or K production resume.",
+          "notEstablished": "Current named N ordinary/explicit Debug and E explicit Debug portrait entry/body/chrome/return have narrow receipts. Universal geometry/Window chronology, owned standalone N, zero-top/landscape and natural pending/late/stale variants remain unaccepted; no whole replacement/FPS claim.",
+          "nextAction": "No currently reachable, source-proven further edit in this finite consistency lane. OPEN rows are natural same-request pending/late duplicate-progress/stale/early-moving/fallback (not emitted by bound cached samples), zero-top/landscape (actual emulator viewport unchanged), and separate deferred/user-held layout/enhancement/K production. Resume only on the recorded reachable native condition, relevant source change or capability change; do not repeat frozen routes, force delay/cache mutation, widen a queue, use197, resume paused K Goal, push or release.",
           "platformSourceFindings": {
             "reference": "Official OpenHarmony master; emulator reports OpenHarmony-7.0.0.105, exact source revision unknown",
             "color": "SystemBarStyleOhos calls SetStatusBarColorForNavigation(content-only); it does not directly set enable. WindowSceneSessionImpl merges owner property flags, latest same flag wins except ABILITY_RUNTIME priority. Native color paths can affect resulting settingFlag, not proven emulator flash cause.",
@@ -712,8 +712,8 @@
           },
           "nonOwnedInitialIntentPlan": {
             "recordedAt": "2026-10-07T05:56:51.727788+08:00",
-            "state": "Current E Debug thumbnail cancelled-entry and no-thumbnail named intent/loading/body/chrome/current-target return accepted narrowly; normal-finished geometry and whole replacement remain OPEN.",
-            "boundary": "NextE explicit Debug embedded reader only. Ordinary E owned Reader route, retained Legacy and all common/N/K sources unchanged.",
+            "state": "Current E and N explicit Debug root/hidden intent/body/show-hide/Back observed in complete original intervals; E normal-finished geometry and natural asynchronous branches remain unaccepted.",
+            "boundary": "Original E explicit Debug embedded-reader initial-intent/close/root plan, with separately source-mapped N explicit Debug correction below. Ordinary owned E/N bodies, retained Legacy and all common/K sources unchanged by these app adapters.",
             "grounding": [
               "Reference: existing ReaderTrialWindow separates desired intent from canPresent; N non-owned adapter already forwards hidden intent independently.",
               "Main information: same reader content remains visible through existing root/body handoff; source system bars remain owned by source until admission.",
@@ -749,7 +749,7 @@
             ],
             "unaffected": "Ordinary E route instantiates Lab with default managesTrialWindow=true; edits to parent helper apply only explicit trial stack. Child change executes only false branch. Common session/assets/menus/preload/geometry/Legacy and N/K are byte unchanged; frozen receipts stay retained.",
             "validation": "Review exact two-file diff; required existing V1 inventory0; sole E signed build. One bounded existing Debug no-thumbnail safe cached work without progress/preferences write, full host movie/source identity/body/show/hide/Back plus original E DetailP3 restoration. Source fences alone do not accept pending/background cases if not natively hit. No test-derived tuning.",
-            "remainingRisk": "Debug routes remain unaccepted until actual observed route; no claim for zero-top, uncached cancellation or full replacement.",
+            "remainingRisk": "Current E/N explicit Debug named routes accepted narrowly; owned standalone N, zero-top, uncached cancellation and full replacement unaccepted.",
             "initialResult": {
               "hapSha256": "f59ccae3eb9007a2d2b40055aa035e7b36ccf8d80cf9bc99a4e1c3971c1d508f",
               "movieSha256": "62ac3df20de420e5b228cfe5d8934d60bcec77dfe7b5a8ff07018875e8dac996",
@@ -801,7 +801,7 @@
             },
             "thumbnailRootReusePlan": {
               "recordedAt": "2026-10-07T06:35:01.889704+08:00",
-              "state": "Current thumbnail cancelled-entry interval accepted for named root pixels/chrome/current-target return only; normal geometry still distinct",
+              "state": "Current E thumbnail cancelled-entry interval accepted for named root/body/chrome/current-target return; E normal-finished geometry distinct. Nested current N correction has separate normal-finished and no-thumbnail receipts.",
               "cause": "Debug Index.openThumbnailTrial awaits NextEReaderEntryPreviewCapture.capture then mounts entryPreview in ReaderSurface. Its armSharedReturn only arms return and pre-marks presentation settled; ordinary openClaimed synchronously retains source pixels and ReaderRootEntryHandoff drives sole root flight. Debug navigation is after the root proxy, opaque black with independent140ms opacity, so PREPARING_CLOSE hides live body before the captured root proxy can be seen. This is a source-proven split owner, not timing inference. White109 has a second source-proven color writer: non-owned Lab destination derives status style from its unused child trialWindow (desired=true), while parent lease retains hidden intent. Both parent and destination must read the same parent style.",
               "changes": [
                 "Index: reuse existing openClaimed/rootOwnedEntryTarget/entryDepartureGuard for Debug thumbnail; clear claim/transition on root snapshot fallback; retain request identity/epoch/site/navigation/foreground guards.",
@@ -903,6 +903,256 @@
                   "0c1c571962ebfa7e28b57afbb71df04b4b0fd3d480a30336513e63bd89ad515b"
                 ],
                 "scope": "Only E Debug three source files plus existing plan; no Kit/N/K/Legacy code, push or full replacement assertion."
+              },
+              "nextNCorrection": {
+                "recordedAt": "2026-10-07T07:25:28.693663+08:00",
+                "state": "Scoped N explicit Debug root-route correction committed; current thumbnail/no-thumbnail named boundaries reviewed. Remaining native conditions unchanged.",
+                "boundary": "Existing explicit Debug readerTrial route only; ordinary direct embedded source/body/native settings/menu/assets/preload/progress/Legacy and Kit/E/K geometry remain unchanged. No new capability.",
+                "sourceCause": "Index awaits NextNReaderEntryPreviewCapture.capture before mounting Debug, optional2500ms delay remains executable, then ReaderSurface entryPreview owns internal motion. Its non-owned child destination derives colors from unused trialWindow, and eager parent root callback lacks foreground/readingChrome/lifetime/onShown fences. Trial close supplies no current context/image and root proxy lies under black Debug navigation. Both source leaves already own actual NhGalleryPage; ordinary root open consumes this DTO.",
+                "changes": [
+                  "Carry actual NhGalleryPage.copy() in existing source facts from two source leaves, without new render geometry or async request. Required constructor argument covers both and all callers.",
+                  "Index Debug calls existing ordinary Coordinator.open synchronously, rootOwnedEntryTarget and live departure guard; remove second capture, app preview and optional wait. Root alone authorizes before intentionally hiding source; phase monitor retires claim without redundant recheck.",
+                  "Parent root admission reuses alive/close/readingChrome/foreground/destinationShown gates; child destination consumes existing parent style read-only, no extra native writer or copied intent.",
+                  "Pass already-computed current close context/image through existing onClose event; parent restores system area, measures current target, restores colors, then existing root close; no-thumbnail keeps live root fallback. Keep reader mounted until restoration/reverse completes.",
+                  "Existing root proxy draws after mutually exclusive Debug navigation; Debug consumes root overlayOpacity transparently without independent opacity animation/pending source spinner. Reset only its root state at existing trial retirement."
+                ],
+                "impact": [
+                  {
+                    "behavior": "thumbnail source/entry/loading/body",
+                    "classification": "direct",
+                    "expected": "same source area/colors until existing root admission; one rootflight to actual selected part; retained loading backdrop/image; no awaited capture/internal preview or delay",
+                    "reject": "source spinner/wait, early fullscreen/colors, internal zoom, missing backdrop or image gap"
+                  },
+                  {
+                    "behavior": "show/hide/current-target Back",
+                    "classification": "direct",
+                    "expected": "actual chrome true/false; hidden Back retains body while area restored, stable current source measured before colors and reverse; same source/P38",
+                    "reject": "toolbar before actual area, stale target, black return, wrong source/page or late colors"
+                  },
+                  {
+                    "behavior": "no-thumbnail Debug",
+                    "classification": "indirect changed style/admission/close event",
+                    "expected": "preserve explicit non-animated trial entry; default opacity1/onShown gate, original loader/body/show-hide/current-root Back/same P38",
+                    "reject": "eager source color/fullscreen, missing loader background or failed current root restoration"
+                  },
+                  {
+                    "behavior": "pending/stale/background/early Back",
+                    "classification": "source fences preserved; native unhit stays unaccepted",
+                    "expected": "current epoch/navigation/source/foreground/safe-mode guards before departure and current close lifetime after every async wait; existing background policy unchanged",
+                    "reject": "stale paint, resurrected trial, callback from retired epoch or failure-as-ready"
+                  },
+                  {
+                    "behavior": "ordinary N/Legacy/E/K/common",
+                    "classification": "unaffected concrete callers",
+                    "expected": "two leaves only add immutable DTO fact at click; existing source guards/render functions unchanged. Ordinary production uses own detailSeed.pages and direct embedded child so removed null preview/read-only delegated destination branch adds no new body/style writer. Owned standalone closes same way, extra onClose args ignored by existing pop callback. Root relative order to ordinary navigation unchanged; no Kit/E/K change.",
+                    "reject": "any changed ordinary route/menu/preload/assets/root dimensions/radius/defaults or geometry WIP bytes"
+                  }
+                ],
+                "validation": "Exact six-file diff and committed preedit hashes; one N signed Debug build; current ordinary URI663205/page37 source proof and known FullPreviewP38. One unchanged-pause full explicit Debug thumbnail interval then one current no-thumbnail interval for changed style dependency, all original frames source/body/loading/chrome/hidden Back/terminal same source reviewed. No timing sweep/frozen ordinary replay or synthetic probe delays; restore30000 timeout and P38 source. Unhit paths explicit unaccepted.",
+                "rejectedApproaches": "REJ001–004 remain closed: no target movement requirement, postflight status restoration, cached close rect or changed target/root/radius eligibility. Root reuse is source-proven elimination of duplicate forward/occluded reverse owners, not speculative geometry repair.",
+                "beforeSourceSha256": {
+                  "entry/src/main/ets/pages/Index.ets": "1e144a0ef03b4b99a29af0dee989dbfdb5e9756945f6082957737ff08ce195be",
+                  "entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets": "0112e0d56a04a9cc9a476ff36173e8d8493e87cd0c3b80439b8a786643577d32",
+                  "feature/reader/src/main/ets/lab/NextNReaderLabPage.ets": "b75d34ca1ecfc6fcc3ef9ae60c63b48828e91f5674acfb7a5734f2a790b27914",
+                  "shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets": "4885742ac4c7273e2c6a8bab2ee97c67c65f0b2884ca15ffd72152011c9db636",
+                  "feature/gallery/src/main/ets/components/GalleryCompactPreviewTile.ets": "b4156e15ff40ac1d2c3358df683212be3d82da01c066144873808e61a6226e46",
+                  "feature/gallery/src/main/ets/components/GalleryVirtualPageThumbnail.ets": "0bdb8ea5af2749908bcc557bac9eb955c0d959ad8716bd73ffd51fc0523a64be"
+                },
+                "nextAction": "No currently reachable, source-proven further edit in this finite consistency lane. OPEN rows are natural same-request pending/late duplicate-progress/stale/early-moving/fallback (not emitted by bound cached samples), zero-top/landscape (actual emulator viewport unchanged), and separate deferred/user-held layout/enhancement/K production. Resume only on the recorded reachable native condition, relevant source change or capability change; do not repeat frozen routes, force delay/cache mutation, widen a queue, use197, resume paused K Goal, push or release.",
+                "build": {
+                  "recordedAt": "2026-10-07T07:45:25.851329+08:00",
+                  "hostHead": "e85e855a58f15e89ae504527750ad11b226a4ec3",
+                  "sourceSha256": {
+                    "entry/src/main/ets/pages/Index.ets": "5dac831fc9cf2172e7ee3d85a8014f8dfa941f264bbd19814207c4a572d2b02f",
+                    "entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets": "c478973be748697c22159ffd6fa2796f88a6b8af2d43d56b4bbfa1d272db3473",
+                    "feature/reader/src/main/ets/lab/NextNReaderLabPage.ets": "da853109233b245218fe34e7486cf21c39321930d56ea238cd3843810f6439e7",
+                    "shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets": "3c65c96789c4fd3d44e2b0480b9511e211a6fb60bdc37d9d29bd9856dd2dfa1e",
+                    "feature/gallery/src/main/ets/components/GalleryCompactPreviewTile.ets": "7748328a3aa5d930360661b54a7005f697e687d541d389f24fcc252256c150ce",
+                    "feature/gallery/src/main/ets/components/GalleryVirtualPageThumbnail.ets": "476c1655a4a91cab7cfa1be3f8c75d8487ea57c7676c02a621ef2d438e4dfa96"
+                  },
+                  "kitBase": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
+                  "geometryWip": "unchanged f715588a/ac0c8c90",
+                  "hap": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/n-debug-root-initial-intent.hap",
+                  "hapSha256": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
+                  "buildExit": 0,
+                  "buildLog": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/n-debug-root-initial-intent-build.log",
+                  "packageApp": {
+                    "iconId": 33554436,
+                    "minPatchAPIVersion": 0,
+                    "debug": true,
+                    "targetPatchAPIVersion": 0,
+                    "minMinorAPIVersion": 0,
+                    "minAPIVersion": 60100023,
+                    "icon": "$media:app_icon_layered",
+                    "buildMode": "debug",
+                    "label": "$string:app_name",
+                    "bundleType": "app",
+                    "versionName": "1.0.5",
+                    "versionCode": 7,
+                    "appEnvironments": [],
+                    "compileSdkType": "HarmonyOS",
+                    "labelId": 33554432,
+                    "targetAPIVersion": 260000026,
+                    "compileSdkVersion": "26.0.0.105",
+                    "vendor": "erosTeam",
+                    "bundleName": "com.erosteam.nextn",
+                    "apiReleaseType": "Release",
+                    "targetMinorAPIVersion": 0
+                  },
+                  "scope": "Existing six-source N Debug root correction plus five-line initial-intent parent seeding. Ordinary/E/K/Kit/Legacy/geometry WIP unchanged. Current build only; prior c09 no-thumbnail initial-hidden row rejected.",
+                  "sourceDecision": {
+                    "artifact": "n-debug-root-initial-intent-current-FullPreview-P38-decision",
+                    "bundle": "com.erosteam.nextn",
+                    "rootBounds": "[0,117][1320,2232]",
+                    "page38Bounds": "[475,807][845,1367]",
+                    "pageIndex": 37,
+                    "sourceId": "reader-thumb-all-thumbnails-3-page-37",
+                    "sourceTap": [
+                      660,
+                      1070
+                    ],
+                    "sourceBoundsCenter": [
+                      660,
+                      1087
+                    ]
+                  }
+                },
+                "currentResult": {
+                  "recordedAt": "2026-10-07T07:58:09.534245+08:00",
+                  "hapSha256": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
+                  "binding": "n-debug-root-initial-intent-binding.json",
+                  "sourceBinding": "Six committed/current SHA256 verified equal installed a895 signed build inputs; final current commit in n-debug-root-current-postcommit-binding.json. Geometry WIP remains separate and unaccepted.",
+                  "thumbnail": {
+                    "movie": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/host-recording/n-debug-root-initial-intent-thumbnail-whole.mov",
+                    "movieSha256": "d1780924d580d3d08c0778525031be1375c5c9fcc300bab3a7d1627091783a3f",
+                    "review": "all670 originals/all19 sheets; foreign cached0–2 excluded, current3–669; source/root/body/show-hide/hidden reverse/terminal inspected. Raw101–104/113–132/175–176/179/248–249/298–302/314–316 inspected.",
+                    "observed": "source3–101 retains dark bars; root enlargement starts102, no second internal zoom; retained proxy through122, sharp original123; white Reader icons176 before tools179; hidden249; retained body298–299/dark source icons and slight shrink300/reverse301–315/same FullPreviewP38 from316 through669. No whole-body gap after retained thumbnail. Current native moving07:46:28.033/waiting28.584/revealing28.596/finished28.738; observed_progress28.744; chrome29.773true/31.232false; hidden Back32.146/current target ready32.189/colors restored32.190.",
+                    "disposition": "NAMED ACCEPTANCE ONLY: cached single/LTR portrait explicit Debug normal root flight, retained proxy/original handoff, initial hidden intent, actual show/hide and hidden current-target reverse. Not ordinary default animation, all modes, uncached cancellation or FPS."
+                  },
+                  "noThumbnail": {
+                    "movie": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/host-recording/n-debug-root-initial-intent-no-thumbnail-whole.mov",
+                    "movieSha256": "0912038e08bf56c8683bdb7f0e29f65c6f93ca775cad41d892760b50183811fc",
+                    "review": "all671 originals/all19 sheets; foreign cached0 excluded, current1–670; raw77–78/81–83/103–104/109–110/207/209–210/285–286/332–333 inspected.",
+                    "observed": "source1–77; admitted black loader78–82/spinner83–103/progress104–109; original110. White status flash from prior c09 frame81 is absent throughout current first hidden loader/body. Backdrop remains through loading. White Reader icons207 before tools210; hidden286; body332/same FullPreviewP38 from333 through670. Current native onShown07:46:52.884/initial_policy52.905; observed_progress53.539; chrome55.657true/57.255false; hidden Back58.171/current root ready58.227/colors restored58.229.",
+                    "disposition": "NAMED ACCEPTANCE ONLY: explicit nonanimated Debug no-thumbnail hidden loading/body/show-hide/current-root Back. This is not ordinary system-animation acceptance or natural uncached same-request evidence."
+                  },
+                  "terminal": {
+                    "bundle": "com.erosteam.nextn",
+                    "rootBounds": "[0,117][1320,2232]",
+                    "sourceId": "reader-thumb-all-thumbnails-3-page-37",
+                    "tileBounds": "[475,807][845,1367]",
+                    "label": "38",
+                    "pageIndex": 37,
+                    "originalBackend": "Shared",
+                    "ordinaryProgress": "P38 retained; Debug route read/write flag false"
+                  },
+                  "cleanup": {
+                    "artifact": "n-debug-root-initial-intent-timeout-restored/run-metadata.json",
+                    "observedAt": "2026-10-07T07:47:40.705403+08:00",
+                    "result": "Checked AWAKE, ScreenOffTimeout30000 and OverrideTimeout30000; actual same FullPreviewP38 restored."
+                  },
+                  "protocol": "Both checked manifests completed; actual UI/state commands exit0. hilog_stop -15 is the bounded diagnostic cancellation, not a UI action failure. Original native timestamps and host frame indices are separate clocks, not a latency/FPS measurement.",
+                  "comparisonLimit": "Current tile y807 differs from rejected c09 y790; compare semantic same-page root/intent/loading behavior, never infer matched-geometry speed or fit improvement."
+                },
+                "initialIntentCorrection": {
+                  "recordedAt": "2026-10-07T07:44:02.656276+08:00",
+                  "state": "IMPLEMENTED and current same-HAP two-route original-frame review accepted narrowly; five-line parent seeding before existing open",
+                  "boundary": "Index.prepareReaderTrialWindow parent initial intent only, exposed both existing Debug entries; no owned/ordinary branch or shared library change",
+                  "counterexample": "current c09 no-thumbnail715b9c04 frame81 white status icons on admitted black loader; actual onShown08.960 opens default visible lease/light08.977 before initial_policy08.979. Source dark icons never prematurely changed, but declared hidden Reader continuity fails.",
+                  "sourceCause": "ReaderTrialWindow.desiredStatus defaults true; parent prepare opens baseline capture before onShown. N child syncChromeVisible forwards hidden only once ReaderSurface/initial session exists; no-thumbnail onShown admits before async session initialization. Parent and destination consume same desired intent but initial value is late. Existing setStatusBarVisible records synchronously before started and native enqueue rechecks admission.",
+                  "minimalChange": "Before lease.open, record !connectReaderPresentation().fullscreen via existing setStatusBarVisible with captured current request/epoch plus alive/close guards. No new state/queue/timer/refresh; source baseline still captures before admission, native writes still gated by parent root/entry/foreground/onShown. Current show gate remains white→actual visible area→layout→chrome.",
+                  "impact": "Direct no-thumbnail initial loader bars; indirect thumbnail initial admission and later show/hide/Back. Desired false already arrives before thumbnail finish, but preseed must not change source colors/area before its admission. No changes to session/ReaderSurface/rendering/nav/proxy/geometry/loading/cache/progress/menu. Ordinary embedded route never calls prepareReaderTrialWindow; standalone owns its own lease; E/K/common unchanged.",
+                  "acceptance": "Same original rows and sourceP38/root: source before departure retains dark bars, first admitted hidden body/loader has no white flash, same retained thumbnail/backdrop through loading; actual show/hide and hidden Back/current target/same source. One full no-thumbnail and one full thumbnail interval, all originals reviewed. Any white-before-hide, early source fullscreen/colors, image/backdrop gap, failed close rejects; no FPS/zero-top/general Window chronology claim.",
+                  "nextAction": "No currently reachable, source-proven further edit in this finite consistency lane. OPEN rows are natural same-request pending/late duplicate-progress/stale/early-moving/fallback (not emitted by bound cached samples), zero-top/landscape (actual emulator viewport unchanged), and separate deferred/user-held layout/enhancement/K production. Resume only on the recorded reachable native condition, relevant source change or capability change; do not repeat frozen routes, force delay/cache mutation, widen a queue, use197, resume paused K Goal, push or release.",
+                  "result": {
+                    "hapSha256": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
+                    "initialFlash": "Prior c09 frame81 rejected; current a895 full no-thumbnail interval has no white-before-hide flash.",
+                    "scope": "Existing desired intent holder and admitted native writer only; no new state/timer/writer/geometry/cache/menu."
+                  }
+                },
+                "rejectedInitialIntentResult": {
+                  "recordedAt": "2026-10-07T07:44:02.656276+08:00",
+                  "hapSha256": "c09ca630fde49a9bad6eb33f0a8cbbe4231dc35f6065daf1c8412d02d01c30ee",
+                  "thumbnail": {
+                    "movieSha256": "01983c8a9b14d230b87d3eaf08a0ac104eb2fe372da6400b8cee696c40f913e5",
+                    "review": "all669 originals/all19 sheets; cached0–1 excluded, current2–668 and raw126/127/140/141/142/184/188/258/308/309/310/323/324/325 inspected",
+                    "observed": "source2–126; root127+; retained proxy140–142; original body, icons184/tools188, hide258; body308/area309/reverse310–324; same FullPreviewP38 from325; current native moving02.501/waiting03.007/revealing03.020/finished03.161, chrome03.811true/05.281false, hidden Back06.195/close ready06.243/colors06.244",
+                    "disposition": "Named cached explicit Debug root flight/body/show-hide/hidden current-target Back observed; initial lease intent source now reopened by no-thumbnail counterexample, no full package acceptance"
+                  },
+                  "noThumbnail": {
+                    "movieSha256": "715b9c04f357e263d622b47e77ff7b2489f376851ad5d238536d225b5efc7f93",
+                    "review": "all671 originals/all19 sheets; cached0 excluded, current1–670; raw76–82/106/107/112/113/206/209/287/330/331/332 inspected",
+                    "observed": "source1–76; black initial77–78/spinner79–106; WHITE STATUS ICONS frame81, hidden82; progress107–112/original113; icons206/tools209,hide287/body330–331/sameFullPreviewP38 from332. Current onShown08.960/light08.977 precedes initial_policy08.979",
+                    "disposition": "REJECTED for initial hidden-status continuity. Loader black backdrop/body/show-hide/same-source Back independently observed, but do not compensate the icon flash or infer ordinary default system animation."
+                  },
+                  "terminal": {
+                    "bundle": "com.erosteam.nextn",
+                    "rootBounds": "[0,117][1320,2232]",
+                    "sourceId": "reader-thumb-all-thumbnails-3-page-37",
+                    "tileBounds": "[475,790][845,1350]",
+                    "label": "38"
+                  },
+                  "cleanup": "checked timeout30000 readback07:41:15; original Shared/P38 retained"
+                },
+                "rejectedInitialIntentBuild": {
+                  "recordedAt": "2026-10-07T07:30:21.613097+08:00",
+                  "hostHead": "e85e855a58f15e89ae504527750ad11b226a4ec3",
+                  "sourceSha256": {
+                    "entry/src/main/ets/pages/Index.ets": "7db9a293465fad196da840cf7170401d1f1c856a437012b414eb6eac3a0eee8c",
+                    "entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets": "c478973be748697c22159ffd6fa2796f88a6b8af2d43d56b4bbfa1d272db3473",
+                    "feature/reader/src/main/ets/lab/NextNReaderLabPage.ets": "da853109233b245218fe34e7486cf21c39321930d56ea238cd3843810f6439e7",
+                    "shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets": "3c65c96789c4fd3d44e2b0480b9511e211a6fb60bdc37d9d29bd9856dd2dfa1e",
+                    "feature/gallery/src/main/ets/components/GalleryCompactPreviewTile.ets": "7748328a3aa5d930360661b54a7005f697e687d541d389f24fcc252256c150ce",
+                    "feature/gallery/src/main/ets/components/GalleryVirtualPageThumbnail.ets": "476c1655a4a91cab7cfa1be3f8c75d8487ea57c7676c02a621ef2d438e4dfa96"
+                  },
+                  "kitBase": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
+                  "geometryWip": "unchanged f715588a/ac0c8c90",
+                  "hap": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/n-debug-root.hap",
+                  "hapSha256": "c09ca630fde49a9bad6eb33f0a8cbbe4231dc35f6065daf1c8412d02d01c30ee",
+                  "buildExit": 0,
+                  "buildLog": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/n-debug-root-build.log",
+                  "packageApp": {
+                    "iconId": 33554436,
+                    "minPatchAPIVersion": 0,
+                    "debug": true,
+                    "targetPatchAPIVersion": 0,
+                    "minMinorAPIVersion": 0,
+                    "minAPIVersion": 60100023,
+                    "icon": "$media:app_icon_layered",
+                    "buildMode": "debug",
+                    "label": "$string:app_name",
+                    "bundleType": "app",
+                    "versionName": "1.0.5",
+                    "versionCode": 7,
+                    "appEnvironments": [],
+                    "compileSdkType": "HarmonyOS",
+                    "labelId": 33554432,
+                    "targetAPIVersion": 260000026,
+                    "compileSdkVersion": "26.0.0.105",
+                    "vendor": "erosTeam",
+                    "bundleName": "com.erosteam.nextn",
+                    "apiReleaseType": "Release",
+                    "targetMinorAPIVersion": 0
+                  },
+                  "scope": "Six N app files only: explicit Debug reuses existing ordinary root flight, parent style and current close context; source/build only, no native acceptance yet."
+                },
+                "checkpoint": {
+                  "recordedAt": "2026-10-07T08:03:26.659266+08:00",
+                  "state": "SCOPED SOURCE CHECKPOINT; current commit and committed hashes in ignored postcommit receipt",
+                  "receipt": "n-debug-root-current-postcommit-binding.json",
+                  "hapSha256": "a89534c21dd1729f2a7d0aac64e5f12270940f71aa471f4c0aec1edcb1068baf",
+                  "sourceSha256": {
+                    "entry/src/main/ets/pages/Index.ets": "5dac831fc9cf2172e7ee3d85a8014f8dfa941f264bbd19814207c4a572d2b02f",
+                    "entry/src/main/ets/pages/NextNReaderEntryPreviewCapture.ets": "c478973be748697c22159ffd6fa2796f88a6b8af2d43d56b4bbfa1d272db3473",
+                    "feature/reader/src/main/ets/lab/NextNReaderLabPage.ets": "da853109233b245218fe34e7486cf21c39321930d56ea238cd3843810f6439e7",
+                    "shared/src/main/ets/navigation/ReaderTrialEntryRelay.ets": "3c65c96789c4fd3d44e2b0480b9511e211a6fb60bdc37d9d29bd9856dd2dfa1e",
+                    "feature/gallery/src/main/ets/components/GalleryCompactPreviewTile.ets": "7748328a3aa5d930360661b54a7005f697e687d541d389f24fcc252256c150ce",
+                    "feature/gallery/src/main/ets/components/GalleryVirtualPageThumbnail.ets": "476c1655a4a91cab7cfa1be3f8c75d8487ea57c7676c02a621ef2d438e4dfa96"
+                  },
+                  "scope": "Six N app source files plus existing work order/active acceptance/Reader UI row. No Kit/E/K code or unrelated K history record. Documentation amend changes no built source bytes.",
+                  "rebuildDisposition": "No rebuild for documentation-only checkpoint: six source hashes equal existing installed a895 signed HAP build inputs.",
+                  "uncommittedPreserved": "Unrelated K UI-ledger20 lines, geometry WIP f715588a/ac0c8c90 and untracked197 transport notes left intact; not silently included in this delivery."
+                }
               }
             }
           }
@@ -913,6 +1163,40 @@
         "recordedSeconds": 0,
         "activeSince": null,
         "note": "No independently recorded effort intervals for this existing row; zero is recorded time only, not total actual time."
+      },
+      "remainingEvidenceConditions": {
+        "recordedAt": "2026-10-07T08:00:45.423291+08:00",
+        "scope": "Original five acceptance rows and existing pending/stale/geometry limits only; no new feature/audit/test queue.",
+        "currentActionableDefect": "N duplicate explicit Debug entry owner and default-visible initial parent intent now source corrected; complete two-route current HAP intervals have no remaining counterexample in the declared cached portrait source/body/chrome/hidden-return boundary.",
+        "conditions": [
+          {
+            "boundary": "Natural same-request pending cancellation",
+            "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready.",
+            "disposition": "UNACCEPTED native condition; no source-proven further change. Forced delay/cache mutation/timing sweep forbidden."
+          },
+          {
+            "boundary": "Late canonical displayed observation with duplicate persisted page",
+            "currentEvidence": "Current readiness bridge is separate from progress-write deduplication; native late-after-cancel/same-page branch was not emitted in retained samples. Existing callback/terminal lifetime source review found no concrete blocker.",
+            "disposition": "UNACCEPTED native condition; not an additional implementation candidate without actual counter-evidence."
+          },
+          {
+            "boundary": "Stale/background/early-moving/fallback variants",
+            "currentEvidence": "Current request/epoch/foreground/source guards and close fences are source-mapped; E early layout Back has prior named evidence, not these variants. Current declared two Debug intervals settle normally or cancelled with body; those variants were not hit.",
+            "disposition": "SOURCE ONLY for these variants; do not relabel as runtime accepted or extend existing protocol through repeated timing guesses."
+          },
+          {
+            "boundary": "Zero-top/landscape and all-layout/FPS/full replacement",
+            "currentEvidence": "Current emulator input left actual1320x2232 viewport unchanged, so it cannot establish zero-top/landscape. Recorded host frames/native events are different clocks. No performance superiority or all-layout proof is available.",
+            "disposition": "CAPABILITY/EVIDENCE LIMIT; real-device197 remains excluded by user, no repeated transport/rotation attempts."
+          },
+          {
+            "boundary": "Layout-switch short black / system enhancement / Koma folder production",
+            "currentEvidence": "Existing separate dispositions: Shared and Legacy both short-black; API26 cross-parent reuse has no bounded safe candidate; enhancement skipped by user after unavailable guest service; folder moved to paused independent K production.",
+            "disposition": "DEFERRED or USER HOLD unchanged; not this consistency capability queue."
+          }
+        ],
+        "nextEvidenceGate": "Only a reachable native reproduction/appropriate capability or relevant changed source may reopen one of these exact existing rows. Re-run mandatory preflight/lease/protocol then, and declare that bounded route before any edit/validation. No user manual-device handoff is required now.",
+        "finiteCheckpoint": "Current declared N Debug thumbnail/no-thumbnail capability is ready for scoped source+record commit; whole Reader replacement remains OPEN."
       }
     },
     {
@@ -1384,18 +1668,18 @@
   },
   "closure": {
     "closedAt": "2026-10-05T16:55:55+08:00",
-    "kind": "reopened-entry-verification",
+    "kind": "named-entry-checkpoint-open-boundaries",
     "authority": "2026-10-06用户要求继续核验全部已报告问题，禁止未完成即结束",
     "fullReplacementAchieved": false,
     "performanceSuperiorityProven": false,
-    "currentDelivery": "K原标题叶复用及页码/章节只读同源已按原五行接受；全Reader原未接受分支保留。",
+    "currentDelivery": "Current E scoped f593 and current N six-source explicit Debug root/initial-intent/close adapter correction committed; complete named thumbnail/no-thumbnail receipts reviewed. Whole replacement/performance/unhit/deferred outcomes not achieved.",
     "deferredOutcomesRemainUnresolved": true,
     "readerSpecificWorkActive": true,
     "bindingReceipt": "package5-finite-handoff-binding.json",
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
-    "latestFiniteCheckpointAt": "2026-10-06T22:45:13.523679+08:00",
-    "currentBindingReceipt": "koma-title-current-acceptance-receipt.json",
-    "currentRestorationReceipt": "koma-title-r4-chapters-direct-reentry-root/run-metadata.json",
+    "latestFiniteCheckpointAt": "2026-10-07T08:03:26.659266+08:00",
+    "currentBindingReceipt": "reader-status-intent-latest-receipt.json",
+    "currentRestorationReceipt": "n-debug-root-initial-intent-timeout-restored/run-metadata.json",
     "reopenedAt": "2026-10-06T17:42:20.819259+08:00"
   },
   "currentEntryReceipts": {
@@ -1410,7 +1694,8 @@
       "nextn-tap-zone-current-review.json",
       "nexte-tap-zone-current-review.json"
     ],
-    "komaPerBook": "koma-per-book-current-acceptance-receipt.json"
+    "komaPerBook": "koma-per-book-current-acceptance-receipt.json",
+    "statusIntent": "reader-status-intent-latest-receipt.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {

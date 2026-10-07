@@ -1,3 +1,5 @@
+import { NhGalleryPage } from '../model/NhGallery'
+
 /** Click-time thumbnail facts for the optional Debug reader host, without reader-kit types. */
 export class ReaderTrialEntrySource {
   galleryId: number
@@ -7,6 +9,8 @@ export class ReaderTrialEntrySource {
   origin: 'detail' | 'grid'
   thumbnailUrl: string
   thumbnailResourceId: string
+  /** Existing native page fact; never re-fetch or fabricate it during entry. */
+  readonly page: NhGalleryPage
   /** Zero means unknown. Never substitute full-page or unverified DTO dimensions. */
   decodedWidth: number = 0
   decodedHeight: number = 0
@@ -16,13 +20,14 @@ export class ReaderTrialEntrySource {
   isCurrent: () => boolean = (): boolean => false
 
   constructor(galleryId: number, pageIndex: number, sourceComponentId: string,
-    snapshotComponentId: string, origin: 'detail' | 'grid', thumbnailUrl: string) {
+    snapshotComponentId: string, origin: 'detail' | 'grid', thumbnailUrl: string, page: NhGalleryPage) {
     this.galleryId = galleryId
     this.pageIndex = pageIndex
     this.sourceComponentId = sourceComponentId
     this.snapshotComponentId = snapshotComponentId
     this.origin = origin
     this.thumbnailUrl = thumbnailUrl
+    this.page = page.copy()
     this.thumbnailResourceId = `${galleryId}:${pageIndex}:${thumbnailUrl}`
     this.objectFit = origin === 'detail' ? 'cover' : 'contain'
   }
@@ -37,7 +42,7 @@ export class ReaderTrialEntrySource {
 
 /**
  * Installed only by the Debug host. Normal entries have no handler and retain their old route.
- * A true return claims the entry synchronously; the host then owns async capture or trial fallback.
+ * A true return claims the entry synchronously; the host then owns the existing root bridge or trial fallback.
  * False leaves the production entry available. A successful claim consumes only its own token.
  */
 export class ReaderTrialEntryRelay {

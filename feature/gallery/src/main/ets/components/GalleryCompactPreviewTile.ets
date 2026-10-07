@@ -96,7 +96,7 @@ export struct GalleryCompactPreviewTile {
         const snapshotId = ReaderThumbnailTransitionCoordinator.sourceSnapshotId(sourceId)
         const thumbnailUrl = this.page.thumbnailUrl
         const mountEpoch = this.sourceMountEpoch
-        const source = new ReaderTrialEntrySource(galleryId, pageIndex, sourceId, snapshotId, 'detail', thumbnailUrl)
+        const source = new ReaderTrialEntrySource(galleryId, pageIndex, sourceId, snapshotId, 'detail', thumbnailUrl, this.page)
         source.isCurrent = (): boolean => this.sourceMounted && this.sourceMountEpoch === mountEpoch &&
           this.galleryId === galleryId && this.pageIndex === pageIndex && this.page.number === pageNumber &&
           sourceId.length > 0 && this.transitionSourceId === sourceId &&
