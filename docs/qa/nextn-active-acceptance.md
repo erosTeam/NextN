@@ -16,12 +16,14 @@
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。
 两文件共同 geometry WIP 未提交且原字节保留；不存在全量替换或性能超越的接受结论。
 
-本次 material physical result（2026-10-07）：只执行 E 当前源发现协议，没有点击 Reader 入场。
-当前 E Detail4203217/root `[0,117][1320,2232]`，源 page2 tile `[673,578][947,964]` 仅对发现时刻有效。
-随后 checked cleanup 冷启退役已武装 Debug 请求，15:04:48+08 读回 AWAKE、ScreenOffTimeout/
-OverrideTimeout=30000，租约已释放。产物位于 ignored `.hvigor/outputs/reader-entry-statusbar-20261006/`
-下 `emulator__PHEMU-FD00/not-applicable/portrait-1320x2232/e-normal-finished-recovery-source/` 与
-`e-recovery-document-hold-cleanup/`。此结果不接受新的 Reader 完整入场。
+本次 material physical result（2026-10-07 15:31+08）：文档前置提交后，实际恢复一次 E P3
+入场→显栏→藏栏→隐藏后 Back，并连续录屏 `bc286415`。原生 id1 在 moving 后取消，
+没有 finished，故 normal-finished 行仍未接受；整段联排及精确原始像素等价已审阅，不新增正常完成分支通过。
+同 HAP/九份源码 SHA 已核对；原 Detail4203217/root `[0,117][1320,2232]`、ContinueP3 保留。
+15:31:22.994 checked postflight 读回 AWAKE、两种 timeout=30000、keepScreenOn=false 已恢复，
+租约随后正常释放。产物位于 ignored `.hvigor/outputs/reader-entry-statusbar-20261006/`，
+`e-post-controls-normal-entry-result.json` 记录原 MOV/日志/协议、取消调用点未记录及审阅限制。
+未改等待、缓存或产品；不能把这次命令执行成功推广为正常完成、所有入场或性能通过。
 
 ## 非 Reader 遗留边界（不自动启动）
 

@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T15:26:50+08:00",
+  "updatedAt": "2026-10-07T15:47:25+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 执行约束已整理；恢复既有 E 未验收动作",
+  "state": "OPEN · 文档约束已收口；已恢复既有 E 操作，normal-finished 未命中",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "按整理后的约束恢复既有 E 正常入场边界",
-    "detail": "文档前置已完成，仅恢复先前遗漏的 normal-finished 完整显隐/隐藏后返回行；没有新产品修改或更广验收结论。",
-    "startedAt": "2026-10-07T15:26:50+08:00"
+    "title": "完成文档范围提交，恢复已有同源再入行",
+    "detail": "冷启完整操作已留证且整段审阅；正常完成分支仍未命中。只恢复一次已有同进程缓存再入前提，不改代码、等待或缓存。",
+    "startedAt": "2026-10-07T15:47:25+08:00"
   },
-  "nextAction": "Resolve the existing unaccepted NextE normal-finished thumbnail-entry row from current source ownership/cancellation conditions and current HAP binding. If the existing ordinary route supports it, execute one complete checked current-HAP entry/chrome/hidden-Back interval; no code edit without a source-proven defect, no timing sweep or frozen route replay. User-held enhancement, deferred layout work and paused independent K production remain excluded.",
+  "nextAction": "One natural same-process P3 re-entry after the just-completed E read, using current source discovery and unchanged current HAP. Do not cold-restart, change cache, waits or guards; native image-cache reuse can precede initial canonical target measurement. Record one complete entry/show/hide/hidden-Back interval and accept normal-finished only if the actual finished event is emitted. If moving cancellation recurs, stop replaying this route and retain its specific unaccepted target prerequisite. Other user holds remain.",
   "hosts": [
     {
       "name": "NextN",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "N/E 实现选择单 value、点按区域提示；K 按书设置与标题；共同窗口意图/取消后原图交接及 N/E 根转场接入已有命名证据。只接受各 receipt 的版本/路径，不能推广到全量替换。E 正常完成入场完整 chrome/hidden-Back 行尚未接受。当前先按用户要求整理执行文档，Reader OPEN。",
-      "action": "Resolve the existing unaccepted NextE normal-finished thumbnail-entry row from current source ownership/cancellation conditions and current HAP binding. If the existing ordinary route supports it, execute one complete checked current-HAP entry/chrome/hidden-Back interval; no code edit without a source-proven defect, no timing sweep or frozen route replay. User-held enhancement, deferred layout work and paused independent K production remain excluded.",
+      "detail": "执行约束整理完成，原有限修复证据沿用。已实际恢复一次 E 当前 P3 入场/显隐/隐藏后返回操作；仅 moving-cancelled，不接受 normal-finished 行。",
+      "action": "One natural same-process P3 re-entry after the just-completed E read, using current source discovery and unchanged current HAP. Do not cold-restart, change cache, waits or guards; native image-cache reuse can precede initial canonical target measurement. Record one complete entry/show/hide/hidden-Back interval and accept normal-finished only if the actual finished event is emitted. If moving cancellation recurs, stop replaying this route and retain its specific unaccepted target prerequisite. Other user holds remain.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -235,6 +235,18 @@
           "resumeAction": "Resolve the existing unaccepted NextE normal-finished thumbnail-entry row from current source ownership/cancellation conditions and current HAP binding. If the existing ordinary route supports it, execute one complete checked current-HAP entry/chrome/hidden-Back interval; no code edit without a source-proven defect, no timing sweep or frozen route replay. User-held enhancement, deferred layout work and paused independent K production remain excluded.",
           "state": "PREREQUISITE COMPLETE",
           "releasedAt": "2026-10-07T15:26:50+08:00"
+        },
+        "latestResult": {
+          "recordedAt": "2026-10-07T15:47:25+08:00",
+          "receipt": "e-post-controls-normal-entry-result.json",
+          "sourceGate": "e-post-controls-normal-entry-source.json",
+          "wholeManifest": "e-post-controls-normal-entry-whole.json",
+          "actualResult": "One current-binding continuous interval after completed prerequisite; moving-cancelled, normal-finished UNHIT, no acceptance promotion. Source cancellation reasons not logged; no speculative patch/replay."
+        },
+        "sourceDisposition": {
+          "currentPhaseOnlyReason": "No current caller log; existing guards preserved. Prior diagnostic maps preview-to-original metadata refinement at unchanged root, not evidence of current Window resize.",
+          "review": "Current bc286415 full interval through exact RGB first-frame coverage; same cancelled-entry bounded behavior observed.",
+          "distinctRemainingAction": "Natural same-process just-presented URI re-entry, once; no cold restart or mutation. Stop repeats if target still cancels."
         }
       }
     },
@@ -673,7 +685,7 @@
     "currentBindingReceipt": "reader-status-intent-latest-receipt.json",
     "currentRestorationReceipt": "n-debug-root-initial-intent-timeout-restored/run-metadata.json",
     "readerSpecificWorkActive": true,
-    "state": "OPEN — 文档前置中的 Reader 结果仍未关闭"
+    "state": "OPEN — 文档前置完成并已恢复原动作；正常完成分支未接受"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
@@ -688,7 +700,8 @@
       "nexte-tap-zone-current-review.json"
     ],
     "komaPerBook": "koma-per-book-current-acceptance-receipt.json",
-    "statusIntent": "reader-status-intent-latest-receipt.json"
+    "statusIntent": "reader-status-intent-latest-receipt.json",
+    "postControlsRun": "e-post-controls-normal-entry-result.json"
   },
   "activeId": "reader-validation-strategy",
   "interruptionRecovery": {
@@ -707,7 +720,7 @@
   },
   "controlCleanup": {
     "state": "COMPLETE — 文档/链接/归档/进度数据已核对，范围提交记录如下",
-    "scope": "Three current host instruction entrypoints/guides, shared Kit contract, current work-order/QA entry, device protocol routing and existing automation. No product source/geometry/menu/default change.",
+    "scope": "Three current host instruction entrypoints/guides, shared Kit contract, current work-order/QA entry, device protocol routing and existing automation. No product source/geometry/menu/default change. Existing UI/transition ledgers qualified as historical evidence; paused K production entry separated.",
     "dispositions": [
       {
         "finding": "5043-line work order combines active JSON, nested old nextAction and multiple old current-package headings",
@@ -736,27 +749,37 @@
       {
         "finding": "E product guide chooses a minimum count of three states",
         "action": "Replace count threshold with pre-edit behavior/impact-derived expected/failure conditions for every exposed row"
+      },
+      {
+        "finding": "N UI ledger begins with stale September current defaults/queue; E transition ledger has old current heading and unconditional repeat matrix; K production index can be mistaken for Reader dispatch",
+        "action": "Qualify historical statements at existing entrypoints, replace unconditional replay with change/impact-derived reopening, make paused production lane routing explicit. Preserve all original redlines and unrelated WIP."
       }
     ],
     "excluded": "Do not edit /Users/honjow/git/Koma primary WIP, global skills or memory registry; no new agents/tests/guards, no paused K production resume, push or release.",
     "completion": "Review exact document diff; confirm archives, links, current queue and dashboard schema; commit only this scope. This is document acceptance, never Reader runtime acceptance.",
-    "verifiedAt": "2026-10-07T15:26:50+08:00",
+    "verifiedAt": "2026-10-07T15:52:13+08:00",
     "checkpoints": {
       "kit": "fca2b2267a2aa6ee5863100f5962424cc34e547e",
       "NextE": "2581eb5f126bebd273db6e390ee69cd9065b03d2",
       "Koma": "6a4e462c626971e0e2bef5de69833ab90db64bcb",
-      "NextN": "This scoped documentation checkpoint"
+      "NextN": "afd2b8e1"
     },
-    "verification": "Archive bytes/SHA and preserved non-Reader limitations; all changed document references resolve; live 8765 API reflects sole current action and three identical doc-only Kit heads. Exact scoped diff reviewed; original geometry WIP hashes unchanged."
+    "verification": "Archive bytes/SHA and preserved non-Reader limitations; all changed document references resolve; live 8765 API reflects sole current action and three identical doc-only Kit heads. Exact scoped diff reviewed; original geometry WIP hashes unchanged. Residual ledger entrypoints reviewed separately; latest checked E material result replaces obsolete source-only physical state.",
+    "ledgerCheckpoint": {
+      "NextE": "8ba6a39dbbd4f52ce0d0fb719b609e7d1f55e772",
+      "Koma": "8dba4b88d2df1488db0d40d6a95eb0ac8cfb9a6b",
+      "NextN": "This scoped ledger/QA checkpoint"
+    }
   },
   "currentPhysicalState": {
-    "observedAt": "2026-10-07T15:04:48+08:00",
+    "observedAt": "2026-10-07T15:31:22.994+08:00",
     "target": "127.0.0.1:5555",
-    "app": "NextE ordinary Detail4203217; Reader entry not executed this run",
+    "app": "NextE Detail4203217 after Reader hidden-area Back",
     "root": "[0,117][1320,2232]",
-    "sourceTile": "page2 [673,578][947,964] at discovery only; old coordinates not reused",
-    "cleanup": "Armed Debug request retired by checked cold restart; AWAKE, ScreenOffTimeout/OverrideTimeout30000 restored; lease released. No new whole-entry acceptance.",
-    "evidenceRoot": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/emulator__PHEMU-FD00/not-applicable/portrait-1320x2232"
+    "sourceTile": "page2 [673,745][947,1131] / ContinueP3; discovery/current interval only",
+    "cleanup": "AWAKE; ScreenOffTimeout and OverrideTimeout30000 restored, keepScreenOn=false restored, lease released without force. No normal-finished acceptance.",
+    "evidenceRoot": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/emulator__PHEMU-FD00/not-applicable/portrait-1320x2232",
+    "receipt": "e-post-controls-normal-entry-result.json"
   }
 }
 -->
@@ -783,9 +806,11 @@ E 当前 accepted 的缩略图样本是 moving-cancelled，不能接受正常完
 这项已有义务不能被“没有源码可修”排除。自然 pending、late-progress、stale/fallback、
 zero-top/landscape 另保留各自实测前提；不能强延迟、改缓存或扫描输入时长造出命中。
 
-本次只完成 E 源入口发现；没有点击 Reader 缩略图、没有新的入场录像。用户切换到文档前置后
-通过 checked cleanup 退役已武装的 Debug 状态、恢复 30 秒超时并释放租约（15:04:48+08）。
-完整原 manifest/run metadata/source layout/cleanup 保留于快照的 currentPhysicalState 路径。
+文档前置提交后已实际恢复一次 E P3 完整动作并录屏（`bc286415`）：moving16.573、
+取消16.656、显栏18.399、藏栏19.462、Back20.096；close-layout-ready20.153早于
+恢复系统色20.154。仍未命中正常完成分支；整段已按原始联排与精确像素等价审阅，仍不能把取消分支算成正常完成通过。
+原 HAP/九份源码 SHA 相同，未改缓存、等待参数或产品代码；ContinueP3、30 秒超时
+及 keepScreenOn 已恢复，租约正常释放。完整产物与审阅限制见 currentPhysicalState/currentEntryReceipts。
 
 ## 验收方法
 
@@ -827,5 +852,6 @@ zero-top/landscape 另保留各自实测前提；不能强延迟、改缓存或�
 
 快照 controlCleanup 列出发现及处理，不另建长期事故/dispatch 账本。旧 Koma 主目录保留全部 WIP，
 全球技能与账号 S0–S6 协议不改。原用户红线/拒绝方案保留；旧重写阶段的调度步骤不是当前路径。
-本轮只做文档一致性、链接/归档/进度页校验；不是 Reader 重新验收，不推送、不发版。
+本轮前置只做文档一致性、链接/归档/进度页校验；完成后恢复一次既有 E 未验收动作。
+文档整理不接受 Reader 功能；该次取消分支也不接受正常完成行。不推送、不发版。
 自动恢复仍每15分钟，遵守此处的最新前置，不以 429 日志作为唯一继续条件。
