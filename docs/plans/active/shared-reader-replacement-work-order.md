@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T21:09:31.910970+08:00",
+  "updatedAt": "2026-10-07T21:49:49.341537+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · N后台身份修正已提交；E自然在线交接命名路径留证",
+  "state": "OPEN · E/N真实在线加载命名区间已留证；用户恢复197，接续实机边界",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
-  "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
+  "target": "197 · live IP192.168.50.197:12345 Connected; ALN-AL80 current viewport/installed identity gate underway",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "NextN对应在线加载路径",
-    "detail": "E ordinaryP87 actualcachemiss/network47%→100%, thumbnail+darkpanel continuous and samepageoriginal/Back fully reviewed581unique/17contacts; native waiting cancellation aftertransportcomplete, not fulltuplependingcancel. OriginalP3 restored. N953d correction2bfb remains bound.",
-    "startedAt": "2026-10-07T21:09:31.910970+08:00"
+    "title": "197恢复与NextN未验收后台边界",
+    "detail": "Nrelated682531P7 cacheabsent before/20315stored after, all928frames/570unique/16contacts reviewed; loading panel through237, samepageoriginal from238. Original663205Continue38 restored. User restored197; automation target updated and checked fresh identity gate running.",
+    "startedAt": "2026-10-07T21:49:49.341537+08:00"
   },
-  "nextAction": "NextN ordinary Gallery663205 source gate and current FullGrid navigation to one existing low page outside previously readP26–40/P1; one declared thumbnail/fast-swipe/Back interval. Use current953d binding, native cache/source evidence and fullmovie review; restoreoriginalP38. No cache mutations/timing sweep/frozen controls replay.",
+  "nextAction": "Finish fresh197 IP wake/timeout/native installed-identity gate already running; bind current953d N package before a single existing ordinary uncached-entry early-background/plain-foreground/Back boundary. Establish current197 source/cache anchors and preserve its original page/settings. No emulator cached replay, cache mutations, timing sweep or production K work.",
   "hosts": [
     {
       "name": "NextN",
@@ -28,8 +28,8 @@
       "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion.",
-      "remaining": "Natural same-request/late duplicate-progress/stale native branches unhit; zero-system-top/landscape capability unaccepted; explicit Debug cached portrait named acceptance only; Shared-and-Legacy mode gap deferred; all-layout/FPS/full replacement unproven.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes.",
+      "remaining": "Natural ordinary N682531P7 uncached loading/retained image/panel/Back accepted only for this emulator interval. Pending original acquisition across early background/foreground still unaccepted. Other exacttuple late/duplicate/stale/zero-top/spread/FPS/fullreplacement limits unchanged; current197 bindings pending.",
       "appHead": "2bfb6328fa759a1c4fa547734d3365be9dfea85d",
       "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "appHeadLayer": "All eight committed product source blobs match installed953d build binding; scoped two-file correction2bfb6328, unrelated work preserved.",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "E ordinaryP87 actualcachemiss/network47%→100%, thumbnail+darkpanel continuous and samepageoriginal/Back fully reviewed581unique/17contacts; native waiting cancellation aftertransportcomplete, not fulltuplependingcancel. OriginalP3 restored. N953d correction2bfb remains bound.",
-      "action": "NextN ordinary Gallery663205 source gate and current FullGrid navigation to one existing low page outside previously readP26–40/P1; one declared thumbnail/fast-swipe/Back interval. Use current953d binding, native cache/source evidence and fullmovie review; restoreoriginalP38. No cache mutations/timing sweep/frozen controls replay.",
+      "detail": "E ordinaryP87 selectednetwork47%→100% retainedthumbnail/darkpanel and samepageoriginal/sameGrid-DetailBack accepted17contacts. N ordinaryrelated682531P7 genuineabsent-before/stored-after, loading/preparingpanel through237, samepageoriginal238, normalBacksameGrid/Detail and original663205Continue38 restore accepted16contacts. Named intervals only; pendingacquisition across background still open.",
+      "action": "Follow the unique top-level nextAction. User restored physical197; do not replay emulator accepted intervals.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -1013,6 +1013,11 @@
       "id": "koma-real-library-restore",
       "label": "Koma真实网络链后书架恢复终态",
       "path": "emulator__PHEMU-FD00/not-applicable/portrait-1320x2232/koma-terra-restore-original-library/screen.png"
+    },
+    {
+      "id": "nextn-online-P7-20261007",
+      "label": "NextN真实在线P7入场/加载/原图交接及返回回执",
+      "path": "n-online-handoff-related682531-P7-acceptance-receipt-20261007.json"
     }
   ],
   "evidenceNote": "录像和绑定文件保留在本地忽略目录。链接对应已明确登记的产物；未经审阅的录像不会自动变成通过结论。",
@@ -1131,6 +1136,24 @@
     "timeout": "30000 restored",
     "lease": "20261007-085223-29be839d valid",
     "nextUnverified": "NextN ordinary Gallery663205 source gate and current FullGrid navigation to one existing low page outside previously readP26–40/P1; one declared thumbnail/fast-swipe/Back interval. Use current953d binding, native cache/source evidence and fullmovie review; restoreoriginalP38. No cache mutations/timing sweep/frozen controls replay."
+  },
+  "nextNOnlineHandoffObservation": {
+    "recordedAt": "2026-10-07T21:26:53.512282+08:00",
+    "receipt": ".hvigor/outputs/reader-entry-statusbar-20261006/n-online-handoff-related682531-P7-acceptance-receipt-20261007.json",
+    "disposition": "Selectedrelated682531P7 native source6/key8affab0-c2d93fc0 absent in positive47entrylist, new20315bytes after. All928decoded/570unique/16contacts reviewed; actualpanel237, absent238 withsamepageoriginal. EarlierP8cachepresent rejection retained; original663205Continue38 restored.",
+    "nextAction": "Use only top-level nextAction; no independent dispatch from this evidence record.",
+    "state": "named ordinary P7 loading accepted; P8 retained as invalid network prerequisite"
+  },
+  "deviceRecoveryObservation": {
+    "recordedAt": "2026-10-07T21:52:07.564994+08:00",
+    "humanInstruction": "197 connection restored; resume physical197",
+    "target": "192.168.50.197:12345",
+    "lease": "20261007-134617-46d9f948",
+    "actual": "Connected/IP echo; checked wake then current ScreenLockRootComponent, accepted centralneutralunlock to desktop; AWAKE/86400000 override; ALN-AL80/portrait1260x2720",
+    "installedIdentity": "NextN1.0.5/v7; currentinstalledHAPpublicdirectory permissiondenied; not953d binding",
+    "preservation": "Originalscreen timeout120000ms, highperformance untouched; noappinstall/navigation before originalstate gate",
+    "automation": "ACTIVE15min sameid; prompttarget updated to197, no duplicate; all scope limits retained",
+    "nextUnverified": "Use top-level nextAction only"
   }
 }
 -->
