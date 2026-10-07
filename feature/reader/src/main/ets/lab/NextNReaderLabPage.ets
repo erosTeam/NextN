@@ -498,6 +498,16 @@ export struct NextNReaderLabPage {
     'externalRouteActive', 'routeActive')
   private syncRootOwnedEntryTarget(): void {
     const entry = this.entryTransition
+    if (this.rootOwnedEntryTarget && entry !== null) {
+      const state = this.session?.snapshot()
+      const frame = state?.frames.find((value): boolean => entry.matches(value.part))
+      console.info(`[NextNReaderEntry] handoff id=${entry.entryId} phase=${entry.phase} ` +
+        `root=${this.readerThumbnailTransition.phase} foreground=${this.labVisibility.foreground} ` +
+        `active=${this.hostRouteActive()} selected=${state?.selectionId ?? -1} ` +
+        `slot=${frame?.slotId ?? -1} request=${frame?.asset.requestId ?? -1} ` +
+        `asset=${frame?.asset.assetRequestId ?? -1} assetPhase=${frame?.asset.phase ?? 'none'} ` +
+        `observed=${state?.observedSelectionId ?? -1}`)
+    }
     if (!this.labVisibility.foreground || !this.rootOwnedEntryTarget || entry === null || !this.hostRouteActive() ||
       this.closeRequested || this.hostClosing) {
       return
@@ -1193,6 +1203,13 @@ export struct NextNReaderLabPage {
                 (policy, intent): void => { this.persistRuntimePolicy(policy, intent) },
                 (enabled, policy): void => { this.persistCrop(enabled, policy) }),
               entryTransition: this.entryTransition,
+              onAssetPresented: (slot: number, request: number, success: boolean, width: number, height: number): void => {
+                if (!this.rootOwnedEntryTarget || this.entryTransition === null) return
+                console.info(`[NextNReaderEntry] presented id=${this.entryTransition.entryId} ` +
+                  `slot=${slot} asset=${request} success=${success} size=${width}x${height} ` +
+                  `phase=${this.entryTransition.phase} foreground=${this.labVisibility.foreground} ` +
+                  `active=${this.hostRouteActive()}`)
+              },
               // The root proxy and the Reader-owned opening placeholder keep the selected image
               // visible until the state machine starts its image handoff.  Do not expose the
               // live pager (or its decode feedback) merely because the root route mounted.

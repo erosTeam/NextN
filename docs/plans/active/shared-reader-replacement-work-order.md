@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T21:49:49.341537+08:00",
+  "updatedAt": "2026-10-07T22:22:15.136967+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · E/N真实在线加载命名区间已留证；用户恢复197，接续实机边界",
+  "state": "OPEN · 197实际moving后台取消后前台准备底板不退出，未通过",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
-  "target": "197 · live IP192.168.50.197:12345 Connected; ALN-AL80 current viewport/installed identity gate underway",
+  "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "197恢复与NextN未验收后台边界",
-    "detail": "Nrelated682531P7 cacheabsent before/20315stored after, all928frames/570unique/16contacts reviewed; loading panel through237, samepageoriginal from238. Original663205Continue38 restored. User restored197; automation target updated and checked fresh identity gate running.",
-    "startedAt": "2026-10-07T21:49:49.341537+08:00"
+    "title": "197 NextN后台准备底板滞留因果调查",
+    "detail": "Preparing panel remains over retained P7 after foreground through frame215; first Back216-234 carries panel onto source tile; second Back246-276 ends Detail7pages Read without Continue7. Original presentation/progress not accepted.",
+    "startedAt": "2026-10-07T22:22:15.136967+08:00"
   },
-  "nextAction": "Finish fresh197 IP wake/timeout/native installed-identity gate already running; bind current953d N package before a single existing ordinary uncached-entry early-background/plain-foreground/Back boundary. Establish current197 source/cache anchors and preserve its original page/settings. No emulator cached replay, cache mutations, timing sweep or production K work.",
+  "nextAction": "Trace current Reader asset/display versus root proxy phase at foreground; isolate source-proven cause before edit. No cache deletion/delay/timing sweep.",
   "hosts": [
     {
       "name": "NextN",
@@ -25,11 +25,11 @@
       "kit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "hap": "953dca650b5e7d0908de7b641064ebe4ab8a0f4f306e517562a0c23fa3a66e00",
       "build": "Two-file background entry ownership correction; Node26 native build failed255; bundled DevEcoNode24 signed build0. Newly packages alreadycommitted Kitdfdd; geometry WIP unchanged, not accepted.",
-      "install": "Checked positive install and native identity observed; named current HAP; no data clear.",
+      "install": "197 checked positive953d install; source8 hashes bound, no uninstall/data clear. Public installedHAP hash denied; no installedbytes claim.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes.",
-      "remaining": "Natural ordinary N682531P7 uncached loading/retained image/panel/Back accepted only for this emulator interval. Pending original acquisition across early background/foreground still unaccepted. Other exacttuple late/duplicate/stale/zero-top/spread/FPS/fullreplacement limits unchanged; current197 bindings pending.",
+      "remaining": "197 moving Home cancellation before native stored is now observed, but foreground preparing panel persists and progress is not accepted; diagnose original presentation versus root proxy before correction. Prior other limits unchanged.",
       "appHead": "2bfb6328fa759a1c4fa547734d3365be9dfea85d",
       "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
       "appHeadLayer": "All eight committed product source blobs match installed953d build binding; scoped two-file correction2bfb6328, unrelated work preserved.",
@@ -1154,6 +1154,38 @@
     "preservation": "Originalscreen timeout120000ms, highperformance untouched; noappinstall/navigation before originalstate gate",
     "automation": "ACTIVE15min sameid; prompttarget updated to197, no duplicate; all scope limits retained",
     "nextUnverified": "Use top-level nextAction only"
+  },
+  "device197PendingBackgroundReceipt": {
+    "recordedAt": "2026-10-07T22:22:15.136967+08:00",
+    "disposition": "REJECTED pending-acquisition foreground result; cause not yet established",
+    "target": "192.168.50.197:12345",
+    "device": "ALN-AL80/API26/portrait1260x2720",
+    "hapSha256": "953dca650b5e7d0908de7b641064ebe4ab8a0f4f306e517562a0c23fa3a66e00",
+    "binding": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/device197-nextn-current-background-binding-20261007.json",
+    "route": "ordinary682531P7 FullGrid tap; immediate Home; plain sameAbility foreground; Back Grid; Back Detail",
+    "native": [
+      "22:09:54.734 entry1 moving source6",
+      "22:09:54.909 cancelled_from=moving",
+      "22:09:55.668 stored20315bytes while Home",
+      "22:09:55.720 adjacent stored18420bytes"
+    ],
+    "movie": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-nextn-background-recording-export-20261007/device197-nextn-P7-home-foreground-20261007.mp4",
+    "movieSha256": "1fe9859733c313c8c4c5b3b13c128baea92bf3d5fe1fa0ab8eda016471c6e41e",
+    "decodedFrames": 287,
+    "uniqueFrames": 287,
+    "reviewedContacts": "all000-007",
+    "encodedVideo": "890x1920/8.427s; not compositor/FPS or exact1260x2720 geometry proof",
+    "visualFailure": "Preparing panel remains over retained P7 after foreground through frame215; first Back216-234 carries panel onto source tile; second Back246-276 ends Detail7pages Read without Continue7. Original presentation/progress not accepted.",
+    "limits": "Stored bytes do not prove decode/display. Postmeasurement narrow logs absent; no native completion/foreground chronology. No same197 old-reader comparison yet.",
+    "cleanup": "new media1471 deleted success; exact unique filename query0; exported device copy removed; local movie retained; Home injection; actual AWAKE timeout/override120000ms; highperformance unchanged",
+    "nextAction": "Trace current Reader asset/display versus root proxy phase at foreground; isolate source-proven cause before edit. No cache deletion/delay/timing sweep."
+  },
+  "device197PendingBackgroundDiagnosis": {
+    "cause": "Not established: native stored only proves acquisition; current cancelled entry refuses target publication, while native presentation and root handoff own separate gates. Need exact foreground phase/asset identity before behavioral edit.",
+    "observation": "Existing N syncRootOwnedEntryTarget logs phase/root/foreground/active/selection/slot/request/assetPhase/observed; existing ReaderSurface.onAssetPresented emits exact native Image acknowledgement facts. No URI/account/session data.",
+    "impact": "N Shared thumbnail root lifecycle only; logs do not change state, readiness, animation, provider, cache, menus, geometry or Legacy. Shared Kit/E/K unchanged; previous receipts not superseded as behavior by diagnostics alone.",
+    "disproof": "If current original is displayed/observed and root handoff completed while panel persists, presentation-stall hypothesis is rejected; if no native decoded/presented event, investigate owning asset/Image rather than forcing root readiness.",
+    "boundedAction": "Build/install observational N HAP; one existing ordinary682531 unvisitedP5 tap/Home/plainforeground interval with native logs spanning whole chain; no forced cache changes/delays/timing sweep."
   }
 }
 -->
