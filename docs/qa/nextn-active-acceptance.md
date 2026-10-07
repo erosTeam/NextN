@@ -8,7 +8,7 @@
 
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |
-| N | HAP `a89534c2`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回、普通生产菜单/设置/翻页/rail/后台保持及同P38往返的命名区间 | 完整五分钟视觉覆盖、自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
+| N | HAP `953dca65` / `2bfb6328`：现有设置实现选择、普通入口及同源 Legacy 几何、显式 Debug 根飞行/无缩略图加载、显隐工具栏与隐藏后返回、普通生产菜单/设置/翻页/rail/后台保持及同P38往返的命名区间 | 完整五分钟视觉覆盖、自然 pending/late-progress/stale/fallback、zero-top/landscape、所有布局/FPS/完全替换 |
 | E | HAP `d7cdffba` / 四文件 checkpoint `f593e88e`：设置选择、命名 moving-cancelled 与当前同进程 cached P3 normal-finished 根飞行/图像交接/显隐/隐藏后同 DetailP3 返回、无缩略图加载、显式 Debug Home/前台 retirement 返回同DetailP3 | 连续五分钟/下载预载/自然 pending/stale/fallback、全量几何/FPS/替换 |
 | K | HAP `b4fb2cf0` / host `850af0c5`、Kit `dfdd2b04`：章节/冷启进度只按未变依赖沿用；Shared及原生Legacy普通History返回、正确页码和退出后单次投影更新的完整命名区间 | 可信自动 end/start native 未命中；全布局/FPS/替换；独立生产工作暂停 |
 
@@ -98,3 +98,7 @@ S0–S6 仍见 [账号协议](../device-protocols/nextn-account-login-acceptance
 原MOV `273db57b`（20.018333s/1119帧/450种RGB、13张联排）及正常两次Back MOV `8b28e5fe`（12.081667s/685帧/299种RGB、9张联排）全部首次RGB已审阅，精确重复映射保留。原Grid→立即Home→普通Ability前台→根proxy从原P38位置缩放→同P38图片；Back原127–138缩回同Grid，下一Back原183–198回Detail Continue38。实际native入场图片ID从旧a895的0变为当前1，bounds[0,114][1320,2118]；返回root[0,117][1320,2232]，keepScreenOn读回false、超时30000恢复。
 
 纠正此前从取消日志推断“前台无动画”的结论：旧a895原录像同样有前台root fallback飞行；本次修正依据是源码清空加载身份与native ID差异，并非旧缓存单页黑帧。当前953d没有ReaderEntry取消phase行，不能称命中cancelled-layout/early-moving；只接受命名Home/前台身份保持和同P38返回。画内像素变化保留，未据此作FPS/解码/动画机制结论。原图无缓存、双页、晚到/重复/失效回调和全阅读器替换仍未验收。回执 `n-background-entry-ownership-acceptance-receipt-20261007.json`，唯一当前动作仍在工作单。
+
+本次 material physical result（2026-10-07 20:57–21:04+08）：E d7普通Gallery4203217/P87，selected缓存键`41:b1a8db26`明确disk_miss→network_start→47%→100%→406036字节stored。原MOV`7ef1f775`23.028333秒/1294帧/581种RGB，17张全首次帧联排与原181/190/196–198已审阅，精确重复映射保留；排除旧N缓存frame0–1。实际132起根飞行，157–195保留同页模糊缩略图及深色加载底板，182显示47%、187起100%；196撤提示后同页图像仍在，随后大图清晰。没有整页黑帧或进度中底板消失。531–543缩回同Grid，600–611普通返回Detail Continue87；checked cleanup恢复原Continue3、root[0,117][1320,2232]、超时30000。keep=false30.789、close ready30.841先于status restore30.843。
+
+原logging正则管道被远端shell误解析，保留错误产物；一次无UI动作的分开hilog过滤读回恢复了相同PID9717/20:57事件，未重跑路线。原fast fling命令早于moving；waiting取消25.140晚于网络stored24.956，不能声称滑动造成取消、已翻页或网络pending跨取消完整tuple通过。这里只接受命名普通P87在线加载/底板/图像连续交接及返回，不接受未测asset/slot/epoch、late/stale/spread/FPS/全量替换。没有源码/构建/安装/缓存/后端/设置修改。回执`e-online-handoff-P87-acceptance-receipt-20261007.json`；唯一当前动作继续N对应在线边界。

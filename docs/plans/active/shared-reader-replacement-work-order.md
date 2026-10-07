@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T20:52:17.051107+08:00",
+  "updatedAt": "2026-10-07T21:09:31.910970+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · N后台入场身份窄修正已运行留证；继续现有在线交接边界",
+  "state": "OPEN · N后台身份修正已提交；E自然在线交接命名路径留证",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "提交N后台入场身份修正并继续在线加载交接",
-    "detail": "N953d build/install positive, native entry image identity retained1 vs baseline0; ordinary P38 immediateHome/plainforeground and normal returns fully reviewed in13/9contacts. No ReaderEntry cancellation phase line in candidate; named physical path only.",
-    "startedAt": "2026-10-07T20:52:17.051107+08:00"
+    "title": "NextN对应在线加载路径",
+    "detail": "E ordinaryP87 actualcachemiss/network47%→100%, thumbnail+darkpanel continuous and samepageoriginal/Back fully reviewed581unique/17contacts; native waiting cancellation aftertransportcomplete, not fulltuplependingcancel. OriginalP3 restored. N953d correction2bfb remains bound.",
+    "startedAt": "2026-10-07T21:09:31.910970+08:00"
   },
-  "nextAction": "Commit the exact N two-file correction plus narrow receipts; then source-bind one ordinary E online unread selected page/fast swipe/Back interval, observe actual asset/request readiness before any pending/late claim. No cache clear/delay/timing sweep or frozen menus replay.",
+  "nextAction": "NextN ordinary Gallery663205 source gate and current FullGrid navigation to one existing low page outside previously readP26–40/P1; one declared thumbnail/fast-swipe/Back interval. Use current953d binding, native cache/source evidence and fullmovie review; restoreoriginalP38. No cache mutations/timing sweep/frozen controls replay.",
   "hosts": [
     {
       "name": "NextN",
@@ -30,9 +30,9 @@
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion.",
       "remaining": "Natural same-request/late duplicate-progress/stale native branches unhit; zero-system-top/landscape capability unaccepted; explicit Debug cached portrait named acceptance only; Shared-and-Legacy mode gap deferred; all-layout/FPS/full replacement unproven.",
-      "appHead": "4ae4cebfbcdffc578d8e06d682473ea1368d0561",
+      "appHead": "2bfb6328fa759a1c4fa547734d3365be9dfea85d",
       "installedKit": "dfdd2b0472e9b8d771fcb9a7d294d3c75a869ab5",
-      "appHeadLayer": "Two changed N product sources bound in n-background-entry-ownership-binding-20261007.json; commit pending; no runtime extrapolation to unhit branches.",
+      "appHeadLayer": "All eight committed product source blobs match installed953d build binding; scoped two-file correction2bfb6328, unrelated work preserved.",
       "kitWorkingTree": "uncommitted geometryf715588a/ac0c8c90",
       "kitDocumentation": "Installeddfdd chapter-origin checkpoint; N single-unit/no chapterNavigation path. Geometry WIP unchanged, no runtime geometric acceptance."
     },
@@ -45,8 +45,8 @@
       "install": "Checked positive install and native E identity; ordinary original DetailP3 retained.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance.",
-      "remaining": "Natural pending/late duplicate-progress/stale/early-moving/fallback native paths unhit; universal native chrome chronology/zero-top/all-layout/FPS/full replacement unproven; Shared-and-Legacy mode gap deferred. Named E root-owned opaque composed handoff is not a guaranteed140ms standalone fade.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance. OrdinaryP87 uncachedhash41:b1a8db26 network47%→100%, retainedthumbnail/darkpanel, samepageoriginal andsameGrid/Detail87 complete17contacts; originalP3restored.",
+      "remaining": "Full same-request tuple pending cancellation/late duplicate/stale/early-moving/fallback unaccepted; named ordinary P87 selectednetwork loading and waiting-cancel aftertransfercomplete accepted. Universal nativechrome chronology/zero-top/all-layout/FPS/fullreplacement unproven; prior holds unchanged.",
       "appHead": "f593e88ecbf827123504f5f46a003954fad1e942",
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
       "appHeadLayer": "Four-file E checkpoint; committed product-source hashes equal installed d7 HAP build inputs, no rebuild needed for documentation checkpoint.",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "N953d build/install positive, native entry image identity retained1 vs baseline0; ordinary P38 immediateHome/plainforeground and normal returns fully reviewed in13/9contacts. No ReaderEntry cancellation phase line in candidate; named physical path only.",
-      "action": "Commit the exact N two-file correction plus narrow receipts; then source-bind one ordinary E online unread selected page/fast swipe/Back interval, observe actual asset/request readiness before any pending/late claim. No cache clear/delay/timing sweep or frozen menus replay.",
+      "detail": "E ordinaryP87 actualcachemiss/network47%→100%, thumbnail+darkpanel continuous and samepageoriginal/Back fully reviewed581unique/17contacts; native waiting cancellation aftertransportcomplete, not fulltuplependingcancel. OriginalP3 restored. N953d correction2bfb remains bound.",
+      "action": "NextN ordinary Gallery663205 source gate and current FullGrid navigation to one existing low page outside previously readP26–40/P1; one declared thumbnail/fast-swipe/Back interval. Use current953d binding, native cache/source evidence and fullmovie review; restoreoriginalP38. No cache mutations/timing sweep/frozen controls replay.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -201,7 +201,7 @@
         "conditions": [
           {
             "boundary": "Natural same-request pending cancellation",
-            "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready. Current ordinaryP63 id2 moving-cancel16.866 and sharpbody173/3.4917s accepted only visually; network-pending/progress-panel tuple not measured, no broadened acceptance.",
+            "currentEvidence": "Existing continuous cancellation sample is cached; current N/E Debug movies are also cache hits. No bound natural pending native request survives motion cancellation in the observed intervals. Source canonical displayed-original predicate/selection/request ownership retained; command or metadata cannot manufacture ready. Current ordinaryP63 id2 moving-cancel16.866 and sharpbody173/3.4917s accepted only visually; network-pending/progress-panel tuple not measured, no broadened acceptance. CurrentE P87 proves selectedcachemiss/networkprogress and fullvisibleloadinghandoff; nativewaiting cancellation occurs afterstored, not simultaneouspendingtransfer/fulltuple acceptance.",
             "disposition": "UNACCEPTED native condition; no source-proven further change. Forced delay/cache mutation/timing sweep forbidden.",
             "unavailableAction": "Observe pending original after same-request motion cancellation without synthesizing readiness.",
             "observedPrerequisite": "Current coldP3 bc286415 cancels moving but original is shown; warmP3 2c9ef292 normal-finishes. Earlier natural unread continuousP59 run00:33:46 emits layout cancellation at00:33:49.832, not bound motion-cancelled pending original.",
@@ -515,6 +515,88 @@
             "limits": "Current candidate logs do not contain ReaderEntry cancelled_from/phase lines, so physical Home timing is not promoted to a proven cancelled-layout or moving-background branch. Interior image pixels vary at static P38 but outer page/38 identity persists; no guest FPS/decode/content-animation claim. No natural network-pending/late/duplicate/spread/stale/fallback/native color-writer chronology/full replacement acceptance."
           }
         }
+      },
+      "onlineLoadingHandoffReceipt": {
+        "recordedAt": "2026-10-07T21:09:31.910970+08:00",
+        "outcome": "OPEN; accepted named ordinary E P87 uncached online loading continuity/root-return, not full native request tuple or simultaneous pending cancellation",
+        "installedHap": "d7cdffba9b05453a3e5a63f5bba42255b911b178a1ddbf829a1f139e5708038b",
+        "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
+        "binding": "e-online-handoff-binding-20261007.json",
+        "source": {
+          "bundle": "com.erosteam.nexte",
+          "root": "[0,117][1320,2232]",
+          "gallery": "4203217/ff4ccabae3",
+          "page": 87,
+          "sourceIndex": 86,
+          "nativeId": "reader-thumb-all-thumbnails-3-page-86",
+          "bounds": "[673,1572][965,1984]",
+          "sourceGates": [
+            "e-online-handoff-ordinary-source-20261007",
+            "e-online-handoff-grid-source-20261007"
+          ]
+        },
+        "transport": {
+          "selectedCacheKey": "reader:v1:4203217:ff4ccabae3:87:resampled",
+          "cacheKeyHash": "41:b1a8db26",
+          "pid": 9717,
+          "diskMiss": "20:57:23.853",
+          "networkStart": "20:57:23.856",
+          "firstData": "20:57:24.620 loaded1460,total0",
+          "progress47": "20:57:24.875 loaded191260,total406036",
+          "progress100": "20:57:24.954",
+          "stored": "20:57:24.956 bytes406036",
+          "preload": "depth2 sources87,88 (zero-based): hashes41:f1d6fa63 and41:bbe76008, bothstored"
+        },
+        "native": {
+          "entryId": 8,
+          "moving": "20:57:23.957 source86",
+          "waiting": "20:57:24.432",
+          "cancelled": "20:57:25.140 cancelled_from=waiting",
+          "fastFlingCommand": "20:57:23.095955–23.437277, before metadata/source/moving; no causality or successful page-flip claim",
+          "keepScreenOnFalse": "20:57:30.789",
+          "closeLayoutReady": "20:57:30.841",
+          "statusRestore": "20:57:30.843"
+        },
+        "movie": {
+          "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/host-recording/e-online-handoff-P87-20261007.mov",
+          "sha256": "7ef1f77501449d972d2ccd382e1fff64026630a40a63df99860782b99153b51d",
+          "durationSeconds": 23.028333,
+          "decodedFrames": 1294,
+          "uniqueRGB": 581,
+          "contacts": 17
+        },
+        "review": {
+          "allContacts": "000–016 reviewed; every distinct full RGB first occurrence and exact-repeat map cover all1294decodedframes",
+          "exclude": "0–1 stale previous N Detail; actual E Grid from2",
+          "rawBoundaryGates": [
+            181,
+            190,
+            196,
+            197,
+            198
+          ],
+          "rootFlight": "132/2.6417s–155; sourceGrid remains before flight",
+          "loading": "157/3.0833–195/3.7500: blurred sameP87 retained under dark loading panel, visible47% at182 then100% at187",
+          "handoff": "196/3.7667 panel gone; same page pixels remain196–198 and original sharpens. No whole-body black or missing panel backdrop observed",
+          "return": "531–543 root reverse, sameGrid544; secondBack600–611; sameDetailContinue87from612 onward",
+          "limits": "Native assetRequest/slot/navigation/layout tuple not measured. Network completes before waiting cancellation; not proof pending transport survived cancellation. No late duplicate/stale/spread/FPS/all-layout/full replacement claim"
+        },
+        "loggingRecovery": {
+          "primary": "reader-window-events.txt contains remote shell pipe errors although logging processexit0; primarylogging not accepted",
+          "readback": "e-online-handoff-P87-event-readback-20261007: no UI action, separate hilog filters Reader andreader_; existing ring recovered selectedPID/time/cachekey; no replay/cacheclear"
+        },
+        "restore": {
+          "manifest": "e-online-handoff-restore-original-P3-20261007",
+          "result": "checked protocol0 allcommands; actual native Eroot[0,117][1320,2232]/ContinueP3 screenshot reviewed; timeout30000restored. single/LTR/rail preference unchanged"
+        },
+        "noChanges": "No product/cache/preferences/backend/build/install mutation"
+      },
+      "nextNOnlineHandoffPlan": {
+        "recordedAt": "2026-10-07T21:09:31.910970+08:00",
+        "sourceBasis": "N production source selects downloaded detail then current route seed thennetwork. LabAdapter acquireAsset awaits host privatecache load before ReaderAsset; native Image decoded/displayed remains separate. N cacheconsole logs hit/stored bytes without requestkey, so transport identity needs actualselected data and readback, not neighborlog inference. Kitloadingbackdrop survivesmotion cancel; current N root/foreground guards retain exactentry identity.",
+        "expected": "Ordinary selected thumbnail rootflight, pending current image retained under ownloadingbackground, decoded samepage replacesit with no wholebodyblank or oldoverlay; normalBacksameGrid thenDetail.",
+        "reject": "preflightfullscreen/colorjump/internalzoom, missingbackground/proxy, oldloaderoverconfirmeddisplayedoriginal, wrongsource/progress, staleopenafterBack",
+        "scope": "One existing unaccepted N online loading row; no sourceedit or behaviorchange, no claim cachemiss from unreadlabelalone"
       }
     },
     {
@@ -1041,13 +1123,14 @@
     }
   },
   "currentPhysicalState": {
-    "observedAt": "2026-10-07T16:55:25.675537+08:00",
+    "recordedAt": "2026-10-07T21:09:31.910970+08:00",
     "target": "127.0.0.1:5555",
-    "app": "NextE Detail4203217 after Debug Home/foreground retirement",
+    "foreground": "com.erosteam.nexte",
     "root": "[0,117][1320,2232]",
-    "sourceTile": "page2 [673,745][947,1131] / ContinueP3; fresh source required before next input",
-    "cleanup": "timeout30000 restored; keepScreenOn=false restored; active renewed lease20261007-085223-29be839d",
-    "receipt": "e-background-foreground-result-20261007.json"
+    "detail": "4203217 ContinueP3 restored",
+    "timeout": "30000 restored",
+    "lease": "20261007-085223-29be839d valid",
+    "nextUnverified": "NextN ordinary Gallery663205 source gate and current FullGrid navigation to one existing low page outside previously readP26–40/P1; one declared thumbnail/fast-swipe/Back interval. Use current953d binding, native cache/source evidence and fullmovie review; restoreoriginalP38. No cache mutations/timing sweep/frozen controls replay."
   }
 }
 -->
@@ -1065,8 +1148,8 @@ QA 入口只索引当前事实，不复制下一步。历史证据完整存于
 
 ## 当前运行证据与剩余条件
 
-安装绑定：N `a89534c2`、E `d7cdffba`、K `3a32ff76`；具体 SHA、路径、命名接受、失败/未命中
-和工时仍在上方快照。共同产品基线 Kit `5b9014cc`；两文件 geometry WIP 保留，不能据此宣称
+安装绑定：N `953dca65` / `2bfb6328`、E `d7cdffba` / `f593e88e`、K `b4fb2cf0` / `850af0c5`；具体 SHA、路径、命名接受、失败/未命中
+和工时仍在上方快照。当前 N/K 安装 Kit `dfdd2b04`，E 安装仍为 `5b9014cc`；两文件 geometry WIP 保留，不能据此宣称
 全几何验收。文档修改不生成新 HAP 或新的运行结论。
 
 文档前置提交后，先保留冷启 `bc286415` 的 moving-cancelled 判定；再按既有同进程缓存前提，
