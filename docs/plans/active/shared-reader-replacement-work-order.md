@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T17:05:29.346725+08:00",
+  "updatedAt": "2026-10-07T17:46:57.956984+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · Debug后台区间留证；正在核验普通生产入口与基本使用",
+  "state": "OPEN · E普通基本动作留证；继续N普通生产使用",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "按用户最新纠正进行完整既有阅读行为一致性检查，主动发现未点名差异；不能把单一修复、提交或未通过说明当成结束条件。",
   "target": "模拟器 127.0.0.1:5555 · API 26 · 1320 × 2232",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "核验普通生产入口及连贯基本使用",
-    "detail": "自动恢复已实际读失败轮次并执行原未验收后台动作；局部Debug流程不代替普通用户基本功能。当前先清除进程内Lab意图，按正式选择与入口核对。",
-    "startedAt": "2026-10-07T17:05:29.346725+08:00"
+    "title": "核验NextN普通生产基本使用",
+    "detail": "E原图/rail/快滑/原菜单/设置/进度/cold/后台已执行留证；P12–14黑底加载反观察保留，不推广五分钟/FPS/下载。",
+    "startedAt": "2026-10-07T17:46:57.956984+08:00"
   },
-  "nextAction": "Resolve and execute the existing ordinary production basic-use boundary from current source and installed HAP: reset only process-local Debug rehearsal by force-stop without clearing data; normal Ability plus known ordinary gallery URI, no Lab/backend Want; fresh semantic Detail source and canonical choice, then one declared continuous basic-use interval (page swipes beyond initial window, rail/chrome and original/menu behavior, same-source progress/reentry). Reuse unaffected named receipts and do not replay frozen entry as a separate test. Record any user-visible difference against unchanged Legacy ownership before editing; no cache/delay mutation, timing sweep or unlimited loop.",
+  "nextAction": "Execute existing NextN ordinary production basic-use boundary with installed a895 HAP: force-stop no data clear, normal EntryAbility/gallery663205 no Lab/backend override, fresh native source/canonical choice; continuous page/rail/chrome/native menu/original/settings/progress/reentry/background chain, restore P38/settings. Frozen entry/choice receipts are setup, not separate replay. Compare observations against unchanged Legacy source before editing; no cache/delay mutation,timing sweep or unlimited loop.",
   "hosts": [
     {
       "name": "NextN",
@@ -45,7 +45,7 @@
       "install": "Checked positive install and native E identity; ordinary original DetailP3 retained.",
       "verdict": "实现选择命名即时/重开/冷启/实际route接受；其余按既有行分开",
       "verdictKind": "open",
-      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change.",
+      "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. Current e4a626f5 whole current4–574: named cancelled-entry root/body/show-hide/hidden-area current-target Back/same DetailP3 observed; cancelled-entry named evidence only. Current0c1c5719 whole current3–668 accepts named explicit Debug no-thumbnail loading/body/show-hide/hidden current-root Back/same DetailP3. Current2c9ef292 same-process cached P3 explicit Debug single/LTR portrait: actual moving→waiting→revealing→finished, complete root/proxy/original/chrome-show/hide/hidden Back/same DetailP3 interval reviewed; named normal-finished accepted. No additional build/install or source change. Ordinary production17:08–17:36 controls/original/P3 progress/cold sameDetail/Home retention named intervals reviewed all distinct RGB originals. P12–14 black loading retained, not cached/FPS/five-minute acceptance.",
       "remaining": "Natural pending/late duplicate-progress/stale/early-moving/fallback native paths unhit; universal native chrome chronology/zero-top/all-layout/FPS/full replacement unproven; Shared-and-Legacy mode gap deferred. Named E root-owned opaque composed handoff is not a guaranteed140ms standalone fade.",
       "appHead": "f593e88ecbf827123504f5f46a003954fad1e942",
       "installedKit": "5b9014cc78f6ef0b888f043f659c6d76bbd28930",
@@ -76,8 +76,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "当前命名 E Debug后台/前台 retirement 区间已审阅；普通生产基本使用未由该区间接受，继续实际可执行入口/使用边界。",
-      "action": "Resolve and execute the existing ordinary production basic-use boundary from current source and installed HAP: reset only process-local Debug rehearsal by force-stop without clearing data; normal Ability plus known ordinary gallery URI, no Lab/backend Want; fresh semantic Detail source and canonical choice, then one declared continuous basic-use interval (page swipes beyond initial window, rail/chrome and original/menu behavior, same-source progress/reentry). Reuse unaffected named receipts and do not replay frozen entry as a separate test. Record any user-visible difference against unchanged Legacy ownership before editing; no cache/delay mutation, timing sweep or unlimited loop.",
+      "detail": "E普通基本使用/后台留证；继续N普通连贯使用，不接受全量替换。",
+      "action": "Execute existing NextN ordinary production basic-use boundary with installed a895 HAP: force-stop no data clear, normal EntryAbility/gallery663205 no Lab/backend override, fresh native source/canonical choice; continuous page/rail/chrome/native menu/original/settings/progress/reentry/background chain, restore P38/settings. Frozen entry/choice receipts are setup, not separate replay. Compare observations against unchanged Legacy source before editing; no cache/delay mutation,timing sweep or unlimited loop.",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -340,7 +340,37 @@
         "sourceBasis": "captureReaderLabWant absent parameters returns without clearing installed ReaderTrialEntryRelay; ordinary aa foreground after Debug alone cannot prove production route. Force-stop without data clear resets process-local relay/override. Production tryOpenProductionThumbnail/openSharedTransition and GalleryDetail Continue resolve canonical persisted backend through resolveNextEReaderBackendSelection.",
         "purpose": "Existing basic-use behavior table and latest user five-minute ordinary-use expectation, not new feature or all-product audit. First establish real ordinary route, then continuous actions according to current layout/source without Debug overrides.",
         "failureRule": "Visible wrong backend/menus/page/black/loading/rail/entry/window/progress difference rejects the interval; local successful pieces never accept whole basic-use route.",
-        "editRule": "Only source-proven differing owner/caller transition permits narrow change; compare Legacy and affected consumers first."
+        "editRule": "Only source-proven differing owner/caller transition permits narrow change; compare Legacy and affected consumers first.",
+        "backgroundFollowup": {
+          "recordedAt": "2026-10-07T17:35:57.760744+08:00",
+          "basis": "Ordinary production NextE Index.readerOverlayRouterMap owns ReaderOverlayRoute independently of readerTrialRequest. onReaderEntryEnvironment closes only explicit Debug request; NextEReaderLabPage.onShown/onHidden and labVisibility pause foreground controls without destroying this ordinary route. Debug Home receipt therefore cannot accept ordinary retention. Existing background row and latest basic-use requirement make this remaining boundary actionable.",
+          "expected": "After ordinary ContinueP3 setup, Home then normal same Ability foreground retains same production Reader/image/page; next page then previous remains usable; Back returns same DetailP3 and releases controls. No Lab/backend Want or preference/cache mutation.",
+          "reject": "returns source instead of retained ordinary Reader, stale reflight/colors, wrong page, dead gestures, controls remain active in background, wrong terminal source",
+          "limit": "One declared interval, not repeated Debug retirement or separately reaccepting frozen entry; no volume-key/FPS/all-layout conclusion",
+          "disposition": {
+            "state": "NAMED ACCEPTANCE ONLY",
+            "receipt": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/e-ordinary-basic-use-receipt-20261007.json",
+            "scope": "Ordinary production Home retainsP3;P4→P3;Back sameDetailP3/control release, not Debug retirement."
+          }
+        },
+        "result": {
+          "recordedAt": "2026-10-07T17:46:57.956984+08:00",
+          "receipt": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/e-ordinary-basic-use-receipt-20261007.json",
+          "observed": [
+            "Ordinary production ContinueP3 Shared single/LTR",
+            "Rail on;P3→15→9 fast swipes ~2.4–2.6/s",
+            "Native four-direction menu retained",
+            "P9 original ON/OFF→ON→OFF retains visible body, OFF terminal",
+            "P9→P3,rail OFF,Back/Continue,native settings",
+            "No-data-clear cold ordinary URI retains Detail ContinueP3",
+            "Production Home/foreground retainsP3,P4→P3,Back sameDetailP3; background/exit keepScreenOn=false"
+          ],
+          "counterObservation": {
+            "visible": "P12–14 black loading stage frames313–394; not cached/download performance acceptance.",
+            "source": "Rolling depth2 per-navigation file preload reached16; transport ready is not decoded bitmap. Legacy also original-only ordinary body/loading stage, native warmers vs Kit filewarm differs. Online transport-unready sample does not establish a decode regression; no patch solely from this sample."
+          },
+          "limit": "Separate named ordinary portrait single/LTR intervals, not continuous five minutes or all-settings/layout/FPS/full replacement. No product edit/build/install/cache/delay mutation."
+        }
       }
     },
     {
