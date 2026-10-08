@@ -2,7 +2,7 @@
 
 当前 Reader 调度仅取 [唯一工作单](../plans/active/shared-reader-replacement-work-order.md)。
 本文件记录当前事实与证据边界，不复制 nextAction，不按每次点击追加日志。
-用户要求的执行约束整理已完成；Reader OPEN，独立 Koma 生产 Goal 保持 PAUSED。
+用户最新指令已将重心切换至Koma生产开发（2026-10-09）；N/E命名证据保留，等待后续反馈，不自动继续全量阅读器验收。Koma唯一开发动作转至其docs/CURRENT_STATUS.md；197目录闭环已接受并提交7f8ad4e6，当前接续KAV-001普通安全配置。
 
 历史失败记录（现已由0fc3替代，临时日志与合并回调候选已撤除）：197 E original-source 当时9183 REJECTED (2026-10-08 14:42–14:44+08): normalSharedP3 primesexistingresolverfacts, normalsettingsLegacy actual sameP3 nowreportsoriginalavailable (11-linecanonicalVM restorationgate). Continuous LegacyON/OFF/ON/OFF movie6d014b50/31.018s/591decoded/580distinct: all19orderedoriginalcontacts andraw0/169/188/590 reviewed. BothOFF actualbody staysblack throughnativeInfo untilON/normalBack; Info WebP62382B retains4299x6071. Existingredactedappsession144045 records two normaldiskhits perOFF, no resampleddecode, and4299x6071 perON. FileInfo/binding/commandcompletion is NOT bodyacceptance. OriginalShared7978 accepted70.442s namedroute keepsitsownbinding, not current9183 wholeacceptance. PlainDetailContinueP3/120000 restored, Sharedselection temporarydiagnosticroutepending. Receipt E-original-Legacy-roundtrip-current-rejected-receipt-20261008.json. Temporary26c9 current source-edge logs only, not productfix; no keys/cache/delay/source/geometry changes. Unique nextaction workorder.
 
@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | N | 当前197 `9af69d41`：Shared及保留Legacy普通返回/源旋转命名区间已留证；实际音量键P2→P3→P2及原OFF恢复留证。历史菜单/设置/加载/入口仅沿未变依赖与原绑定 | 未观察回调组合、全布局/FPS/完全替换 |
 | E | 当前197 `0f6f9b53`：单页普通/原图实际Save、3308帧完整审阅和三份自建媒体清理0已留证；源码717a0ff9与16项构建输入一致。冷Legacy同P3能力/ON/OFF沿0fc3旧绑定保留，暖7b2c/Shared7978及前台/入口沿各自未变依赖与原绑定 | P3/P4双图输出/222关键原帧及精确清理恢复已核对；双页全片连续性未接受，现有短准备黑底保留，其他布局/native晚回调/FPS/整体替换未接受 |
-| K | 当前197 `2d0e875f`：显/隐Home/plain前台与同Library02/P18·95%返回原片完整审阅；db1a622c既有Monitor接foreground。原6e1d Legacy源栏、章节起止页、音量及实际单图保存沿未变依赖与原绑定 | 其他入口/Legacy/旋转/全布局/FPS/整体替换不由本次前台接受；独立生产保持暂停 |
+| K | 当前197 `2d0e875f`：显/隐Home/plain前台与同Library02/P18·95%返回原片完整审阅；db1a622c既有Monitor接foreground。原6e1d Legacy源栏、章节起止页、音量及实际单图保存沿未变依赖与原绑定 | 其他入口/Legacy/旋转/全布局/FPS/整体替换不由本次前台接受；生产开发已按最新用户指令恢复 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。

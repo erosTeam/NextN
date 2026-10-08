@@ -3,14 +3,14 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-09T03:32:43.998193+08:00",
+  "updatedAt": "2026-10-09T03:54:50.862869+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 本轮连续基本使用验收收口",
+  "state": "用户转向Koma生产开发 · N/E保留当前证据",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
-  "scope": "三宿主各一条连续基本流程与两项明确补证完成；既有专项保留，暂挂项不恢复，不增加矩阵或性能特调。",
+  "scope": "本共享专项保留既有证据，Koma生产开发已由用户恢复；共享层只按Koma实际可复用需求或N/E新反馈关联修改。",
   "activity": {
     "state": "completed",
     "title": "三应用连续基本使用与两项补证完成",
@@ -19,7 +19,7 @@
     "updatedAt": "2026-10-09T03:32:43.998193+08:00",
     "action": "本轮规定的实际动作已完成；证据归档到本检查点，不由压缩或定时触发重启已留证流程。"
   },
-  "nextAction": "本轮规定的连续基本使用及两个执行缺口均完成；保留整体目标OPEN和原用户暂挂项。恢复时先读人类最新指令/中断动作，不重复已完成路线，也不以未证明的全量资格生成新测试矩阵。",
+  "nextAction": "用户于2026-10-09明确转向Koma开发，唯一生产动作取/private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md；N/E不继续主动验收，后续按用户新反馈恢复受影响路径。",
   "hosts": [
     {
       "name": "NextN",
@@ -2534,8 +2534,8 @@
     }
   ],
   "evidenceNote": "各条原片/回执绑定实际应用和包，基本流程观察与旧专项分开；E租约尾段资格、未逐原帧全片视觉审阅及未达到3Hz均明确保留。页面显示实质动作，不因刷新伪装推进。",
-  "stopRule": "只推进唯一当前动作及源码影响明确的既有基本行为缺口。已留证路径保持冻结；不扩大为功能开发、性能调参、整产品穷举或暂停的Koma生产。",
-  "excluded": "现有菜单、设置、数据、导航、根转场、默认选择与旧版回退保留；不推送/发版，独立Koma生产与其Goal暂停；当前已按用户恢复197实机，旧模拟器排除197文本不再适用。",
+  "stopRule": "用户已切换至Koma生产开发，其唯一当前动作由Koma docs/CURRENT_STATUS.md维护；N/E保留现有证据，收到后续反馈再恢复对应修复，不继续扩大阅读器测试。",
+  "excluded": "现有菜单、设置、数据、导航、根转场、默认选择与旧版回退保留；不推送/发版。Koma生产及Goal已按2026-10-09最新用户指令恢复；当前197实机。",
   "costNote": "不虚构完成比例、费用或工时。问题经过时间持续显示；处理时长只累计已记录区间，未知历史不回填。页面连接不等于任务持续运行。",
   "jointAssessmentHandling": {
     "recordedSeconds": 420,
@@ -2548,7 +2548,7 @@
     "fullReplacementAchieved": false,
     "performanceSuperiorityProven": false,
     "deferredOutcomesRemainUnresolved": true,
-    "originalGoalDisposition": "用户持续推进的共享阅读器一致性目标仍OPEN；前台窗口子计划完成不替代整体目标。",
+    "originalGoalDisposition": "用户最新指令将当前重心转到Koma生产开发；N/E命名验收保留待用户后续反馈，未宣称全量替换。",
     "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
     "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
     "readerSpecificWorkActive": false,
@@ -2579,7 +2579,7 @@
       "userHeld": [
         "enhancement-success：用户已要求跳过系统增强成功验收，真实不同能力条件并明确重新开启后恢复",
         "layout-switch-black：Shared及Legacy皆有短黑，按既有成本决定本轮不做API26跨父复用专项",
-        "remaining-host-acceptance：Koma目录导入移回独立生产计划，该Goal仍暂停"
+        "Koma目录导入：用户已恢复独立生产lane，转入Koma CURRENT_STATUS；目录实机命名闭环已提交7f8ad4e6，KAV-001为当前有限包，不再在Reader队列调度。"
       ],
       "noExternalBlockClaim": "未将总体资格未证明伪装成外部阻塞；本轮明确排定动作已实际执行，用户暂挂按各原项目保持。",
       "unprovenClaims": "原全量替换、所有布局/提供者与FPS性能超越仍未证明；有限修复完成不关闭用户整体目标，也不是未完成安全动作的退出条件。",
@@ -3236,7 +3236,7 @@
       "label": "本轮范围",
       "status": "一致性修复",
       "kind": "review",
-      "detail": "当前设备197；独立Koma生产工作暂停，不推送、不发版。"
+      "detail": "当前设备197；Koma生产已恢复，N/E测试停止扩大；不推送、不发版。"
     }
   ],
   "heartbeatRecovery": {
