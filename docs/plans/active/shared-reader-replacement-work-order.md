@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T16:42:23.221427+08:00",
+  "updatedAt": "2026-10-08T18:39:20.396828+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 当前原图命名修复完成；整体替换与性能不由此接受",
+  "state": "OPEN · 本轮E保存有限修复与受影响验证完成，证据提交中",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "state": "completed",
-    "title": "本轮前台一致性及原图附项已收口",
-    "detail": "原图两处源码修复9fab5a71/51d516df、197暖/冷完整原片、原设置与P3恢复、五段自建媒体精确清理已完成。八项源码影响最终逐项核定；未观察组合和FPS不冒充通过，用户暂挂与E403保留独立边界。 当前不存在本轮尚未执行的命名动作；恢复条件与安全替代见最终裁决。",
-    "startedAt": "2026-10-08T13:55:56.868551+08:00"
+    "state": "active",
+    "title": "保存修复：提交证据与网页记录",
+    "detail": "NextE717a0ff9；当前0f6f单页普通/原图和双页P3/P4真实文件均已核对。单页全部3308帧审阅；双页保存/许可/恢复222关键原帧审阅，其他区间不扩大结论。五个准确显示名复核均0；原设置/P3/120秒已恢复。",
+    "startedAt": "2026-10-08T18:17:52.838592+08:00"
   },
-  "nextAction": "本轮前台及原图有限动作均已执行完成。后续仅沿最终裁决中的真实恢复条件继续：系统增强/较大布局/Koma生产需用户重新开启；E原URL403需实际源条件变化或先有本地请求缺陷证据。冻结命名路径不重复；整体替换/FPS未由有限证据接受。",
+  "nextAction": "核对并提交本次工作单/QA两份证据，确认网页新回执链接与显示；随后按现有保存一致性范围核对N/K实际生产接入的文件准备与缓存所有权，不重复冻结路径，不恢复用户暂挂事项。",
   "hosts": [
     {
       "name": "NextN",
@@ -58,31 +58,31 @@
       "kit": "05542ecf7d3275cb63bf9b53719f1dbc1ae95cb5",
       "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
       "build": "签名候选构建通过；N/E 保留原 debug 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
-      "install": "0fc3正向noClear安装；普通force-stop冷Legacy/P3能力与ON/OFF正文已命名接受，原Shared/P3已恢复",
-      "verdict": "当前冷Legacy单页缓存原图可用/切回正文有限接受",
+      "install": "0f6f正向无clear安装；单P3普通/原图和双页P3/P4真实保存文件、原设置/同DetailP3恢复已观察",
+      "verdict": "普通/原图及双图实际保存已核对 · 整体替换未证明",
       "verdictKind": "open",
       "runtime": "历史35f8命名区间：普通P3实际chrome/Back横屏源0→竖屏124；竖屏缩略图P3源栏颜色保持→根缩放→原位图片交接→实际chrome→当前P3反向返回。261/134原帧、7/4联排及15关键原图均已审阅。仅接受这些命名区间。旧7938隐藏栏结果及诊断反例仍保留，不推广到本包其他分支。 保留Legacy普通P3→实际旧版chrome→Back横屏源栏隐藏→竖屏SCBstatus123恢复，269/254distinct/all8contacts。Legacy清理后root0不同于Shared124，不接受完整几何等价。 当前413c已显示Legacy外部P3确认替换→实际新正文/chrome→正常Back同P3/source横屏隐藏→竖屏SCB123，631original/19contacts全审阅；旧1512误导出副本隔离，实际1513绑定55e2e1f1。 当前413c Shared同入口真实Read→新正文/实际chrome→普通Back/源旋转，414original/383distinct/all12contacts全审阅，1514绑定c83826de。 当前413c Shared阅读页实际chrome显示时横竖屏一次仍持有状态栏/图像，266原帧/8联排全审阅并正常Back同P3，6b77a745命名接受。",
       "remaining": "委托/Debug及其他加载/布局/退出分支、FPS/整体替换未由本次命名区间接受。",
-      "appHead": "51d516df67a38ede36a828656a373564d549b423",
+      "appHead": "717a0ff9fdb967eb71dc45e2093be60dc0c54376",
       "installedKit": "构建时3468fa41 + 同字节源策略候选；现提交为05542ecf。所列两几何WIP仍在安装包/工作区，未进入此提交。",
-      "appHeadLayer": "9fab5a71同页Image节点与canonical暖元数据；51d516df仅原图能力OR既有磁盘命中。构建时绑定不改写，12源码hash和两提交blob与当前相同。",
+      "appHeadLayer": "源码717a0ff9仅宿主Save文件准备：同URI可读缓存优先复制，缺失保留原下载。16项源码SHA匹配不可变buildhead51d516df/0f6f绑定；原图修复9fab/51d依原绑定保留。",
       "kitWorkingTree": "共同源策略05542ecf已提交；仅原几何WIP f715588a/ac0c8c90保留",
       "kitDocumentation": "共同策略及三宿主接入本地提交完成，构建时源绑定原样保留；六条Shared/Legacy正常返回与方向区间有限接受，E另含缩略图路径。几何WIP和未观察分支不由此接受。",
       "rejectedCandidate": {
         "hap": "021aea893f1066d01ea90655c0be18c07c26358a839e9cbbe2d734873c31c46f",
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
-      "installedHap": "0fc3eab20479008a9c3cebb3d7517393045e9c3515c99790ba2d241d84be0e63",
-      "progressSummary": "7b2c暖ON/OFF/ON/OFF 582帧/all19接受持续黑屏修复；0fc3普通冷Legacy同P3 WebP800×1130→JPEG4299×6071→WebP800×1130，410帧/all13+8raw全部审阅。现有短准备黑底保留。9fab5a71/51d516df已提交；Shared/P3/120秒恢复，1543–1547清理0。",
+      "installedHap": "0f6f9b53f9c62c01a91d2effa3431189412d152db82aa909958f9fcb44d99171",
+      "progressSummary": "717a0ff9同URI可读缓存复用，当前0f6f单P3普通WEBP/原图JPEG及P3/P4两份WEBP真实输出正确；全部3308帧单页原片与222关键双页原帧审阅，精确清理及准确显示名零结果、同P3/单页/OFF/120秒恢复。双页其他录屏区间不作连续性/FPS接受。",
       "installedPackage": {
-        "sha256": "0fc3eab20479008a9c3cebb3d7517393045e9c3515c99790ba2d241d84be0e63",
-        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/E-original-cold-availability-20261008.hap",
-        "binding": "E-original-cold-availability-binding-20261008.json",
-        "status": "positive native noClear install; cold cached-original capability and ON/OFF/Back named interval accepted"
+        "sha256": "0f6f9b53f9c62c01a91d2effa3431189412d152db82aa909958f9fcb44d99171",
+        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/E-cached-save-20261008.hap",
+        "binding": "E-cached-save-binding-20261008.json",
+        "status": "positive native noClear install; actualsingle normal/original anddirectdouble output/content/restoration acceptedat namedboundary"
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage",
       "ordinaryVolumeReceipt": "E-ordinary-volume-receipt-20261008.json",
-      "actualSaveReceipt": "E-current-actual-save-failure-receipt-20261008.json",
+      "actualSaveReceipt": "E-cached-save-current-acceptance-receipt-20261008.json",
       "sourceColorReceipt": "E-current-source-color-cold-discrimination-receipt-20261008.json",
       "foregroundReceipt": "E-foreground-intent-final-acceptance-receipt-20261008.json",
       "originalRoundtripReceipt": "E-original-roundtrip-current-acceptance-receipt-20261008.json",
@@ -90,7 +90,8 @@
       "originalLegacyRoundtripStatus": "9183/26c9/d217失败反例保留，诊断与无效Monitor合并完全撤；7b2c暖/0fc3冷实际OFF正文恢复有限接受。",
       "originalLegacyRoundtripReceipt": "E-original-Legacy-roundtrip-current-rejected-receipt-20261008.json",
       "originalRetainedNodeReceipt": "E-original-retained-node-roundtrip-acceptance-receipt-20261008.json",
-      "originalColdAvailabilityReceipt": "E-original-cold-roundtrip-acceptance-receipt-20261008.json"
+      "originalColdAvailabilityReceipt": "E-original-cold-roundtrip-acceptance-receipt-20261008.json",
+      "actualDoubleSaveReceipt": "E-cached-save-double-current-acceptance-receipt-20261008.json"
     },
     {
       "name": "Koma",
@@ -152,7 +153,7 @@
       "title": "验证策略与完整行为基准",
       "status": "本轮影响核定与原片审阅完成；全量替换未证明",
       "kind": "open",
-      "detail": "K/N实际可读单图输出及原进度/媒体清理有限接受。E当前P3内部下载三次403、无确认/新图片；失败原片11联排和原尺寸0/14/222审阅，原尺寸证实黑色区域属于原页内容，撤销缺图误判；不接受全量/FPS。",
+      "detail": "K/N命名单图及E当前单P3普通/原图、双页P3/P4实际输出与清理恢复已留证；单页全部3308原帧、双页直接保存/许可/恢复222关键原帧已审阅，双页其他区间未接受。E403原始失败和网络原因unknown保留。八项来源影响核定完成；不把局部证据当整体替换/FPS。",
       "action": "本轮八行影响核定及当前窗口修复原片审阅已完成；保留每条真实路径/包绑定，未观测组合不等于通过。现有自然缓存缺失/取消路线已经执行，不以未凑齐全部tuple无限重测。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
@@ -839,18 +840,18 @@
     {
       "id": "media-panel-current",
       "title": "既有媒体动作：当前面板/取消返回",
-      "status": "面板取消冻结；K/N当前实际单图保存接受，E请求失败",
+      "status": "本轮E保存有限修复及直接双图输出完成",
       "kind": "accepted",
-      "detail": "K本地NemoP1、N在线P38和E在线P3的原生保存确认框/分享面板均已观察并取消，未写入相册或发送。E原请求05:08三次HTTP403保留；原More换源后05:44实际新下载157118B，05:45新资源保存打开“允许NextE保存1张图片”并显示同P3预览，05:51返回原Detail继续P3。实际仍同源主机，不能断言403原因或换了主机。 新增当前197 K实际右侧P18保存：新媒体JPG可读并核对原内容、同页和原书库进度恢复、自建媒体精确清理；不重放已冻结取消。 N当前在线P2真实WEBP63548B/1280×1101完整解码/内容一致并返回原P2，1527/1528清理0；E当前P3内部下载三次403，无实际图片，失败不能计保存通过。",
-      "action": "原面板取消及K/N命名实际保存冻结；E单次失败回执保留，不重复同URL保存，不用网络失败推出整个Shared退化。",
+      "detail": "K右P18JPEG、N单P2WEBP实际保存及清理恢复沿原绑定保留。E旧单次403无媒体反例保留，网络原因unknown。当前717a两文件缓存准备窄修复已在0f6f验证：普通/原图单P3和双图P3/P4均真实保存、完整解码及内容匹配，原设置/进度与测试媒体精确清理完成；只接受这些命名输出，双图非关键电影区间未作完整连续性接受。",
+      "action": "冻结当前补丁的命名保存修复；保留403原因unknown、变化中保存/cachemiss/其他源/Legacy/发送未接受边界，不扩大为组合穷举。",
       "reportedAt": null,
       "reportedAtSource": "既有验收边界，不是新用户缺陷；原始提出时间未核实。",
       "firstEvidenceAt": "2026-10-05T04:55:46+08:00",
-      "closedAt": "2026-10-05T05:58:18+08:00",
+      "closedAt": "2026-10-08T18:17:52.838592+08:00",
       "handling": {
         "recordedSeconds": 2415,
         "activeSince": null,
-        "activeUntil": null,
+        "activeUntil": "2026-10-08T18:17:52.838592+08:00",
         "trackingSince": "2026-10-05T04:55:46+08:00",
         "historicalCoverage": "incomplete"
       },
@@ -859,7 +860,8 @@
         "receipt": "K-current-actual-save-acceptance-receipt-20261008.json",
         "limits": "K双图/变化中保存、Legacy实际保存、其他源、发送、全部替换及性能未由此接受。",
         "NextN": "CurrentP2 WEBP actualsaved/readable/contentmatched; originalReader/DetailP2 and own1527/1528cleanup",
-        "NextE": "CurrentP3 actualsavefailed: persistent download HTTP403; no image/permit; own1529cleaned"
+        "NextE": "0f6f singleP3 normalWEBP/originalJPEG andspreadP3/P4 actualWEBPs contentmatched; complete3308single frames and222directdouble criticalframes reviewed; exactowned1548–1553deleted, correct5displaynamequeries0; Single/OriginalOFF/P3/120000restored",
+        "doubleReceipt": "E-cached-save-double-current-acceptance-receipt-20261008.json"
       }
     },
     {
@@ -882,6 +884,10 @@
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-08T17:21:39.471081+08:00",
+      "text": "E0f6f缓存优先保存候选构建/原生安装后，197同P3普通与原图各一次许可真实写入，导出完整解码与同页内容核对完成；全片审阅/清理继续。未接受远端403原因、缓存缺失fallback或全量/FPS。"
+    },
     {
       "at": "2026-10-08T14:02:43.099542+08:00",
       "text": "197当前NextE P3原图/普通图两次往返与原进度恢复已实际执行；原片过程待全审，尚不接受连续性。"
@@ -1114,6 +1120,14 @@
     {
       "at": "2026-10-08T16:42:23.221427+08:00",
       "text": "原图新增修复八项影响核定完成；两源码提交、当前冷普通路由与恢复/清理均已实际完成，系统增强/大布局/Koma生产保持原暂挂，E原URL403不重复。有限完成不替代整体与FPS。"
+    },
+    {
+      "at": "2026-10-08T17:46:44.078430+08:00",
+      "text": "E当前单页普通/原图保存修复717a0ff9完成：实际两份文件完整解码和内容核对，全部3308帧原片审阅；1548–1550精确清理0，120秒与同DetailP3恢复。开始仅核对直接受影响双页Save。"
+    },
+    {
+      "at": "2026-10-08T18:17:52.838592+08:00",
+      "text": "E同0f6f补验一次SaveBoth：P3/P4两份实际WEBP正确，222关键原帧审阅，单页/P3/OFF/120秒恢复；五个正确显示名清理核对均0。本轮两文件修复直接动作完成，文档网页检查点提交中。"
     }
   ],
   "evidence": [
@@ -2003,6 +2017,66 @@
       "label": "原图两处修复：八项源码影响及有限完成边界",
       "path": "E-original-current-eight-row-final-disposition-20261008.json",
       "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-current",
+      "label": "E单页普通与原图实际保存/完整原片/清理回执",
+      "path": "E-cached-save-current-acceptance-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-eight-row",
+      "label": "E保存两文件八项影响核定",
+      "path": "E-cached-save-eight-row-final-disposition-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-source",
+      "label": "E保存源码717a提交与16项输入SHA绑定",
+      "path": "E-cached-save-source-checkpoint-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-movie",
+      "label": "E单页保存完整原片（3308帧已审阅）",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cached-save-own1548-1550-export-20261008/device197-E-cached-save-normal-original-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-normal",
+      "label": "实际保存普通图：WEBP800×1130",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cached-save-own1548-1550-export-20261008/4203217-3.webp",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-original",
+      "label": "实际保存原图：JPEG4299×6071",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cached-save-own1548-1550-export-20261008/4203217-3.jpg",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-double",
+      "label": "E双图实际输出/关键区间审阅/精确清理回执",
+      "path": "E-cached-save-double-current-acceptance-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-double-movie",
+      "label": "E双图保存原片（关键222帧审阅，非全片通过）",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cached-save-double1551-1553-export-20261008/device197-E-cached-save-double-enter-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-P4",
+      "label": "实际保存右侧第4页WEBP800×1130",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cached-save-double1551-1553-export-20261008/4203217-4.webp",
+      "storage": "device197"
+    },
+    {
+      "id": "e-cached-save-double-windows",
+      "label": "双图保存/许可/恢复原帧范围与审阅边界",
+      "path": "E-cached-save-double-original-review-20261008/critical-save-windows/ranges.json",
+      "storage": "device197"
     }
   ],
   "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
@@ -2023,13 +2097,17 @@
     "originalGoalDisposition": "用户持续推进的共享阅读器一致性目标仍OPEN；前台窗口子计划完成不替代整体目标。",
     "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
     "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
-    "readerSpecificWorkActive": false,
-    "state": "本轮前台窗口与原图命名修复已完成；整体替换/性能仍未由有限证据证明。",
+    "readerSpecificWorkActive": true,
+    "state": "本轮前台、原图与E缓存保存的有限修复已完成；整体替换/性能仍不由有限证据证明。",
     "currentForegroundRepairPlanCompleted": true,
     "currentForegroundRepairReceipt": "foreground-window-eight-row-final-disposition-20261008.json",
-    "finiteCurrentPlan": "前台源栏修复及原图当前实机附项完成；用户暂挂/外部失败/未观察组合保留准确边界。",
+    "finiteCurrentPlan": "本轮前台、原图、E缓存保存和直接受影响双图输出已完成；当前仅完成证据/网页检查点，不将其扩大为全量替换/FPS或全组合。",
     "currentOriginalRepairPlanCompleted": true,
-    "currentOriginalRepairReceipt": "E-original-current-eight-row-final-disposition-20261008.json"
+    "currentOriginalRepairReceipt": "E-original-current-eight-row-final-disposition-20261008.json",
+    "currentCachedSaveSinglePlanCompleted": true,
+    "currentCachedSaveSingleReceipt": "E-cached-save-current-acceptance-receipt-20261008.json",
+    "currentCachedSaveDirectPlanCompleted": true,
+    "currentCachedSaveDoubleReceipt": "E-cached-save-double-current-acceptance-receipt-20261008.json"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
@@ -2066,12 +2144,12 @@
     "failureCause": "Prior executions skipped conversation failure records and treated agent-authored unhit conditions and unchanged hashes as grounds to exit. Actual failed429 turns01a11522/01a11562 were read through read_thread; fresh heartbeat01a1158d reads them and executes pending original scope.",
     "currentVerification": "16:49:39 heartbeat first used read_thread including failed429 turns, then executed checked Home/foreground lifecycle16:55:17–25 with full original MOV review. This proves real resumed execution for this trigger, not guaranteed future429 recovery or whole Reader acceptance.",
     "latestObservedRecovery": {
-      "at": "2026-10-08T07:04:04.140242+08:00",
-      "previousTurn": "01a11858-8333-7233-a2ba-cfce6fe23942",
+      "at": "2026-10-08T18:39:20.396828+08:00",
+      "previousTurn": "01a11b06-3fbf-73a2-ac7f-dfa7cde85c4a",
       "status": "failed",
-      "error": "exceeded retry limit, last status:429 Too Many Requests",
-      "lastCompleted": "K nativeSettings root capture completed; ordinary Reading pane/menu resumed without repeating N/E recordings",
-      "actualResumedAction": "K native Reading pane and current backend menu read; originalShared row and visual check agree"
+      "error": "502 Bad Gateway: Provider unreachable: unknown certificate verification error",
+      "lastCompleted": "18:17双图回执、工作单和QA已写入；此前实际保存/恢复/清理完成，租约已释放。失败轮次没有工具动作。",
+      "actualResumedAction": "本轮read_thread读取status/error/items，续做未提交的证据和网页核对；不重放已完成设备操作。"
     }
   },
   "history": {
@@ -2133,16 +2211,16 @@
     }
   },
   "currentPhysicalState": {
-    "at": "2026-10-08T16:20:22.921078+08:00",
+    "at": "2026-10-08T18:10:55+08:00",
     "host": "NextE",
     "target": "192.168.50.197:12345",
     "device": "ALN-AL80/API26/portrait1260x2720",
-    "lease": "20261008-055346-529feb3f renewed through17:26:23+08",
-    "foreground": "actual normal public Gallery4203217 Detail ContinueP3; light/darkclock wholePNG",
-    "settings": "originalShared row restored; persistedP3; otherpreferences unchanged",
-    "timeout": "AWAKE Timeout120000/Override120000 actual readback; no powermode change",
-    "recording": "own1543–1547 full originals retained locally and all orderedcontacts reviewed; exactdelete/query0 in cleanup receipt",
-    "nextUnverified": "本轮前台及原图有限动作均已执行完成。后续仅沿最终裁决中的真实恢复条件继续：系统增强/较大布局/Koma生产需用户重新开启；E原URL403需实际源条件变化或先有本地请求缺陷证据。冻结命名路径不重复；整体替换/FPS未由有限证据接受。"
+    "lease": "twofollowup leases normalreleased",
+    "foreground": "LatestactualunlockedDetail4203217 ContinueP3 at17:55; laterpowerSLEEPnormaltimeout, no awakeclaim",
+    "settings": "Shared,Single/LTR,OriginalOFF andP3 restoredactual",
+    "timeout": "Timeout/Override120000actual; finalPowerSLEEPnormaltimeout, no powermode changes",
+    "recording": "Allowned1548–1553positiveexports retainedlocal/deleted; exact5correct displaynamequeries0. Double original3857frames retained,222criticalframes actualreviewed.",
+    "nextUnverified": "核对并提交本次工作单/QA两份证据，确认网页新回执链接与显示；随后按现有保存一致性范围核对N/K实际生产接入的文件准备与缓存所有权，不重复冻结路径，不恢复用户暂挂事项。"
   },
   "nextNOnlineHandoffObservation": {
     "recordedAt": "2026-10-07T21:26:53.512282+08:00",
@@ -2848,12 +2926,12 @@
       {
         "id": "host-media",
         "behavior": "Koma与媒体能力",
-        "impact": "K章节直接改变；保存/分享实现未改",
+        "impact": "E宿主Save准备缓存选择直接改变；共同保存控制与确认/分享未改",
         "kind": "open",
-        "status": "当前K/N实际单图保存已留证；E单次下载403失败",
-        "reason": "Kit边缘→chapterNavigation origin；K可信序列→adapter.prepare→同session.open(start/end)，显式picker仍resume。媒体仍走ReaderImageSaveController/ReaderSystemImageSaveHost独立临时副本与原生确认；本轮没有改它。",
-        "evidence": "197真实可信序列和双版本章节原片已完成；原三宿主保存/分享面板取消只能接受取消，不能接受真实相册写入或发送。 当前K右P18真实JPG新建、可读、内容核对和原进度恢复已完成。 N当前P2真实WEBP、原P2与精确媒体清理已完成；E单次失败由持久日志定位下载HTTP403；原尺寸0/14/222证实原页完整，撤销缺图误判，仍不接受FPS或全Reader。",
-        "limit": "K双图/变化中保存、Legacy实际保存/所有源/分享发送未接受；E同URL不重试，网络403不由构建/旧确认框抵消。",
+        "status": "三宿主命名单图及E当前普通/原图/双图输出留证",
+        "reason": "ReaderImageSaveTarget按当前visualleft/right快照捕获原saveUri；共同Host每项独立临时副本并一次原生确认。只将E下载回调接到既有同URI文件缓存，缺失保留旧网络回退；不改Kit或其他宿主。",
+        "evidence": "KrightP18/NsingleP2沿原绑定；E0f6f普通/原图singleP3和spreadP3/P4输出完整解码、内容对应。单页3308原帧全审、双页关键222原帧全审；所有本轮媒体精确清理及正确显示名query0，原Single/OFF/DetailP3/120秒恢复。",
+        "limit": "双页全片/布局性能、变化中保存、cache-miss运行、其他源/Legacy/发送未由本轮接受；403原因unknown。",
         "receipts": [
           "K-current-chapter-Legacy-comparison-receipt-20261008.json",
           "koma-media-panels-reviewed.json",
@@ -2861,7 +2939,9 @@
           "nexte-media-panels-reviewed.json",
           "K-current-actual-save-acceptance-receipt-20261008.json",
           "N-current-actual-save-acceptance-receipt-20261008.json",
-          "E-current-actual-save-failure-receipt-20261008.json"
+          "E-current-actual-save-failure-receipt-20261008.json",
+          "E-cached-save-current-acceptance-receipt-20261008.json",
+          "E-cached-save-double-current-acceptance-receipt-20261008.json"
         ],
         "foregroundChangeDisposition": "Monitor不调用源/章节prepare/媒体save/share。K/N单图完成与E同URL403单次失败保留原绑定；不重复取消或403请求，独立K生产暂停。"
       }
@@ -2870,10 +2950,11 @@
   },
   "actualMediaSaveReceipt": {
     "Koma": "K-current-actual-save-acceptance-receipt-20261008.json",
-    "accepted": "OnlyKright18JPEG andNsingleP2WEBP actualreadable/contentmatched/currentReader+sourceprogress+ownedmediacleanup",
-    "remaining": "E该次原图下载HTTP403失败；同URL不重复请求，跨源/Legacy实际保存与分享发送未接受。前台颜色命名修复另有独立回执。",
+    "accepted": "Kright18JPEG/NsingleP2WEBP/Ecurrent singleP3normalWEBP+originalJPEG/spreadP3-P4WEBPs actualcontentmatched andowncleanup at eachoriginalbinding",
+    "remaining": "原HTTP403原因unknown；变化中保存/cache-miss/其他源/Legacy/分享发送没有由命名输出证据接受。本轮保存源补丁直接动作已完成，不扩大组合穷举。",
     "NextN": "N-current-actual-save-acceptance-receipt-20261008.json",
-    "NextE": "E-current-actual-save-failure-receipt-20261008.json"
+    "NextE": "E-cached-save-current-acceptance-receipt-20261008.json",
+    "NextEDouble": "E-cached-save-double-current-acceptance-receipt-20261008.json"
   },
   "sourceColorDiagnosticPlan": "E-source-color-actual-managed-observer-diagnostic-plan-20261008.json",
   "sourceColorOwnerCorrection": {
@@ -2922,7 +3003,13 @@
   "originalColdAvailabilityBinding": "E-original-cold-availability-binding-20261008.json",
   "originalColdAvailabilityReceipt": "E-original-cold-roundtrip-acceptance-receipt-20261008.json",
   "originalCleanupReceipt": "E-original-owned-media-cleanup-receipt-20261008.json",
-  "originalEightRowFinalDisposition": "E-original-current-eight-row-final-disposition-20261008.json"
+  "originalEightRowFinalDisposition": "E-original-current-eight-row-final-disposition-20261008.json",
+  "cachedSaveCauseImpact": "E-cached-save-cause-impact-20261008.json",
+  "cachedSaveBinding": "E-cached-save-binding-20261008.json",
+  "cachedSaveReceipt": "E-cached-save-current-acceptance-receipt-20261008.json",
+  "cachedSaveSourceCheckpoint": "E-cached-save-source-checkpoint-20261008.json",
+  "cachedSaveEightRowFinal": "E-cached-save-eight-row-final-disposition-20261008.json",
+  "cachedSaveDoubleReceipt": "E-cached-save-double-current-acceptance-receipt-20261008.json"
 }
 -->
 
