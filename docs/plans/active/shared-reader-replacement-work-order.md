@@ -3,23 +3,23 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T23:14:01.718226+08:00",
+  "updatedAt": "2026-10-08T23:42:55.965013+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · 本轮缓存与原图修复收尾完成，证据网页核验中",
+  "state": "OPEN · 本轮缓存修复与直接影响验收已收尾",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "state": "active",
-    "title": "本轮缓存修复与旧版对照收尾",
-    "detail": "828fac15/7e290b47/65def48d三个窄修复已提交。旧版缓存跳P21全部148原帧/5联排+6原图已审阅，准备黑底0.096811秒；共享已有样本0.100312秒，不能由此称性能相等。1562精确清理query0，原Shared/P3/120秒恢复。",
+    "state": "completed",
+    "title": "本轮缓存修复与直接影响验收已收尾",
+    "detail": "828fac15/7e290b47/65def48d三个窄修复已提交。当前P3原图往返/AutoRead/显式重新加载与旧版缓存跳页对照均留原片；显式reload123原帧全部审阅，1563清理0、Timeout120000，租约已释放。a274593f前一证据检查点和23:18网页核验真实完成。",
     "startedAt": "2026-10-08T20:41:59.295691+08:00",
-    "action": "提交本轮两份证据文档并核验网页最新内容与可点击原片/回执",
-    "updatedAt": "2026-10-08T23:10:46.958749+08:00"
+    "action": "本轮缓存分支已完成；总体替换/性能结论与原用户暂挂事项继续保留，不能由此默认通过",
+    "updatedAt": "2026-10-08T23:42:55.965013+08:00"
   },
-  "nextAction": "提交本轮两份证据文档并核验网页最新内容与可点击原片/回执",
+  "nextAction": "本轮缓存分支已完成；总体替换/性能结论与原用户暂挂事项继续保留，不能由此默认通过",
   "hosts": [
     {
       "name": "NextN",
@@ -76,7 +76,7 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "c7ad6b362ca22c26148e29e6c881f854f458d7eec477a14c803e1f9ac1eb9d0a",
-      "progressSummary": "828fac15/7e290b47/65def48d：预载角色、普通及原图缓存优先已提交。c7ad冷ON/OFF/保存取消426原帧全审；AutoRead两个邻页沿8c84回执。缓存P21参考Legacy约0.097秒、Shared约0.100秒，均有短准备黑底，不称零黑/FPS。原Shared/P3/120秒、自建媒体清理完成。",
+      "progressSummary": "828fac15/7e290b47/65def48d：预载角色、普通及原图缓存优先已提交。c7ad冷ON/OFF/保存取消426原帧全审；AutoRead两个邻页沿8c84回执。缓存P21参考Legacy约0.097秒、Shared约0.100秒，均有短准备黑底，不称零黑/FPS。原Shared/P3/120秒、自建媒体清理完成。 当前c7ad普通P3更多菜单重新加载一次已补实际运行：123原帧/4联排+6原图，加载保留P3→100%→正文，正常Back同DetailP3/1563query0/Timeout120000；未推广原图reload/所有miss分支。",
       "installedPackage": {
         "sha256": "c7ad6b362ca22c26148e29e6c881f854f458d7eec477a14c803e1f9ac1eb9d0a",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/E-cached-original-source-order-20261008.hap",
@@ -99,7 +99,8 @@
       "priorityReceipt": "E-shared-priority-current-runtime-receipt-20261008.json",
       "cacheFirstReceipt": "E-cache-before-resolve-current-runtime-receipt-20261008.json",
       "autoReadReceipt": "E-cache-autoread-current-runtime-receipt-20261008.json",
-      "cachedOriginalReceipt": "E-cached-original-source-order-current-runtime-receipt-20261008.json"
+      "cachedOriginalReceipt": "E-cached-original-source-order-current-runtime-receipt-20261008.json",
+      "explicitReloadReceipt": "E-cache-explicit-reload-current-runtime-receipt-20261008.json"
     },
     {
       "name": "Koma",
@@ -908,10 +909,19 @@
         "activeSince": null,
         "activeUntil": null,
         "note": "仅两条原图/旧版往返checked协议命令的实际起止耗时下界；不回填调查/构建/等待或整个墙钟时长。"
-      }
+      },
+      "runtime": " 当前普通P3显式reload一次123原帧也接受；不是原图reload或全部force/miss分支。"
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-08T23:41:36.705579+08:00",
+      "text": "当前c7ad普通P3显式重新加载一次：全部123原帧/4联排+6原图审阅，加载保留正文→100%→正文；Back同DetailP3、1563清理0、Timeout120000。"
+    },
+    {
+      "at": "2026-10-08T23:23:12.811048+08:00",
+      "text": "a274593f证据提交及23:18网页可见核验完成；仅补一次现有重新加载分支。"
+    },
     {
       "at": "2026-10-08T22:35:09.788242+08:00",
       "text": "c7ad原图缓存顺序候选构建11.749秒、正向无clear安装和force-stop普通P3命名路线已执行，同DetailContinueP3/120秒读回；1561原片全段审阅中，不以终态认定过程通过。"
@@ -2346,6 +2356,30 @@
       "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cached-slider-Legacy-export-Shared-restore-20261008/device197-E-cached-slider-Legacy-P3-P21-P3-20261008.mp4",
       "kind": "video",
       "storage": "device197"
+    },
+    {
+      "id": "E-cache-reload-runtime",
+      "label": "缓存修复：当前显式重新加载运行回执",
+      "path": "E-cache-explicit-reload-current-runtime-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "E-cache-reload-review",
+      "label": "缓存修复：显式重新加载全部123原帧审阅",
+      "path": "E-cache-explicit-reload-original-all-20261008/causal-review-map.json",
+      "storage": "device197"
+    },
+    {
+      "id": "E-cache-reload-movie",
+      "label": "缓存修复：显式重新加载连续原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cache-explicit-reload-owned1563-export-20261008/device197-E-cache-explicit-reload-once-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "reader-cache-final-checkpoint",
+      "label": "本轮最终Git与网页检查点",
+      "path": "reader-cache-final-document-web-checkpoint-20261008.json",
+      "storage": "device197"
     }
   ],
   "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
@@ -2366,11 +2400,11 @@
     "originalGoalDisposition": "用户持续推进的共享阅读器一致性目标仍OPEN；前台窗口子计划完成不替代整体目标。",
     "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
     "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
-    "readerSpecificWorkActive": true,
+    "readerSpecificWorkActive": false,
     "state": "本轮前台、原图与E缓存保存的有限修复已完成；整体替换/性能仍不由有限证据证明。",
     "currentForegroundRepairPlanCompleted": true,
     "currentForegroundRepairReceipt": "foreground-window-eight-row-final-disposition-20261008.json",
-    "finiteCurrentPlan": "本轮前台/原图/保存、预载优先级角色、普通与原图缓存读取、AutoRead及缓存跳页旧版参考的有限计划均完成命名动作、原帧审阅、精确清理与源码检查点。当前只剩两份证据文档提交及网页可见核验；整体替换与性能未由此证明，原明确暂挂事项不自动恢复。",
+    "finiteCurrentPlan": "本轮有限修复的源码、命名运行区间、全原帧审阅、正常返回、精确媒体清理与两份证据文档均已完成；网页已核验，当前补充回执也已注册，保存最终文档检查点。本字段仅关闭这份有限修复计划，不关闭用户整体一致性目标，不把未验证组合或暂挂项改成通过。",
     "currentOriginalRepairPlanCompleted": true,
     "currentOriginalRepairReceipt": "E-original-current-eight-row-final-disposition-20261008.json",
     "currentCachedSaveSinglePlanCompleted": true,
@@ -2386,7 +2420,19 @@
       "K-save-dialog-foreground-cancel-acceptance-20261008.json"
     ],
     "currentCachedResourceFinitePlanCompleted": true,
-    "currentCachedResourceComparisonCompleted": true
+    "currentCachedResourceComparisonCompleted": true,
+    "currentExplicitReloadPlanCompleted": true,
+    "currentExplicitReloadReceipt": "E-cache-explicit-reload-current-runtime-receipt-20261008.json",
+    "currentFiniteRuntimeActionsComplete": true,
+    "remainingBoundaryDisposition": {
+      "userHeld": [
+        "enhancement-success：用户已要求跳过系统增强成功验收，真实不同能力条件并明确重新开启后恢复",
+        "layout-switch-black：Shared及Legacy皆有短黑，按既有成本决定本轮不做API26跨父复用专项",
+        "remaining-host-acceptance：Koma目录导入移回独立生产计划，该Goal仍暂停"
+      ],
+      "noExternalBlockClaim": "未将总体资格未证明伪装成外部阻塞；本轮明确排定动作已实际执行，用户暂挂按各原项目保持。",
+      "unprovenClaims": "原全量替换、所有布局/提供者与FPS性能超越仍未证明；有限修复完成不关闭用户整体目标，也不是未完成安全动作的退出条件。"
+    }
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
@@ -3034,17 +3080,18 @@
     }
   ],
   "heartbeatRecovery": {
-    "at": "2026-10-08T22:26:36.392873+08:00",
+    "at": "2026-10-08T23:41:36.705579+08:00",
     "interruption": "Prior human continuation turn01a11b12 failed exceeded retry limit,laststatus429 TooManyRequests; read_thread performed at heartbeat start",
     "latestHuman": "继续 and maintain real progress webpage",
-    "resumedAction": "已完成N/K保存前台组合、E本地快速翻页、后台调度分类纠正、缓存正文优先窄修复及AutoRead两个直接邻页、真实恢复与自有媒体清理；继续仅源码证明原图依赖",
-    "state": "Actual resumed execution; documentary checkpoint now in progress, not merely unchanged hash polling"
+    "resumedAction": "current explicitreload actualmovie123 reviewed, clean1563query0; no productsourceedit",
+    "state": "本轮从429中断实际恢复并完成命名缓存修复计划及显式重新加载直接分支；不将本轮计划完成等同总体替换，也不自动恢复用户暂挂"
   },
   "documentCheckpoint": {
-    "commit": "b5da54ed2737b5804a7723615154bb01a9f03e44",
-    "at": "2026-10-08T18:47:33.999337+08:00",
+    "commit": "a274593f",
+    "at": "2026-10-08T23:23:12.811048+08:00",
     "scope": "Owned current foreground/save/QA/web data; unrelated PRIVATE-HISTORY ledger and Kit geometry preserved",
-    "status": "此字段保留前一实际文档提交；当前仅工作单和QA的完整新增证据即将独立提交，随后只核验网页。"
+    "status": "a274593f是前一实际文档检查点；本轮显式重新加载补充证据的最终提交由latestReceipt记录，不自填当前提交哈希。",
+    "latestReceipt": "reader-cache-final-document-web-checkpoint-20261008.json"
   },
   "ordinaryVolumePlan": {
     "sourcePlan": "E-ordinary-volume-source-plan-20261008.json",
@@ -3326,7 +3373,9 @@
   "cachedOriginalBinding": "E-cached-original-source-order-binding-20261008.json",
   "cachedOriginalReceipt": "E-cached-original-source-order-current-runtime-receipt-20261008.json",
   "cachePriorityFinalDisposition": "E-priority-cache-original-eight-row-final-disposition-20261008.json",
-  "cachedSliderLegacyReceipt": "E-cached-slider-Legacy-comparison-current-receipt-20261008.json"
+  "cachedSliderLegacyReceipt": "E-cached-slider-Legacy-comparison-current-receipt-20261008.json",
+  "cachedExplicitReloadPlan": "E-cache-explicit-reload-source-impact-plan-20261008.json",
+  "cachedExplicitReloadReceipt": "E-cache-explicit-reload-current-runtime-receipt-20261008.json"
 }
 -->
 
