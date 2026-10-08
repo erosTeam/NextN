@@ -3,23 +3,23 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-09T01:42:09.210394+08:00",
+  "updatedAt": "2026-10-09T03:32:43.998193+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "本轮有限修复完成 · 总体替换资格未证明",
+  "state": "OPEN · 本轮连续基本使用验收收口",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
-  "scope": "保留已绑定命名行为修复；本次价值核算后关闭不可变缓存有限收尾，不追加组合/FPS测试，不恢复独立Koma生产。",
+  "scope": "三宿主各一条连续基本流程与两项明确补证完成；既有专项保留，暂挂项不恢复，不增加矩阵或性能特调。",
   "activity": {
     "state": "completed",
-    "title": "价值复核完成，有限修复队列收口",
-    "detail": "六组实际成果已逐项核算；E6439f11a缓存所有权修复完成必要读回，Shared/OFF/同Detail P3/120秒恢复，自有1565/1566精确清理，租约释放。未追加组合或性能测试。",
-    "startedAt": "2026-10-09T01:04:57.442486+08:00",
-    "updatedAt": "2026-10-09T01:42:09.210394+08:00",
-    "action": "当前缓存字节所有权的有限收尾已经完成；不派发新组合、保存矩阵、FPS或旧版单次毫秒差测试。暂挂增强、跨父布局专项、Koma生产保持用户原处置。全量资格未证明是声明边界，不自动变成开发队列。"
+    "title": "三应用连续基本使用与两项补证完成",
+    "detail": "N/E/K原长片及两短片判读、原设置/进度恢复与精确自有媒体清理完成；本轮未改产品代码。最终证据文档与网页按同一检查点收口。",
+    "startedAt": "2026-10-09T02:08:50.458609+08:00",
+    "updatedAt": "2026-10-09T03:32:43.998193+08:00",
+    "action": "本轮规定的实际动作已完成；证据归档到本检查点，不由压缩或定时触发重启已留证流程。"
   },
-  "nextAction": "按成本评估保留已有修复，冻结完成路径；当前有限队列无待执行动作。既有用户暂挂项维持原处置，全量替换/FPS未知不自动派发新测试。",
+  "nextAction": "本轮规定的连续基本使用及两个执行缺口均完成；保留整体目标OPEN和原用户暂挂项。恢复时先读人类最新指令/中断动作，不重复已完成路线，也不以未证明的全量资格生成新测试矩阵。",
   "hosts": [
     {
       "name": "NextN",
@@ -28,10 +28,10 @@
       "hap": "eb44a98bef880695a7a052a4d1d87d75adace0221e452d69f4b8ed8926fb33d1",
       "build": "签名候选构建通过；N/E 保留原 debug 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
       "install": "197 已安装更新候选 9af69d41；构建/安装不能替代运行验收。",
-      "verdict": "命名路径留证 · 总体未验收",
+      "verdict": "基本使用命名流程已观察",
       "verdictKind": "open",
       "runtime": "Ordinary persisted Legacy and Shared: immediate/reopened native menu agrees with row; force-stop/cold ordinary route without backend override opens actual selected implementation; original progress restored (N P38/E P3). Whole row/menu/siblings visually reviewed in bound screenshots. Tap-policy preview previous movie retains only identical dependencies and named paged regions. CurrentIndex cleanup namedP1 FullGrid rootflight/retainedimage/BacksameGrid originalframes1–524 reviewed;P38Reader andDetailContinue38 restoredviaordinaryindex37route. Current explicit Debug d1780924 normal-finished root/body/initial hidden intent/show-hide/current-target reverse and0912038e no-thumbnail loader/body/show-hide/current-root return observed in all originals, same FullPreviewP38. Rejected c09 one-frame flash is retained, not accepted. Ordinary production17:51→17:56 actual306.524s chain executed; reviewed long MOV endsP35, short75645822 independently supplementsP36–38 and Back/reentry. Native four-option menu/settings/retainedP32 after Home/progress38 terminal observed. Not five-minute visual/FPS guarantee. Current953d ordinaryP38 FullGrid/Home/plainforeground nativeentryImage1 vs old0, root flight retained and normalBacksameGrid/DetailContinue38 observed;13/9originalRGBsheets fully reviewed. Candidate cancellation phase absent, no pending/spread/FPS promotion. CurrentordinaryP8 sample0e0ddf98 full15contacts root/Back observed but preexisting96988-byte cache means online-loading prerequisite rejected. OriginalContinueP38 restored by checked currentGrid cleanup. Ordinaryrelated682531P7 genuinecachemiss/current loading/preparing panel and samepageoriginal238/sameGrid-DetailBack reviewed all16contacts; original663205Continue38 restored. Corrected prior sheet reading239/240 to raw237/238; no product changes. Current197 ordinary682531/P2 cancelled moving/Home/plainforeground displayed-original preparation no old backdrop; sameGrid/DetailContinueP2 reviewed all367frames/11contacts. LegacyP2 all239/7 with actual same-root1260x2720 original-only reference; no preparation reference promoted. Physical197 initiallyuncached560948P3 pendingasset0/moving→backgroundcancelled→stored111888, samepagebody/processing/ordinarysystemreturn reviewed443originals; original682531ContinueP2 restored. Currenteb44 namedP1openingreverse/P2reentry/normalBack movieb5f5c65a all406/12contacts and raw219222244331 reviewed; nofullscreenfirst/bodyblack/staleoldpage. Original682531ContinueP2/root0,124 restored;1497query0. 当前9af6保留Legacy普通P2 actualtoolbar/Back source横屏隐藏→竖屏SCB123恢复，265original/all8contacts；原P2保留，root0不同于Shared124不作几何等价。",
-      "remaining": "其他关闭/入口分支、FPS/整体替换未由本次源栏路径接受。",
+      "remaining": "全量替换/全部布局/提供者及FPS性能超越不由这一条流程证明；旧专项与用户暂挂保持。",
       "appHead": "4410e2c2d53559dd2bfda5afba394b4cea974e36",
       "installedKit": "构建时3468fa41 + 同字节源策略候选；现提交为05542ecf。所列两几何WIP仍在安装包/工作区，未进入此提交。",
       "appHeadLayer": "本地源策略接入检查点；已安装HAP及构建时绑定保留不变，所列源码字节逐项与当前一致。",
@@ -42,7 +42,7 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
-      "progressSummary": "当前9af6前台源栏、音量及实际单P2保存沿各自回执；新增普通P2保存确认框Home/返回/禁止/Back完成，284关键原帧/18联排+6原图审阅，同DetailP2、设备1555精确清理0。未推广全布局/五分钟/FPS。",
+      "progressSummary": "本轮当前包连续基本使用原片324.93s已判读；根转场保持源，未观察点击时先跳全屏；页序与缩略图栏对应；方向菜单和设置对应；Home/前台保留P2正文；Back同源继续P2。在线P4/P6/P7有解析提示但图片底板保留并完成，不写成全程无提示。 当前三百余秒连续基本流程观察完成；RTL时P7向末端手势被末页钳位，不能冒充RTL反向翻页证明。快速段实际HDC节奏未达到3次/秒，不接受3Hz/FPS。 有效60m租约另补86.885822s/419原帧、全部12联排：非末页RTL右滑P2→P3、左滑P3→P2，菜单实际LTR恢复并正常Back同P2。原长片末页钳位资格保留。",
       "installedPackage": {
         "sha256": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-N-hidden-ready-20261008.hap",
@@ -53,7 +53,9 @@
       "ordinaryVolumeReceipt": "N-ordinary-volume-receipt-20261008.json",
       "actualSaveReceipt": "N-current-actual-save-acceptance-receipt-20261008.json",
       "foregroundReceipt": "N-ordinary-foreground-acceptance-receipt-20261008.json",
-      "saveDialogForegroundReceipt": "N-save-dialog-foreground-cancel-acceptance-20261008.json"
+      "saveDialogForegroundReceipt": "N-save-dialog-foreground-cancel-acceptance-20261008.json",
+      "basicUserFlowReceipt": "three-host-basic-user-flow-current-receipt-20261009.json",
+      "basicTailReceipt": "basic-user-flow-targeted-tail-receipt-20261009.json"
     },
     {
       "name": "NextE",
@@ -62,10 +64,10 @@
       "hap": "7e0315fddc60c6f27f7e16314bf90a551c56e8e1209459c92027834c4ea06a78",
       "build": "签名候选构建通过；N/E 保留原 debug 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
       "install": "a18f正向install bundle successfully，无clear；冷P3 More gate核对。初次错误设备路径安装失败/旧包UI不接受。",
-      "verdict": "缓存所有权有限修复完成 · 整体替换未证明",
+      "verdict": "基本使用命名流程及有效租约尾段补证已观察",
       "verdictKind": "open",
       "runtime": "历史35f8命名区间：普通P3实际chrome/Back横屏源0→竖屏124；竖屏缩略图P3源栏颜色保持→根缩放→原位图片交接→实际chrome→当前P3反向返回。261/134原帧、7/4联排及15关键原图均已审阅。仅接受这些命名区间。旧7938隐藏栏结果及诊断反例仍保留，不推广到本包其他分支。 保留Legacy普通P3→实际旧版chrome→Back横屏源栏隐藏→竖屏SCBstatus123恢复，269/254distinct/all8contacts。Legacy清理后root0不同于Shared124，不接受完整几何等价。 当前413c已显示Legacy外部P3确认替换→实际新正文/chrome→正常Back同P3/source横屏隐藏→竖屏SCB123，631original/19contacts全审阅；旧1512误导出副本隔离，实际1513绑定55e2e1f1。 当前413c Shared同入口真实Read→新正文/实际chrome→普通Back/源旋转，414original/383distinct/all12contacts全审阅，1514绑定c83826de。 当前413c Shared阅读页实际chrome显示时横竖屏一次仍持有状态栏/图像，266原帧/8联排全审阅并正常Back同P3，6b77a745命名接受。",
-      "remaining": "委托/Debug及其他加载/布局/退出分支、FPS/整体替换未由本次命名区间接受。",
+      "remaining": "全量替换/全部布局/提供者及FPS性能超越不由这一条流程证明；旧专项与用户暂挂保持。",
       "appHead": "6439f11a",
       "installedKit": "构建时3468fa41 + 同字节源策略候选；现提交为05542ecf。所列两几何WIP仍在安装包/工作区，未进入此提交。",
       "appHeadLayer": "四文件不可变字节缓存本地提交；签名a18f源码字节一致，运行范围单独保留。",
@@ -76,7 +78,7 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "a18f6b78f3ddf9d502a7e5db2140c80887575d584518988c0da942c67ed43201",
-      "progressSummary": "当前a18f缓存所有权有限修复完成；源码6439f11a，普通r1/r2留图重载、原图r3信息可读、Legacy冷正文及信息/latest=r2；原Shared/OFF/P3/120秒恢复，自有1565/1566精确清理。没有整体性能提升或全量替换声明。",
+      "progressSummary": "本轮当前包连续基本使用原片327.52s已判读；OriginalON帧692–701、OFF760–767准备提示覆盖保留正文，完成后正文可读；OFF没有变成黑屏。超过初始预载范围P3→13→3可读；原四方向菜单、设置和同页返回正常。黑底白花是P3漫画正文，不判为黑屏。 327.518744秒视频基本流程已审阅，但原租约02:37:25过期，命令链尾约47秒不符合租约协议；原始画面事实保留，不标整段协议合格。新租约只补终态观察，没有冒充原尾段有效。快速段不接受3Hz/FPS。 有效60m租约另补16.984156s/329原帧、全部10联排：两次Continue/正常Back及Home/普通前台同P3正文和chrome，最终同DetailP3。系统push短准备底18–21/130–133保留；不追认原失效尾段。",
       "installedPackage": {
         "sha256": "a18f6b78f3ddf9d502a7e5db2140c80887575d584518988c0da942c67ed43201",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/E-cache-immutable-20261009.hap",
@@ -102,7 +104,9 @@
       "cachedOriginalReceipt": "E-cached-original-source-order-current-runtime-receipt-20261008.json",
       "explicitReloadReceipt": "E-cache-explicit-reload-current-runtime-receipt-20261008.json",
       "reloadCancellationReceipt": "E-cache-reload-cancel-current-receipt-20261009.json",
-      "immutableCacheRuntimeReceipt": "E-cache-immutable-current-runtime-receipt-20261009.json"
+      "immutableCacheRuntimeReceipt": "E-cache-immutable-current-runtime-receipt-20261009.json",
+      "basicUserFlowReceipt": "three-host-basic-user-flow-current-receipt-20261009.json",
+      "basicTailReceipt": "basic-user-flow-targeted-tail-receipt-20261009.json"
     },
     {
       "name": "Koma",
@@ -111,10 +115,10 @@
       "hap": "9b85a661b0c68ba34d80c6ce198d0c9a25c14b6aef006336c889f9448f2f2b68",
       "build": "签名候选构建通过；Koma 保留原 default release 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
       "install": "13:29当前2d0e正向无clear安装；13:31显/隐前台及同02/P18正常返回全片审阅",
-      "verdict": "当前隐栏前台恢复命名路径接受 · 整体替换未接受",
+      "verdict": "基本使用命名流程已观察",
       "verdictKind": "open",
       "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored. Currentb4fb Shared ordinaryHistory1->3->Back and nativeLegacy3->4->Back complete RGB reviews14/17contacts: all Today/Yesterday remain white, rowupdates3/4; publication follows ownedOnDisappear exactly once. RestoredShared/upper1/Library102P1/timeout30000. Earlier55c dark return retained as rejected baseline. 当前6e1d保留Legacy原Library02/P18：实际18/19旧工具栏→normalBack横屏source0→竖屏SCB123/cleanroot124；233原帧/all7contacts全审阅。原Shared冷启后行文字/视觉勾选一致，原02/P18·95%保留。 当前197右侧P18单图真实保存，媒体同名before0→after1→精确清理0；导出JPG250413B/980×1394完整解码并与实际右页/确认预览一致，原02P18/03P10和Library95%恢复。只接受这条保存，不接受双图/发分享/全部媒体与性能。",
-      "remaining": "其他关闭/入口分支、FPS/整体替换未由本次源栏路径接受。",
+      "remaining": "全量替换/全部布局/提供者及FPS性能超越不由这一条流程证明；旧专项与用户暂挂保持。",
       "appHead": "db1a622c76542caedcd3bdf361512ce2139d0349",
       "installedKit": "构建时3468fa41 + 同字节源策略候选；现提交为05542ecf。所列两几何WIP仍在安装包/工作区，未进入此提交。",
       "kitWorkingTree": "共同源策略05542ecf已提交；仅原几何WIP f715588a/ac0c8c90保留",
@@ -124,7 +128,7 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "2d0e875f2c5cfcf2f545af2953aa6edd37e8fe1c9caa286870917183f1091de2",
-      "progressSummary": "当前2d0e/db1a前台显隐修复沿原回执；新增原Dual左17/右18保存右图确认框Home/返回/禁止/Back完成，326关键原帧/21联排+3原图审阅，同Library02/P18·95%、设备1556精确清理0。未推广全布局/FPS，独立生产保持暂停。",
+      "progressSummary": "本轮当前包连续基本使用原片332.41s已判读；双页往返到1–2及17–18可读，无持续空白或加载卡死；菜单保留single/dual/vertical/continuous，实际勾选dual；本书设置保留Dual/LTR。正常双页翻页记首项17，旧版与共享相同，不新增修补；精确缩略图18恢复后同书架第18页。 332.409256秒连续基本流程观察完成。实际整段终态17·89%如实记录；后续当前UI恢复原18，不将恢复动作混入原片。不是所有章节/本地文件/布局/FPS接受。",
       "installedPackage": {
         "sha256": "2d0e875f2c5cfcf2f545af2953aa6edd37e8fe1c9caa286870917183f1091de2",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/K-foreground-hide-intent-20261008.hap",
@@ -137,7 +141,8 @@
       "chapterEdgeReceipt": "K-current-chapter-edge-acceptance-receipt-20261008.json",
       "chapterLegacyReceipt": "K-current-chapter-Legacy-comparison-receipt-20261008.json",
       "foregroundReceipt": "K-foreground-hide-intent-current-acceptance-receipt-20261008.json",
-      "saveDialogForegroundReceipt": "K-save-dialog-foreground-cancel-acceptance-20261008.json"
+      "saveDialogForegroundReceipt": "K-save-dialog-foreground-cancel-acceptance-20261008.json",
+      "basicUserFlowReceipt": "three-host-basic-user-flow-current-receipt-20261009.json"
     }
   ],
   "gaps": [
@@ -913,6 +918,25 @@
         "note": "仅两条原图/旧版往返checked协议命令的实际起止耗时下界；不回填调查/构建/等待或整个墙钟时长。"
       },
       "runtime": " 当前普通P3显式reload一次123原帧也接受；不是原图reload或全部force/miss分支。"
+    },
+    {
+      "id": "basic-user-flow",
+      "title": "三应用普通连续基本使用",
+      "status": "本轮观察与有限补证完成",
+      "kind": "review",
+      "detail": "N324.93s/E327.52s/K332.41s普通衔接原片保留；另N非末页RTL实际P2/P3/P2及E有效尾段完成。未观察持续空白、卡死、菜单退化或进度丢失。E原失效尾段资格保留，不追認为合格。",
+      "action": "本轮原片保留、原进度与设置恢复；不以压缩/触发或绝对资格未证明从头重测。新动作需真实反例或明确受影响源码/既有未执行路径。",
+      "reportedAt": null,
+      "reportedAtSource": "本轮用户基本使用要求的原消息时间未精确核实。",
+      "firstEvidenceAt": "2026-10-09T02:08:50.458609+08:00",
+      "closedAt": "2026-10-09T03:32:43.998193+08:00",
+      "handling": {
+        "trackingSince": "2026-10-09T02:08:50.458609+08:00",
+        "recordedSeconds": 1025.643887,
+        "activeSince": null,
+        "activeUntil": null,
+        "note": "只累计三长链与两短链实际协议起止下界；不回填墙钟/未记录审阅工时。"
+      }
     }
   ],
   "milestones": [
@@ -1216,6 +1240,14 @@
     {
       "at": "2026-10-09T01:42:09.210394+08:00",
       "text": "成本复核后的唯一缓存候选有限收尾完成：Legacy冷读可见、Shared/OFF/P3和120秒恢复，1565/1566精确清理，本地源6439f11a。关闭自扩组合测试，不作全量/FPS声明。"
+    },
+    {
+      "at": "2026-10-09T03:12:26.785233+08:00",
+      "text": "三应用连续基本流程判读完成（N324.93s/E327.52s/K332.41s）；原图OFF可读、正文/加载底板及菜单/进度保留。E约47s过期租约资格单列。原进度和120秒恢复、四自有媒体精确清理；无产品修改/重建/安装。"
+    },
+    {
+      "at": "2026-10-09T03:32:43.998193+08:00",
+      "text": "两个执行缺口补证完成：N非末页RTL实际P2→P3→P2/LTR恢复；E有效尾段Continue/Back/Home/前台同P3。两原片完整解码判读，1571/1572精确清理，本轮未改产品。"
     }
   ],
   "evidence": [
@@ -2449,9 +2481,59 @@
       "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-cache-immutable-owned1565-export-20261009/device197-E-cache-immutable-regular2-original-info-savecancel-20261009.mp4",
       "storage": "device197",
       "kind": "video"
+    },
+    {
+      "id": "basic-flow-receipt",
+      "label": "三应用连续基本使用判读与资格",
+      "path": "three-host-basic-user-flow-current-receipt-20261009.json",
+      "storage": "device197"
+    },
+    {
+      "id": "basic-flow-n-movie",
+      "label": "NextN本轮连续基本使用完整原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-flow-N-export-E-source-20261009/device197-basic-flow-N-continuous-20261009.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "basic-flow-e-movie",
+      "label": "NextE本轮连续基本使用完整原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-flow-E-export-K-source-20261009/device197-basic-flow-E-continuous-20261009.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "basic-flow-k-movie",
+      "label": "Koma本轮连续基本使用完整原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-flow-K-export-E-final-20261009/device197-basic-flow-K-continuous-20261009.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "basic-flow-K-restored",
+      "label": "Koma原P18恢复终态",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-flow-K-restore-P18-terminal-20261009/gate.png",
+      "storage": "device197"
+    },
+    {
+      "id": "basic-tail-NextN-video",
+      "label": "NextN有限补证原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-tail-N-export-E-source-20261009/device197-basic-tail-N-RTL-20261009.mp4",
+      "storage": "device197",
+      "kind": "video"
+    },
+    {
+      "id": "basic-tail-NextE-video",
+      "label": "NextE有限补证原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-tail-E-export-K-source-20261009/device197-basic-tail-E-foreground-20261009.mp4",
+      "storage": "device197",
+      "kind": "video"
+    },
+    {
+      "id": "basic-tail-receipt",
+      "label": "两项补证、资格与清理回执",
+      "path": "basic-user-flow-targeted-tail-receipt-20261009.json",
+      "storage": "device197"
     }
   ],
-  "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
+  "evidenceNote": "各条原片/回执绑定实际应用和包，基本流程观察与旧专项分开；E租约尾段资格、未逐原帧全片视觉审阅及未达到3Hz均明确保留。页面显示实质动作，不因刷新伪装推进。",
   "stopRule": "只推进唯一当前动作及源码影响明确的既有基本行为缺口。已留证路径保持冻结；不扩大为功能开发、性能调参、整产品穷举或暂停的Koma生产。",
   "excluded": "现有菜单、设置、数据、导航、根转场、默认选择与旧版回退保留；不推送/发版，独立Koma生产与其Goal暂停；当前已按用户恢复197实机，旧模拟器排除197文本不再适用。",
   "costNote": "不虚构完成比例、费用或工时。问题经过时间持续显示；处理时长只累计已记录区间，未知历史不回填。页面连接不等于任务持续运行。",
@@ -2470,10 +2552,10 @@
     "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
     "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
     "readerSpecificWorkActive": false,
-    "state": "本轮有限修复与成本复核完成；原整体一致性结果不以局部证据关闭，完整替换与性能超越不作声明。",
+    "state": "本轮基本使用、两个补证及恢复完成；整体目标和原暂挂仍OPEN，不自动扩测。",
     "currentForegroundRepairPlanCompleted": true,
     "currentForegroundRepairReceipt": "foreground-window-eight-row-final-disposition-20261008.json",
-    "finiteCurrentPlan": "源码检查点6439f11a及当前a18f不可变缓存的普通代际、原图可读、Legacy冷读、正常返回/设置恢复和精确媒体清理均已完成；只关闭该有限计划。",
+    "finiteCurrentPlan": "三条长片+两项明确短链补证完成，原资格不改写。",
     "currentOriginalRepairPlanCompleted": true,
     "currentOriginalRepairReceipt": "E-original-current-eight-row-final-disposition-20261008.json",
     "currentCachedSaveSinglePlanCompleted": true,
@@ -2501,7 +2583,7 @@
       ],
       "noExternalBlockClaim": "未将总体资格未证明伪装成外部阻塞；本轮明确排定动作已实际执行，用户暂挂按各原项目保持。",
       "unprovenClaims": "原全量替换、所有布局/提供者与FPS性能超越仍未证明；有限修复完成不关闭用户整体目标，也不是未完成安全动作的退出条件。",
-      "finiteQueue": "缓存字节候选的最后安全动作已实际执行；未把未证明资格派发为无限组合验证。"
+      "finiteQueue": "本轮三条基本流程、N RTL实际往返、E有效尾段、原恢复/精确清理均完成；不因资格未全证明自动新建组合循环。"
     },
     "currentImmutableCachePlanCompleted": true,
     "currentImmutableCacheReceipt": "E-cache-immutable-current-runtime-receipt-20261009.json"
@@ -2607,10 +2689,16 @@
     }
   },
   "currentPhysicalState": {
-    "at": "2026-10-09T01:39:40.471918+08:00",
-    "actual": "Actual Shared native row, OriginalOFF/resampled, normalBack same DetailContinueP3, PowerManager AWAKE/Timeout120000/Override120000",
-    "cleanup": "Only owned1565/1566 deleteSUCCESS/exactquery0; own export copies and failed own HAP removed. Local raw evidence retained, 1566 unreviewed excluded. Lease04640ac5 released.",
-    "boundary": "Recorded terminal state only, no later AWAKE claim."
+    "at": "2026-10-09T03:30:22.728946+08:00",
+    "device": "192.168.50.197:12345",
+    "foreground": "system lockscreen at cleanup capture",
+    "lastAppGate": "03:27 com.honjow.koma Library02P18·95%",
+    "progress": "N/P2、E/P3、K/02P18原进度已分别观察恢复",
+    "settings": "original host settings and railOFF retained",
+    "timeout": "AWAKE/Timeout120000/Override120000 at cleanup readback",
+    "lease": "released",
+    "evidence": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-basic-tail-own-media-cleanup-20261009/gate.png",
+    "boundary": "清理截图为超时后的锁屏，不声称03:30仍显示K书架。"
   },
   "nextNOnlineHandoffObservation": {
     "recordedAt": "2026-10-07T21:26:53.512282+08:00",
@@ -3159,11 +3247,15 @@
     "state": "本轮从429中断实际恢复并完成命名缓存修复计划及显式重新加载直接分支；不将本轮计划完成等同总体替换，也不自动恢复用户暂挂"
   },
   "documentCheckpoint": {
-    "commit": "a274593f",
-    "at": "2026-10-08T23:23:12.811048+08:00",
-    "scope": "Owned current foreground/save/QA/web data; unrelated PRIVATE-HISTORY ledger and Kit geometry preserved",
-    "status": "此前a274593f仅是历史检查点；本轮缓存收尾和价值核算的实际文档提交见latestReceipt，避免自填当前提交哈希。",
-    "latestReceipt": "reader-value-review-final-checkpoint-20261009.json"
+    "state": "本记录所在两路径范围检查点；实际SHA与网页核验另保存在basic-user-flow-checkpoint-20261009.json",
+    "baseHead": "5e85176f5b1e40bad3196809be076a7cbaefefc1",
+    "ownedPaths": [
+      "docs/plans/active/shared-reader-replacement-work-order.md",
+      "docs/qa/nextn-active-acceptance.md"
+    ],
+    "webReceipt": "basic-user-flow-web-routes-20261009.json",
+    "noPush": true,
+    "scope": "本轮基本流程观察与协议资格，未改产品代码，保留外来WIP。"
   },
   "ordinaryVolumePlan": {
     "sourcePlan": "E-ordinary-volume-source-plan-20261008.json",
@@ -3552,8 +3644,8 @@
   },
   "immutableCacheRuntimeReceipt": "E-cache-immutable-current-runtime-receipt-20261009.json",
   "replacementDisposition": {
-    "at": "2026-10-09T01:42:09.210394+08:00",
-    "currentFiniteQueue": "completed",
+    "at": "2026-10-09T03:32:43.998193+08:00",
+    "currentFiniteQueue": "completed_current_basic_flows_and_targeted_tails",
     "retained": "六组源修复按各自命名运行绑定保留；前三宿主共同生命周期、章节边界可复用，EH源缓存/原图保持NextE宿主职责。",
     "held": [
       "enhancement-success：用户已要求跳过系统增强成功验收，真实不同能力条件并明确重新开启后恢复",
@@ -3562,7 +3654,74 @@
     ],
     "claimLimits": "全量替换、所有布局/提供者、FPS性能超越仍未证明。未知资格不等于新缺陷，也不自动成为补丁或穷举测试。",
     "costDecision": "不继续NextE单软件特调；没有新的源码因果或实际反例，不复测已冻结路径。"
-  }
+  },
+  "ordinaryUserFlowPlan": {
+    "status": "OBSERVED · 三条基本流程与两项有限补证完成",
+    "reason": "最新人类要求普通用户五分钟基本操作无明显退化，禁止未完成结束。",
+    "sourceAuthority": "Legacy原行为、宿主canonical菜单/设置与Kit consumer contract。",
+    "costBoundary": "每宿主一个衔接流程；不重复冻结专项、不新增矩阵/FPS、不制造缓存/时序。",
+    "hosts": {
+      "NextN": {
+        "state": "reviewed_named_flow_with_original_qualification_preserved",
+        "receipt": "three-host-basic-user-flow-current-receipt-20261009.json",
+        "current": "本轮当前包连续基本使用原片324.93s已判读；根转场保持源，未观察点击时先跳全屏；页序与缩略图栏对应；方向菜单和设置对应；Home/前台保留P2正文；Back同源继续P2。在线P4/P6/P7有解析提示但图片底板保留并完成，不写成全程无提示。 当前三百余秒连续基本流程观察完成；RTL时P7向末端手势被末页钳位，不能冒充RTL反向翻页证明。快速段实际HDC节奏未达到3次/秒，不接受3Hz/FPS。 有效60m租约另补86.885822s/419原帧、全部12联排：非末页RTL右滑P2→P3、左滑P3→P2，菜单实际LTR恢复并正常Back同P2。原长片末页钳位资格保留。"
+      },
+      "NextE": {
+        "state": "reviewed_named_flow_with_original_qualification_preserved",
+        "receipt": "three-host-basic-user-flow-current-receipt-20261009.json",
+        "current": "本轮当前包连续基本使用原片327.52s已判读；OriginalON帧692–701、OFF760–767准备提示覆盖保留正文，完成后正文可读；OFF没有变成黑屏。超过初始预载范围P3→13→3可读；原四方向菜单、设置和同页返回正常。黑底白花是P3漫画正文，不判为黑屏。 327.518744秒视频基本流程已审阅，但原租约02:37:25过期，命令链尾约47秒不符合租约协议；原始画面事实保留，不标整段协议合格。新租约只补终态观察，没有冒充原尾段有效。快速段不接受3Hz/FPS。 有效60m租约另补16.984156s/329原帧、全部10联排：两次Continue/正常Back及Home/普通前台同P3正文和chrome，最终同DetailP3。系统push短准备底18–21/130–133保留；不追认原失效尾段。"
+      },
+      "Koma": {
+        "state": "reviewed_named_flow_with_original_qualification_preserved",
+        "receipt": "three-host-basic-user-flow-current-receipt-20261009.json",
+        "current": "本轮当前包连续基本使用原片332.41s已判读；双页往返到1–2及17–18可读，无持续空白或加载卡死；菜单保留single/dual/vertical/continuous，实际勾选dual；本书设置保留Dual/LTR。正常双页翻页记首项17，旧版与共享相同，不新增修补；精确缩略图18恢复后同书架第18页。 332.409256秒连续基本流程观察完成。实际整段终态17·89%如实记录；后续当前UI恢复原18，不将恢复动作混入原片。不是所有章节/本地文件/布局/FPS接受。"
+      }
+    },
+    "lastActualAction": "N非末页RTL实际往返、E有效尾段判读完成；自建1571/1572精确清理和原120秒读回、租约正常释放。",
+    "nextUnverifiedAction": "本轮实际运行队列已执行完；文档/网页收口，不新增产品补丁或组合矩阵。",
+    "updatedAt": "2026-10-09T03:32:43.998193+08:00",
+    "sourceAudit": {
+      "NextN": "原ReaderModeControl四方向被Legacy/Shared共用；SettingsChoiceRow仅canonical value推导标签与勾选；readerPresentation Monitor调用 retained session.setPolicy。",
+      "NextE": "原四方向HostModeControl与readMode Monitor同policy；普通原图切换复用已有source服务，不改按钮语义。",
+      "Koma": "宿主四翻页模式、per-book preferences由KomaReaderPreferenceBridge和既有写队列承接；Kit不另造宿主菜单。",
+      "bindingReadback": [
+        {
+          "binding": "source-policy-N-hidden-ready-binding-20261008.json",
+          "recordedSources": 7,
+          "mismatch": [],
+          "hap": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
+          "actualHapMatches": true
+        },
+        {
+          "binding": "E-cache-immutable-binding-20261009.json",
+          "recordedSources": 17,
+          "mismatch": [],
+          "hap": "a18f6b78f3ddf9d502a7e5db2140c80887575d584518988c0da942c67ed43201",
+          "actualHapMatches": true
+        },
+        {
+          "binding": "K-foreground-hide-intent-binding-20261008.json",
+          "recordedSources": 10,
+          "mismatch": [],
+          "hap": "2d0e875f2c5cfcf2f545af2953aa6edd37e8fe1c9caa286870917183f1091de2",
+          "actualHapMatches": true
+        }
+      ]
+    },
+    "receipt": "three-host-basic-user-flow-current-receipt-20261009.json",
+    "targetedFollowup": {
+      "reason": "N测试目标末页导致方向动作未命中；E尾段协调失效。避免将这两项资格写成通过。",
+      "boundedActions": [
+        "N现有P2选择RTL，右滑实际P3→左滑P2，恢复原LTR/P2",
+        "E现有P3正常继续→Home→普通前台→正常Back同DetailP3，全部有效租约"
+      ],
+      "forbidden": "不重放三条五分钟长片，不新建产品补丁或测试矩阵。",
+      "status": "completed",
+      "receipt": "basic-user-flow-targeted-tail-receipt-20261009.json",
+      "at": "2026-10-09T03:32:43.998193+08:00"
+    }
+  },
+  "ordinaryUserFlowReviewReceipt": "three-host-basic-user-flow-current-receipt-20261009.json"
 }
 -->
 
