@@ -52,6 +52,8 @@ checked cleanup原生恢复Shared及Terra upper1、原Library Catalogue102 P1/10
 
 本次 material physical result（2026-10-07 20:00–20:04+08）：E安装d7/Kit5b保持不变。普通画廊4203217当前预览P63→立即快速水平滑动，日志id2/source62 moving16.789→cancelled16.866；MOV `8dba385b`22.1s/1235帧/412种RGB、12张联排全部审阅，旧K缓存frame0排除。模糊缩略图连续保留到原172，原173(3.4917s)开始同P63清晰图片，直到Back；没有整页黑帧或图片消失。返回同Grid、Detail Continue63，checked cleanup原生恢复Continue3与超时30000。这里只接受命名移动取消后的可见正文与返回；没有selected request/asset/slot/epoch tuple或网络未就绪来源，不能称网络pending提示、晚到重复回调或FPS通过。不得以这次未测得的前提作补丁/缓存清除/时序穷举。回执 `e-natural-pending-motion-cancel-receipt-20261007.json`；原早期后台行由唯一工作单继续调度。
 
+本次 material physical result（2026-10-08 11:00+08）：N9af6普通682531/P2 actualSave原生许可一次，WEBP63548B/1280×1101完整解码且内容与P2/许可预览一致；actualReader2/7和原DetailContinueP2保持，自建1527/1528正向导出后精确清理0。N回执 `N-current-actual-save-acceptance-receipt-20261008.json`；仅接受此单图，81联排仅000/080功能节点审阅，不接受全片/FPS/五分钟。E413c普通4203217/P3单次Save busy→idle，未出现原生许可、七种确切格式均无新媒体，原P3返回；失败MOV1529已正向导出。另源详情浅背景上的白色状态栏文字保留反例。当前E失败原因/颜色owner仍在既有范围调查，不重放保存请求、修改资源或以历史显隐通过抵消颜色反例。未修改产品/构建/安装。
+
 ## 非 Reader 遗留边界（不自动启动）
 
 文档整理不对无关产品作新的通过判断。账号 P0 的历史 2026-09-04 named candidate 已有
@@ -206,3 +208,29 @@ Current953d positively installed on physical197 (ALN-AL80/API26/1260x2720), ordi
 原Shared/02P18、Dual/LTR/odd_left从右侧P18保存一次，实际原生许可显示1张图片；允许后同名JPG由0条变1条，正向导出250413B/980×1394 RGB，完整解码并查看原图，与右页及原生预览内容一致。许可框和toast仅辅助；实际导出内容是完成证据。仍18/19，02index17/19及03index9/15的pageId/ratio/completed/isRead/columnMode与基线一致，Library原02/P18·95%。
 
 全原片2338090a/197.65s及4487帧映射保留；只审阅000/001/124功能节点联排及实际原生整图，未称125联排全审或FPS/全程动画接受，调查门等待不当作产品耗时。自建1525/1526导出后精确delete success/query0；首次清理末态自动休眠锁屏，未当Library接受，已知中性解锁+普通前台后实际K root[0,124][1260,2720]/原书库整图与AWAKE120000/Override120000再确认。App私有save-temp列举拒绝，源码finally release不能冒充物理清理接受。回执K-current-actual-save-acceptance-receipt-20261008.json。无产品/构建/安装/设置/缓存/源改动；其他宿主/双图/变化中保存/发送未由此接受。
+
+
+## 2026-10-08T11:29:39.396176+08:00 · E单次保存下载失败与源颜色因果区分
+
+当前413c Shared普通4203217/P3一次Save无系统许可/新媒体，既有持久日志同一请求10:57:59.706、10:58:00.856、10:58:03.011三个内部attempt均image HTTP403；旧版ImageSaveUtil也调用同一下载函数，未执行Legacy同URL，不能报告Shared专属退化或远端403原因。失败MOV93e56f08/122.068s/395decoded和全部11联排已审阅，部分图区间缺失与native整图点证据冲突，保留未归因，不能接受显示连续性/FPS。Only1529导出后精确delete success/query0。回执E-current-actual-save-failure-receipt-20261008.json。
+
+温热源页白字在Save前已存在，非据Save建立原因。一次no-clear cold同DetailP3/source黑字→SharedP3/实际chrome→Back同Detail黑字，802a600a/8.597s/119decoded/118distinct四联排全审阅，不执行Save时正文观察区间完整。随后原进程自然锁屏/中性无凭据解锁、无AA，11:22 actualE root124/ContinueP3整图仍黑字。Only1530导出后精确delete/query0，AWAKE/Timeout120000/Override120000读回。当前Shared observer=null，实际saved/restore properties未留存；readerSourceSystemBarStyle仅Legacy overlay，不是root源栏，禁止用改其nullguard掩盖source。冷启动未复现不等于反例修复。原export manifest继承N binding/K notes元数据错误保留原件，实际E roots/current E binding另在纠正回执记录，不将错误metadata当绑定证据。E-current-source-color-cold-discrimination-receipt-20261008.json。
+
+本段无产品源码/构建/安装/新保存请求/缓存/资源/主题变更；K/N已命名真实单图保存证据保留，整体替换仍OPEN。唯一动作取工作单。
+
+
+2026-10-08T11:40:36.996059+08:00 更正先前判读及owner映射：从失败原片解码原尺寸0/14/222并逐张查看，漫画云团/自身黑色区域/文字/边界一致，先前由缩小联排推断缺图不成立，撤销该产品异常判断，不为它修改图片路径。实际Index.prepareReaderTrialWindow已设ReaderTrialEntryProbe.windowEvent observer；NextEReaderLabPage null observer是managesTrialWindow=false时未使用的子owner，不描述当前实际窗口。saved/restore_readback存在内存而不在既有持久日志，故一行DiagnosticLogger.info接实际Index观察点候选构建中，窗口/Kit/状态/几何/菜单/转场时序未改。诊断计划E-source-color-existing-observer-diagnostic-plan-20261008.json；构建不当运行接受。
+
+
+2026-10-08T11:59:14.220412+08:00 再纠正11:40 owner映射：Index普通ReaderShared2281省略managesTrialWindow，默认true，LabPage116为实际owner且原observer=null。Index1130供Debug1150/managesfalse，8cc日志无效；当前源精确撤其一行，仅LabPage既有observer接DiagnosticLogger，启用既有restore_readback读，不改Window写、显隐、等待、树或Kit。11:45实际P3 chrome→Home→普通前台仍3/124/root127但时钟黑字黑底；11:46 Back同Detail/ContinueP3/root124黑字整图已审阅，Power120000恢复。不是总体生命周期接受。
+
+
+2026-10-08T12:08:15.052076+08:00 E953a实际普通managed observer事件取得：12:01:50 saved content#FF000000/false；12:01:56 restore_called与readback同#FF000000/false，Back同Detail/P3黑字。226decoded/224distinct七联排000-006全部查看，Home前chrome有白色clock，plainforeground返回实际3/124/body/chrome但clock黑字黑底。仅此颜色时序反例与当前backup正确被观察；温热白字未被消除，具体NativeNavigation第二写入来源尚待源码确认。精确1532导出/cleanup0，Timeout120000恢复；无窗口行为patch、无FPS/总体接受。公开回执只抽reader-window事件，不注册原始敏感日志。E-managed-foreground-color-diagnostic-receipt-20261008.json。
+
+
+2026-10-08T12:34:54.150245+08:00 E8ca实际普通P3→chrome→Home/plain前台白字；隐栏Home/plain前台保持无栏；显示后normalBack同DetailP3黑字。MOV9fc6f87d/15.317s/358decoded/352distinct、全部10联排及原134/260/335整图审阅。仅此当前候选命名路径接受，不推FPS/三宿主/整体替换，横屏及缩略图影响范围仍依唯一工作单继续。1533正向导出6330101B、完整解码后精确delete success/query0，原片本地保留。恢复gate当前ScreenLock，下一操作先执行已知中性解锁，未误称源页。回执E-foreground-intent-current-acceptance-receipt-20261008.json。
+
+
+## 2026-10-08T12:53:11.742906+08:00 · E最终前台窗口意图修复
+
+实际managed owner漏foreground replay且actualvisible事件空处理，官方Navigation backup/restore源码只支持第二writer机制推断，未把具体Native writer称为已追踪。LabPage复用既有Monitor与prepareStatusBarVisible两处窄修复，单文件9+/2-本地提交eec20a92。临时observer日志已撤，最终7978正向native安装/无clear；实际ordinaryP3显栏Home/plainforeground白字、隐栏Home/plainforeground无栏、show后normalBack同Detail/ContinueP3深色源栏。359decoded/354distinct全部10联排及原140/266/338、三native整图核对；原片f7a29d6e/15.125s。先前8ca横屏430/420/all12与缩略图119/113/all4及原25/44/68/84/95分别留原绑定，不把构建当全运行。三个被影响命名范围完成，N/K当前foreground未由E推广。1534/1535/1536正向导出后精确delete success/query0，原片保留；原Timeout120000/Override120000，最终cleanup实际PowerSLEEP不冒充当前UI。E单次HTTP403保存失败独立保留，不重复同URL。下一动作只读唯一工作单。

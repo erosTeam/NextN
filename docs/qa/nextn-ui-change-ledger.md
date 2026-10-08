@@ -13452,3 +13452,10 @@ Source-hidden readiness impact before edit: N common primitive completes on the 
 
 - Final named external result: current E351fa/413c actual Legacy and Shared publicP3 Read→newbody/actualchrome→ordinaryBack/source direction accepted separately:1513/55e2e1f1/631original/all19contacts and1514/c83826de/414original/all12contacts. ExistingNavigation reused; initialroot/cold admission unchanged. Initial1512missingReader is a rejected interval, not discarded. Precise assetcleanup/query0 andoriginal120000/P3/Shared restoration complete; localoriginals retained.
 - Remaining direction-ownership row: E413c actualSharedchrome-visible portrait→landscape→portrait/currentP3Back accepted in1515/6b77a745/266original/all8contacts plus4raws; nativeReader127/SCB123 duringlandscape. Common function andthreeAbilitymapping sourceproof remain separate from E runtime; no N/K allorientation/FPS/whole replacement claim. No further productpatch from this interval.
+
+
+## E-READER-FOREGROUND-20261008 · OPEN
+
+2026-10-08T12:20:05.263181+08:00 用户持续授权修复共享阅读器一致性，当前真实反例：E953a普通P3实际chrome白字→Home/plainforeground实际chrome不变但clock黑字黑底。参考为同一原片Home前的wholeReader及返回sourceP3；原图、上下chrome、进度/页码、nativeviewport保持。源码实际owner为LabPage managed，已有replay漏foreground且syncChromeVisible(true)忽略republish。最小修正只接foreground到既有replay，并在actualvisible事件使用既有Window准备和currentguard；无Tree/布局/geometry/menu/setting/entry/sourceclose改动。N/K不改；详细影响与反证E-managed-foreground-window-intent-plan-20261008.json。当前OPEN，构建不等于运行接受。
+
+- 2026-10-08T12:53:11.742906+08:00 bounded disposition: E eec20a92 single-file foreground replay/actualchrome Window gate accepted for final7978 ordinaryP3 visible/hidden Home/plainforeground andnormalBack only. All359decoded/10contacts+original140/266/338 andnative whole terminalPNGs reviewed. Prior8ca affectedlandscape430/all12 andthumbnail119/all4+5originals retainbinding; observer removed, other9mappedfiles byteidentical. Own1533–1536 exactcleanup/query0; sourceP3 and120000 restored. No N/K foreground/FPS/fullreplacement promotion; no root/style/menu/geometry/cache edits.
