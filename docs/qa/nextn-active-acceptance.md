@@ -286,3 +286,46 @@ E7978普通4203217/P3：实际原生Info由WEBP60.9KB/800×1130重采样→JPEG8
 本次 material physical result（2026-10-08 17:51–17:55执行、18:10清理+08）：E同0f6f普通4203217，现有双页SaveBoth原生左P3/右P4和2图许可，一次Allow后两份实际WEBP800×1130：P3/62382B与既有普通单图SHA逐字节相同，P4/109006B完整解码且内容匹配右图。原片246.034s/3857原PTS保留，审阅14功能门槛和293–397/3740–3856全部222关键原帧（7联排），未观察正文丢失；没有审阅全3857帧，不称全片连续性/入场/布局/FPS通过。原Single、OriginalOFF和DetailContinueP3实际恢复；120000实际读回，后续正常超时SLEEP不冒充AWAKE。
 
 1551–1553只删除本次自建媒体且正向导出保留。URI-form查询含displayName格式错误，其零结果不采信；后续checked协议按P3WEBP/P3JPEG/P4WEBP及两段准确电影显示名分别query0且无格式提示，无删除重放。两复核租约正常释放；回执E-cached-save-double-current-acceptance-receipt-20261008.json。本轮717a保存补丁直接命名动作完成，整体目标/性能结论不扩大，用户暂挂仍保持。
+
+2026-10-08T18:47:33.999337+08:00 保存横向源码对照：仅核对当前N工作树、E717a和K实际生产checkout/db1a，不使用/Users/honjow/git/Koma的旧Debug实现代替生产。14份宿主文件与各自提交相符，共同ReaderAsset/SaveTarget/SystemSaveHost三份逐字节一致；N成功缓存及K网络/本地正文直接复制本地文件，无E式重复下载。N翻译图保存译图与旧版translated-first一致，不强行统一参数。详见cross-host-save-source-comparison-20261008.json；只增加源码证据，没有新增设备通过/产品补丁。保存证据文档检查点b5da54ed已提交，十条新增网页链接Range读取成功。
+
+### 2026-10-08 · E 保存确认框与前台恢复组合（命名路径完成）
+
+当前0f6f/717a0ff9普通P3系统确认框打开后Home，正确com.erosteam.nexte普通前台返回仍保留同确认框；当前“禁止”一次后实际P3正文/白字栏，正常Back同Detail“继续P3”/黑字。未点击允许，WEBP/JPEG准确显示名查询均0。录屏1554已停，待正向导出、受影响原帧审阅与精确自有媒体清理。timeout最终正确命令读回120000/120000。错误包名10104001、tap预检拒绝、无效setmode -s（被设备拒绝）不作产品验收，原命令输出留存。
+
+E组合收尾：E-save-dialog-foreground-cancel-acceptance-20261008.json。Home/正确普通前台/禁止/Back对应287关键原帧与18联排全部审阅，另审4原图；同P3正文/白字→同DetailP3黑字，未见旧保存层残留。原片799.028秒完整解码22507帧，但仅上述动作窗口接受，长等待与全片/FPS不接受。1554正向导出后精确删除，准确显示名零结果；正常释放租约。120000/120000恢复读回后，睡眠时Override10000实际另记，不虚称最终override不变。
+
+
+2026-10-08T19:39:20.677854+08:00 N/K保存确认框foreground组合实际执行完：N当前9af6普通682531/P2 nativeSave1在Home/plainforeground后保留，禁止一次正文2/7保持、正常Back同Detail继续P2；K当前2d0e生产checkout/db1a原Dual左17右18，选择右18系统Save1预览与右图匹配，Home/plainforeground后确认框保留，禁止一次同18/19双图和正常保存按钮，Back同Library继续02/P18·95%。未Allow、无settings/cache/产品代码改动；N准确WEBP/JPG查询0。K恢复timeout实际AWAKE/120000/120000。N1555/K1556已停录，原片审阅与精确自有媒体清理正在执行，尚未以静态门槛宣称完整切换接受。
+
+
+2026-10-08T19:56:15.933919+08:00 N/K系统保存确认框foreground组合收尾：N9af6普通682531/P2，K2d0e生产db1a原Dual17/18选择右18，nativeSave1→Home→正确bundle普通前台→禁止一次→同正文/正常保存按钮→普通Back分别同Detail继续P2和Library02/P18·95%、源黑字。N284关键原帧/18联排及6原图、K326关键原帧/21联排及3原图全部审阅；原片分别3924/1691完整解码，DTS及K解码警告原样保存，不冒充全片视觉/FPS接受。先前N联排条带怀疑未被完整原2131/2154/2180确认，没有据此改代码。收据N-save-dialog-foreground-cancel-acceptance-20261008.json、K-save-dialog-foreground-cancel-acceptance-20261008.json。
+
+本地原片SHA2e3158d3/92bfaa82有效保留，设备仅自建1555/1556完整URI正向删除；第一次查询带displayName格式错误虽exit0不接受，实际正确query <准确文件名> -u均find0且无格式错误。无Allow，N准确WEBP/JPG、K准确JPEG新图查询0；120秒timeout实际19:37:51恢复，后续仅媒体清理不冒充当前唤醒UI。两租约均正常释放，无源码/构建/安装/缓存/菜单修改。E287关键原帧组合沿独立回执，三宿主命名组合完成；整体替换、五分钟基本使用和性能未由此证明。唯一剩余动作仍取工作单，不新增平行队列。
+
+
+2026-10-08T20:11:44.787655+08:00 既有预载缺口的有界源码澄清：共享ReaderPagedSession每次资源窗推进重排后续0..5文件预载，并非仅初始五页；file-ready不代表native Image decoded。共同Swiper.cachedCount固定1，E旧版按设置缓存原生节点且在线有ReaderCacheWarmers；N旧版List为3、单/双Swiper为1；K旧版本地0避免THR_BLOCK_6S、远程按设置。来源hash及准确symbol见rolling-preload-native-budget-source-comparison-20261008.json。未据此推断既有在线黑帧是本地解码退化，未作统一增大缓存或产品补丁；一次普通现有Downloads可用性门槛决定必要下一动作，仍只从工作单顶层调度。
+
+2026-10-08T20:41:59.295691+08:00197现有完成下载Non-H4212986/19P普通Shared13→7→13一次快速手势往返，全部371原帧/24联排及181/365全原图审阅，未观察整页黑屏/准备进度面板；实际约2.05次/秒，不接受3Hz/FPS/冷归档/全量替换。原P13/原在线4203217P3保留、正常Back同Downloads、120秒超时恢复；1557精确删除/正确文件名查询0及临时导出清理，租约正常释放。回执E-local-downloaded-fast-pages-current-receipt-20261008.json。另确认E Shared正文和原图100进入低优先级单下载队列、Legacy可见0会提升的源码差异；修改前因果/影响与拒绝条件已记录E-shared-asset-priority-cause-impact-20261008.json，尚未把该源码原因当运行修复接受。唯一当前动作仍取工作单顶层。
+
+2026-10-08T20:52:34.501241+08:00源码因果纠正：ReaderImagePriorityScheduler.isLowPriority实际为priority===LOW2，不是>=2；此前将Shared100推断为低队列正文等待是错误并撤回，发生在候选编辑/构建/安装启动后、运行验收前。正确可证差异是Shared预载100绕过后台单槽，而Legacy预载LOW2受限。三处常量候选恢复LOW预载/MEDIUM资源需求/HIGH显式原图角色，影响范围重新核定；不接受错误因果或既有在线黑帧归因。修订前记录明确保留于ignored因果receipt correction字段，唯一运行动作按工作单继续。
+
+### 2026-10-08 21:20 CST — E现有预载调度角色与保留反例
+
+- 源码828fac15仅adapter三角色常量，当前2ee4签名包正向安装；不改Kit树、缓存数、入口/菜单/系统栏。LOW精确2，旧100后台绕过限制；此前低队列正文推断撤回及错误时序已留存。
+- 当前197 P3→原生滑块P21→快速滑动P22：P23实际priority1晋升，正确.img前后读回证明P23/24/25新文件257622/302024/416518字节。92原帧三联排全审阅，7/35/91原图审阅。**已缓存P21仍在0.182～0.648秒黑底加载，不接受缓存跳页平滑**；P21→P22命名邻页连续。
+- 原P3/同DetailContinueP3与AWAKE/Timeout120000/Override120000已实际恢复；自有1558已导出SHA693cccbe留存，删除SUCCESS/精确query0，租约正常释放。
+- .image错扩展的只读缓存探测已排除、.img实际纠正；两个锁屏/未离开comments的前序注入不计验收。
+- 唯一当前动作见工作单：先对照Legacy缓存优先与Shared先解源路径，完整评估Save/原图/信息/增强再窄改。回执 E-shared-priority-current-runtime-receipt-20261008.json；无FPS、整体替换或发版结论。
+
+
+2026-10-08T22:03:22.589706+08:00 E当前8c84缓存优先命名动作：正向无clear安装后同4203217P3→原生滑块P21→Save1许可预览同P21→禁止一次→P3→正常Back同DetailContinueP3；446关键原帧/14联排全审及10原图，不冒充全2870帧。P21black10–15/0.299744..0.400056约0.10秒、返回P3black2803–2805仍保留；实际标签正在准备图片对应decoding，非解源等待，不称零黑帧/FPS。Legacy同阶段有对应opacity/loader，但时间等价未证明。单adapter32+/8−本地7e290b47，16源绑定sha一致。自建1559正向导出SHA7232a9c1保留后精确deleteSUCCESS/queryfind0，临时文件清理/原120s恢复及租约释放。影响中的缓存AutoRead尚待实际动作，唯一队列已切该直接分支，未扩大菜单/Kit或其他宿主。回执E-cache-before-resolve-current-runtime-receipt-20261008.json。
+
+
+2026-10-08T22:26:36.392873+08:00 当前8c84缓存AutoRead直接影响区间：普通4203217P3一次ON、原3秒节奏推进到P4/P5、一次OFF；整段172原PTS/165唯一、全部6联排和80/114/171原尺寸图已审阅，两个邻页过渡正文保持，无准备黑底面板。此结果不接受滑块跳页、FPS、慢网或全布局。原片6c279dd7保留。第一次恢复实际DetailP5、下一次锁屏均拒绝为原P3恢复；最终连续wake/原路径右滑两次/Back实际同DetailContinueP3，22:17:39读回AWAKE/Timeout120000/Override120000。自有1560精确deleteSUCCESS、准确文件名queryfind0、tmp导出副本清理、租约正常释放。回执E-cache-autoread-current-runtime-receipt-20261008.json；当前仅原图缓存依赖的源码收尾，唯一动作仍取工作单。
+
+
+2026-10-08T22:44:00+08:00 原图缓存顺序直接依赖收尾：修改前E prepareOriginal先resolveOriginal而Legacy先读原图文件的源码因果/8行影响留存；只改adapter12+/3−，65def48d本地提交。当前c7ad冷普通4203217/P3 ON→Info JPEG864.7KB4299×6071→Save1同P3预览/禁止→OFF→Info WEBP60.9KB800×1130→Back同DetailContinueP3及黑色源文字，426原PTS/425唯一、全部14联排与8原图已审阅。ON9–17与OFF269–272 preparing反馈叠在保留正文上，没有整图黑帧观察；不称无加载反馈。原片3755e90f保留、rawvideo DTS警告保留、不以empty narrow PID8962日志证明无历史网络。22:41只删自建1561 deleteSUCCESS/准确文件名queryfind0，own临时movie/HAP副本移除，租约741e正常释放。源码16绑定字节一致；forceReload/eviction回退仅源码证据、不是运行通过。回执E-cached-original-source-order-current-runtime-receipt-20261008.json，8行最终判定E-priority-cache-original-eight-row-final-disposition-20261008.json。当前只对已保留P21约0.10秒准备黑底做有限源码阶段对照，整体替换/FPS不推广。唯一动作仍取工作单。
+
+
+2026-10-08T23:10:46.958749+08:00 缓存跳页准备阶段有限旧版参考完成：当前c7ad同197/原生4203217/P3，通过原设置选择Legacy，冷进程普通继续后Slider P3→P21→P3→Back同DetailP3。原片c74a8d5f，148视频原PTS/5联排全部审阅及10/11/12/15/16/77全尺寸原帧。Legacy P21黑10–15，第一正文16，0.217267→0.314078=0.096811秒；Shared 8c84命名原片黑10–15、第一正文16、0.299744→0.400056=0.100312秒。原生根与Slider同视口；普通缓存路径未被c7ad原图专用修改改变。两次样本不证明帧率/性能相等，也不接受零黑；没有支持继续扩大Shared等待/预算/转场补丁的源码因果。已正常恢复原Shared设置、普通P3正文、Back同DetailContinueP3与黑色源文字及120000/Override120000实际读回；23:07精确自建1562 deleteSUCCESS/query0、自有导出副本删除，原片本地保留，租约199d正常释放。回执E-cached-slider-Legacy-comparison-current-receipt-20261008.json。本轮产品源码未再修改，当前唯一动作转为两份证据文档提交与网页核验；原暂挂和整体替换/性能未证明限制保持。
