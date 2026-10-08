@@ -382,3 +382,12 @@ K双页正常翻页保存首项17，与旧ReaderPage spreadIndexes/setPage及共
 用户已转向Koma生产开发，唯一生产动作仍取Koma工作单。FOLDER-001本地普通目录确认/持久READ授权/cold封面与P2/同根重导入/取消保数据已接受并提交7f8ad4e6。KAV-001普通安全保存的Asset群组因果修复d7e8089a，当前自有配置/未收藏读/显式收藏/冷读命名路径已接受。KAV-COVER-001三文件协议地址与详情身份修复d3d3c6c7：当前197签名Release44089b81，cold原书架卡/继续卡/详情真实封面，原15书及Reader字节保持，样本通过原UI移出。本地receipt为/private/tmp/koma-production-20261005/.hermes-artifacts/20261005-production/kav-cover001-197-acceptance-receipt.json。
 
 这些是Koma生产路径证据；Reader/Kit两份原WIP字节保留，未重跑或提升旧Reader全量替换/FPS结论，N/E冻结路径不重开。Koma下一有限包为既有目录维护FOLDER-002，只读owner评估后一个自有根新增章的普通重扫，不从本回执调度重复验收。
+
+
+### 2026-10-09 07:51 · Koma目录身份与原页位置、私库历史检查点
+
+Koma唯一生产队列继续取/private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md；N/E冻结接受路径不重开。FOLDER-002普通自有根新增章及原生改名恢复已按旧命名回执接受，源码未因此重写。FOLDER-ID-001三文件acb15205：197 signedRelease dbc7b2ba双自有root同名Nemo并存15→16、两root重扫/cold新1/1与原2/3，原UI仅移出新书后精确原15保留。PRIVATE-HISTORY-KAV-001未增加代码：dbc7b2ba cold普通History重开自有未收藏Kavita章2P2/3、原Back完整3章9页目录仍加入书架、Library15逐字节不变。
+
+FOLDER-PROGRESS-001两文件a27af54f：原页ID在目录前插后的继续序号消费修正，与书架摘要共用纯解析；常态返回原进度对象，不改树/菜单/窗口/Kit。197当前signedRelease9bdec103的实际普通同root前插书架P3/75、原详情Continue实际原002蘑菇图3/4、no-data-clear cold同图；FileManager只删除本轮新增000后重扫书架P2/67，实际同图2/3、当前DetailContinue2/3，正常回Library。其他14本、其他progress/章状态、sourceHistory/remoteHistory完全相同；原章页ID/URI恢复。自身扫描章createdAt/updatedAt及真实阅读时间变动如实保留，未宣称Library整文件字节相同。前插阶段Detail标签未独立拍摄，Legacy单独选择/全部布局/FPS不由本包证明。
+
+回执：Koma ignored artifact root .hermes-artifacts/20261005-production中的folder-id001-197-acceptance-receipt.json、private-history-kav001-197-acceptance-receipt.json、folder-progress001-197-acceptance-receipt.json；后者绑定当前签名HAP/source并记录902秒。实际端点192.168.50.197:12345、lease20261008-195528-c6642941，原高性能与120000ms观测超时保持。本轮首锁屏点击不计正文接受；其后刷新锚点后的实际图单独记录。BAK197 signal0实际Operation not permitted，仅限制直接精确中断仪器，不限制其他可执行工作，不以hdc exit0称允许；没有重复抢窗口/注入checkpoint/延时。当前转入原私库历史备份保留边界，未进行全历史清空，不推送或发版，不提升Reader全量替换结论。
