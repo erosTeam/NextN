@@ -172,3 +172,13 @@ Current953d positively installed on physical197 (ALN-AL80/API26/1260x2720), ordi
 ### 2026-10-08T08:20:38.262137+08:00 — 当前E413c阅读中方向所有权与清理
 
 原Shared/P3实际Continue进入、显示工具栏后，阅读页仍显示时横屏→竖屏：横屏原生rkit-reading-surface/root127、3/124工具栏和SCBGestureTopBar123留存，随后普通Back同Detail继续P3/root124。原片6b77a745/16.469秒、266decoded/252distinct，全部8联排及79/96/139/230四张原图已审阅。回执 `source-policy-E-live-direction-receipt-20261008.json`；这仅接受当前E Shared方向所有权行，不能推广N/K所有旋转、FPS或全量替换。精确本次1515录屏清理query0，原Timeout120000/Override120000、P3、Shared和高性能状态保留；前三次1513/1514同样清理，本地所有原片保留。
+
+
+## 2026-10-08T08:58:57.597236+08:00 · 197普通Shared音量键命名区间
+
+- 延续既有“release日志没有真实按键”缺口；先映射共同ReaderVolumeKeys/inputConsumer及N/E/K宿主路由、前台、设置sheet和偏好hydration门控。没有修改产品源码，未复测已冻结入场。
+- E当前413c原开关ON，平台17实际P3→P4、16→P3，再正常Back同DetailP3；独立原片673aa140/192帧、6联排全审。N当前9af6原OFF临时ON，同一session立即17→P3、16→P2；287556e4/308帧、10联排全审；原OFF/DetailP2恢复。
+- K当前6e1d原OFF临时ON，原down-next方向不变：16使18所在17/18跨页→15/16，17回到17/18并显示首项17；d636c819/291帧（290不同RGB）、10联排全审。Kit selectDisplay→anchorAt默认part0与保留旧版next/previous→setPage(spreadstarts)同规则。不能报告原数字18自动回到18，也不能据此宣称新回归或RuntimeLegacy按键通过；已通过原缩略图明确恢复选中18、原OFF、隐藏缩略图栏、Library02/P18·95%。
+- 三宿主actual intent accepted=true与离开/关闭设置released=true均有本次时间戳；八路音量保持12/3/0/8/0/3/12/3、VIBRATE、Timeout/Override120000。1516/1517/1518各自完成原片导出/全覆盖审阅后精确删除，query0；原始本地录像保留。
+- 证据：本地reader-entry-statusbar-20261006下E/N/K-ordinary-volume-receipt-20261008.json与对应完整录像；已注册现有网页。平台UITest按键不等于实体按钮硬件、FPS、缩放/边缘/后台/方向替代或全量Reader验收。
+- 操作例外保留：K首个源gate拷贝hostlabel时误替换本地artifact/codeIdentity根，原run未改写，实际输出原样复制回NextN证据根，后续用正确绑定；该gate本身不能证明包绑定。初次OFF快照被同manifest的末态缩略图dump覆盖，未用于OFF接受；独立fresh P18宿主设置确认false及原方向。N继承actionlabelP2但实际down文件/native为P3，按实际证据记账。

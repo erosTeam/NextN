@@ -3,7 +3,7 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T08:20:38.262137+08:00",
+  "updatedAt": "2026-10-08T08:58:57.597236+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
   "state": "OPEN · 六条普通返回与NextE双版本外部替换命名区间接受",
@@ -13,11 +13,11 @@
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
     "state": "active",
-    "title": "提交源状态栏修复的有限验收记录",
-    "detail": "六条Shared/Legacy普通返回、NextE双版本实际外部替换，以及E当前Shared阅读页旋转窗口持有关系都已有完整原片与命名回执。设备恢复完毕，正在检查版本依赖和本地文档提交。",
-    "startedAt": "2026-10-08T08:20:38.262137+08:00"
+    "title": "音量键命名区间已留证，更新本地记录与网页",
+    "detail": "三宿主实际原生按键对完成：E3→4→3、N2→3→2、K原选中18所在双页→15/16→17/18。原片192/308/291帧覆盖均已审阅；K首项17的页码原因对照旧版规则，未改产品代码。N/K原开关OFF和E原ON、原进度、音频与120秒均恢复；own1516/1517/1518query0。",
+    "startedAt": "2026-10-08T08:30:52.927875+08:00"
   },
-  "nextAction": "检查当前源码/签名包依赖与受影响行为分类，提交本次有限回执和网页数据；保留原全量未验收边界，不以构建、帧数或命名路径代替完整替换。",
+  "nextAction": "把三宿主实际按键/状态恢复回执与源码解释写入QA，核对当前网页内容与原片链接，精确审阅并提交本轮文档检查点。原全量替换结果保持OPEN，不把有限按键行当总体验收。",
   "hosts": [
     {
       "name": "NextN",
@@ -40,14 +40,15 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
-      "progressSummary": "当前9af6 Shared及保留Legacy正常返回/旋转源栏命名路径接受；进程临时覆盖已清除。",
+      "progressSummary": "当前9af6 Shared及保留Legacy正常返回/旋转源栏命名路径接受；进程临时覆盖已清除。 原OFF临时ON无需重入：17→P3/16→P2有限接受，308原帧审阅，OFF/P2已恢复。",
       "installedPackage": {
         "sha256": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-N-hidden-ready-20261008.hap",
         "binding": "source-policy-N-hidden-ready-binding-20261008.json",
         "status": "positive native install; named Shared and Legacy normal source-policy close/rotation intervals accepted"
       },
-      "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage"
+      "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage",
+      "ordinaryVolumeReceipt": "N-ordinary-volume-receipt-20261008.json"
     },
     {
       "name": "NextE",
@@ -70,14 +71,15 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "413c9e3dc4fcbe3ed01d9038413ea1fb7aee08852bf6b55109a8e7184a3fb681",
-      "progressSummary": "413c双版本外部替换与Shared阅读中旋转持有状态栏命名区间接受；35f8历史正常/缩略图区间依原绑定保留。",
+      "progressSummary": "413c双版本外部替换与Shared阅读中旋转持有状态栏命名区间接受；35f8历史正常/缩略图区间依原绑定保留。 原ON音量17→P4/16→P3及正常返回原P3有限接受，192原帧审阅。",
       "installedPackage": {
         "sha256": "413c9e3dc4fcbe3ed01d9038413ea1fb7aee08852bf6b55109a8e7184a3fb681",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-E-visible-admission-20261008.hap",
         "binding": "source-policy-E-visible-admission-binding-20261008.json",
         "status": "positive native install; current actual external replacement Shared/Legacy and Sharedlive-directionownership namedintervals accepted"
       },
-      "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage"
+      "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage",
+      "ordinaryVolumeReceipt": "E-ordinary-volume-receipt-20261008.json"
     },
     {
       "name": "Koma",
@@ -99,7 +101,7 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
-      "progressSummary": "6e1d Shared及保留Legacy正常返回/旋转源栏命名路径接受；原Shared及02/P18·95%已恢复。",
+      "progressSummary": "6e1d Shared及保留Legacy正常返回/旋转源栏命名路径接受；原Shared及02/P18·95%已恢复。 原OFF临时ON，16→15/16跨页、17→原17/18跨页有限接受；291原帧覆盖审阅，原P18/OFF已恢复。",
       "installedPackage": {
         "sha256": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-K-hidden-ready-20261008.hap",
@@ -107,7 +109,8 @@
         "status": "positive native install; named Shared and Legacy normal source-policy close/rotation intervals accepted"
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage",
-      "appHeadLayer": "本地源策略接入检查点；已安装HAP及构建时绑定保留不变，所列源码字节逐项与当前一致。"
+      "appHeadLayer": "本地源策略接入检查点；已安装HAP及构建时绑定保留不变，所列源码字节逐项与当前一致。",
+      "ordinaryVolumeReceipt": "K-ordinary-volume-receipt-20261008.json"
     }
   ],
   "gaps": [
@@ -135,8 +138,8 @@
       "title": "验证策略与完整行为基准",
       "status": "命名一致性修复已留证；原未验收边界OPEN",
       "kind": "open",
-      "detail": "设置单选、真实在线加载、后台/前台、打开中返回及本轮源状态栏修复都有命名证据；原全量替换/FPS和未观察回调组合未由这些行接受。新的原生反例保留，旧空泛landscape待执行项已由实际回执纠正。",
-      "action": "沿唯一当前动作推进状态栏策略，不重复已冻结路径。",
+      "detail": "设置单选、真实在线加载、后台/前台、打开中返回及本轮源状态栏修复都有命名证据；原全量替换/FPS和未观察回调组合未由这些行接受。新的原生反例保留，旧空泛landscape待执行项已由实际回执纠正。 当前197三宿主实际音量键命名行及原状态恢复有独立原片/回执；K双页首项页码对照旧版源码，未将不同测试期望当成产品回归。",
+      "action": "按顶部唯一当前动作补原基本使用的未验证操作，不重复已冻结路径。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -249,9 +252,10 @@
       },
       "handling": {
         "trackingSince": "2026-10-06T13:16:27+08:00",
-        "recordedSeconds": 0,
-        "activeSince": null,
-        "note": "No independently recorded effort intervals for this existing row; zero is recorded time only, not total actual time."
+        "recordedSeconds": 1684.669361,
+        "activeSince": "2026-10-08T08:58:57.597236+08:00",
+        "note": "Actual continuously active source/platform/native volume verification in this turn; no preexisting unrecorded time filled.",
+        "activeUntil": "2026-10-08T09:13:57.597236+08:00"
       },
       "remainingEvidenceConditions": {
         "recordedAt": "2026-10-08T08:20:38.262137+08:00",
@@ -840,6 +844,18 @@
   ],
   "milestones": [
     {
+      "at": "2026-10-08T08:58:57.597236+08:00",
+      "text": "当前197三宿主原生音量按键各一次已取得独立页码、日志与原片：E192、N308、K291帧覆盖已审阅；原开关/进度/音频/超时恢复，own1516/1517/1518query0。K18→15→17按旧版同样的跨页首项规则解释，显式恢复原18，无产品补丁。仅这些命名行接受。"
+    },
+    {
+      "at": "2026-10-08T08:39:08.035534+08:00",
+      "text": "当前E413c音量减/加实际P3→P4→P3和正常返回接受：原开关ON未修改，192原帧全审阅，音量全部原值/VIBRATE/120秒恢复及exact1516query0。三宿主实际接入继续，非全量替换结论。"
+    },
+    {
+      "at": "2026-10-08T08:30:52.927875+08:00",
+      "text": "源策略有限回执/QA/UI台账本地提交0bbcaaab；原始异常与录像保留，未推送。原普通基本使用音量键行仍只有释放日志，进入对应源码/平台门控调查。"
+    },
+    {
       "at": "2026-10-08T08:20:38.262137+08:00",
       "text": "网页证据链接检查发现三条历史197回执被登记到模拟器目录，已按实际文件位置修正storage；当前三宿主源码7/9/8份与安装包绑定一致，几何WIP保留。"
     },
@@ -994,6 +1010,18 @@
     }
   ],
   "evidence": [
+    {
+      "id": "e-current-ordinary-volume-movie",
+      "label": "NextE实际音量减/加与返回完整录屏",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-ordinary-volume-export-20261008/device197-E-ordinary-volume-measurement-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "e-current-ordinary-volume-receipt",
+      "label": "NextE普通音量键实际翻页/原状态恢复回执",
+      "path": "E-ordinary-volume-receipt-20261008.json",
+      "storage": "device197"
+    },
     {
       "id": "source-policy-current-final-bindings",
       "label": "当前三宿主源码、共同Kit与实际安装包字节对应（7/9/8份）",
@@ -1442,6 +1470,36 @@
       "label": "NextE当前阅读页横竖屏与原P3返回完整录屏",
       "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-source-policy-E-live-direction-export-20261008/device197-source-policy-E-live-direction-measurement-20261008.mp4",
       "storage": "device197"
+    },
+    {
+      "id": "n-current-ordinary-volume-movie",
+      "label": "NextN实际音量键P2→P3→P2完整录屏",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-N-ordinary-volume-export-20261008/device197-N-ordinary-volume-measurement-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "n-current-ordinary-volume-receipt",
+      "label": "NextN实际按键与原OFF/P2恢复回执",
+      "path": "N-ordinary-volume-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "k-current-ordinary-volume-movie",
+      "label": "Koma实际双页音量键往返完整录屏",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-K-ordinary-volume-export-20261008/device197-K-ordinary-volume-measurement-20261008.mp4",
+      "storage": "device197"
+    },
+    {
+      "id": "k-current-ordinary-volume-receipt",
+      "label": "Koma实际按键/原OFF/P18恢复回执",
+      "path": "K-ordinary-volume-receipt-20261008.json",
+      "storage": "device197"
+    },
+    {
+      "id": "k-current-ordinary-volume-spread-cause",
+      "label": "Koma双页首项页码与旧版源码规则对照",
+      "path": "K-ordinary-volume-spread-cause-20261008.json",
+      "storage": "device197"
     }
   ],
   "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
@@ -1567,13 +1625,17 @@
     }
   },
   "currentPhysicalState": {
-    "recordedAt": "2026-10-08T08:20:38.262137+08:00",
+    "at": "2026-10-08T08:58:57.597236+08:00",
+    "host": "Koma",
+    "source": "OriginalLibrary02話/P18/95percent",
+    "settings": "Shared/paired/LTR/originalvolumeOFF/downnext/railhidden",
+    "power": "OriginalTimeout120000/Override120000 andVIBRATE/all8audio volumes verified",
+    "recording": "OFF; exact1516/1517/1518 query0; originals localretained",
     "target": "192.168.50.197:12345",
     "device": "ALN-AL80/API26/1260x2720 portrait",
-    "foreground": "E413c originalDetailContinueP3/root[0,124][1260,2720], Shared persisted/no backendoverride;Recorderoff. Own1513/1514/1515deleteSUCCESS/query0;localoriginalsretained. Noriginal682531/P2 andK02話/P18·95% preserved.",
-    "timeout": "Final AWAKE/Timeout120000ms/OverrideTimeout120000ms restored; no powermodewrite",
     "lease": "20261007-195848-f8f3a5bd",
-    "nextUnverified": "unique top-level nextAction"
+    "nextUnverified": "unique top-level nextAction",
+    "foreground": "CurrentnativeLibrary com.honjow.koma, originalContinue02/P18/95; originalN682531/P2 andE4203217/P3 preserved"
   },
   "nextNOnlineHandoffObservation": {
     "recordedAt": "2026-10-07T21:26:53.512282+08:00",
@@ -2040,7 +2102,7 @@
     ],
     "externalLegacyRestorationReview": {
       "recordedAt": "2026-10-08T07:23:56.325672+08:00",
-      "state": "implemented/committed/signed build succeeded; runtime pending",
+      "state": "Local source commit23bb87c3; affected external route accepted on current351fa/413c both Shared/Legacy, retaining initial1512missingReader rejection",
       "owner": "E retainedLegacy ReaderPage.onShown/onWillHide/onWillDisappear owns readerRouteVisible; normal close uses separate restoreStatusBarForClose. Common ReaderSourceWindowPolicy owns sourceDirection/native visibility queue/sourceOwnsWindow. N Index.restoreAppStatusBar and K ReaderPage.applyAppStatusBarVisible dispatch source ownership false.",
       "finding": "E ReaderPage.restoreAppStatusBar currently invokes applyStatusBarVisible(true,appColors); both source-restoration callbacks set readerRouteVisible=false but helper still passes readerOwnsWindow=true. It bypasses direction policy and leaves configuration updates suppressed after external cover/unmount. Existing applyStatusBarVisible guard omits visible-vs-source phase, allowing already queued opposite-phase writes after a hide/show.",
       "writers": "E Reader chrome/readMode calls applyStatusBarVisible; onShown schedules it. onWillHide/onWillDisappear clear hide timer and restore only !readerClosing. Normal close increments routeEpoch/closing and dispatches separate restoreStatusBarForClose to source. Source configuration updates dispatch only sourceOwnsWindow. N/K corresponding source restores already dispatch false.",
@@ -2089,7 +2151,7 @@
         "Readeropen configuration: current E413c actualShared portrait→landscape→portrait retains3/124 chrome/status/currentimage; commonownership guard andthreeAbilitymapping sourceverified, N/K unobserved orientations not promoted.",
         "debug/delegated: fixedsource true/null plusproductionclosure function only whereprevioussource-restore true existed; existingfixed behavior preserved, no productionequivalence claim"
       ],
-      "nextBoundary": "Completed namedE live-direction boundary; no secondorientation/performance/fullfeature testqueue introduced.",
+      "nextBoundary": "Source-policy named affected rows completed; unrelated original basic-use pending action dispatched only by top nextAction.",
       "runtime": "source-policy-E-live-direction-receipt-20261008.json: actualE413c Sharedchrome visible inlandscape/nativeSCB123 andportrait/currentP3return; no codepatch required"
     },
     "currentByteBinding": "source-policy-current-final-source-bindings-20261008.json"
@@ -2120,6 +2182,21 @@
     "latestHuman": "Maintain ongoing work and progress in existing local page",
     "resumedAction": "E failed log and reader identity observation, currentefbc ordinary ContinueP3",
     "state": "executing"
+  },
+  "documentCheckpoint": {
+    "commit": "0bbcaaab48f1f48f6dc847dad7815e92f95b6ccc",
+    "scope": "Three owned reader acceptance records only; unrelated UI ledger hunk/geometry WIP preserved",
+    "at": "2026-10-08T08:30:52.927875+08:00"
+  },
+  "ordinaryVolumePlan": {
+    "sourcePlan": "E-ordinary-volume-source-plan-20261008.json",
+    "EReceipt": "E-ordinary-volume-receipt-20261008.json",
+    "state": "E/N/K namedcurrentkeypairs andoriginalrestoreaccepted; Legacyspreadrule sourceonly",
+    "limits": "NativeUITest keyeventpair perhost only; not physicalhardwarekey/FPS/alternatekeymapping/zoom/background/edge/allReader acceptance",
+    "NReceipt": "N-ordinary-volume-receipt-20261008.json",
+    "KReceipt": "K-ordinary-volume-receipt-20261008.json",
+    "KSpreadExplanation": "K-ordinary-volume-spread-cause-20261008.json",
+    "next": "QA/web/scopeddoccheckpoint"
   }
 }
 -->
