@@ -4,13 +4,15 @@
 本文件记录当前事实与证据边界，不复制 nextAction，不按每次点击追加日志。
 用户要求的执行约束整理已完成；Reader OPEN，独立 Koma 生产 Goal 保持 PAUSED。
 
+历史失败记录（现已由0fc3替代，临时日志与合并回调候选已撤除）：197 E original-source 当时9183 REJECTED (2026-10-08 14:42–14:44+08): normalSharedP3 primesexistingresolverfacts, normalsettingsLegacy actual sameP3 nowreportsoriginalavailable (11-linecanonicalVM restorationgate). Continuous LegacyON/OFF/ON/OFF movie6d014b50/31.018s/591decoded/580distinct: all19orderedoriginalcontacts andraw0/169/188/590 reviewed. BothOFF actualbody staysblack throughnativeInfo untilON/normalBack; Info WebP62382B retains4299x6071. Existingredactedappsession144045 records two normaldiskhits perOFF, no resampleddecode, and4299x6071 perON. FileInfo/binding/commandcompletion is NOT bodyacceptance. OriginalShared7978 accepted70.442s namedroute keepsitsownbinding, not current9183 wholeacceptance. PlainDetailContinueP3/120000 restored, Sharedselection temporarydiagnosticroutepending. Receipt E-original-Legacy-roundtrip-current-rejected-receipt-20261008.json. Temporary26c9 current source-edge logs only, not productfix; no keys/cache/delay/source/geometry changes. Unique nextaction workorder.
+
 ## Reader 当前有效边界
 
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |
 | N | 当前197 `9af69d41`：Shared及保留Legacy普通返回/源旋转命名区间已留证；实际音量键P2→P3→P2及原OFF恢复留证。历史菜单/设置/加载/入口仅沿未变依赖与原绑定 | 未观察回调组合、全布局/FPS/完全替换 |
-| E | 当前197 `413c9e3d`：Shared/Legacy实际外部替换新正文/chrome/返回源旋转及Shared阅读中旋转留证；实际音量键P3→P4→P3留证。历史35f8普通/缩略图记录保留其原绑定 | 未观察委托/Debug或加载/布局分支、FPS/整体替换 |
-| K | 当前197 `6e1d043d`：Shared及保留Legacy原Library02/P18普通返回/源旋转留证；实际双页音量往返及原OFF/P18恢复留证。历史章节/冷启/History投影仅沿未变依赖 | 197当前02/03自动start/end及旧版有限对照、右P18真实单图保存留证；全布局/FPS/替换仍未接受；独立生产工作暂停 |
+| E | 当前197 `0fc3eab2`：冷Legacy同P3缓存原图可用、ON/OFF实际正文及尺寸一致留证，原Shared/P3恢复；9fab5a71/51d516df源码字节与绑定一致。暖7b2c反复OFF与Shared7978原图往返沿原绑定；前台/旋转/入口旧命名记录仅沿未变依赖 | 现有短准备黑底保留；其他布局/native晚回调/FPS/整体替换未接受 |
+| K | 当前197 `2d0e875f`：显/隐Home/plain前台与同Library02/P18·95%返回原片完整审阅；db1a622c既有Monitor接foreground。原6e1d Legacy源栏、章节起止页、音量及实际单图保存沿未变依赖与原绑定 | 其他入口/Legacy/旋转/全布局/FPS/整体替换不由本次前台接受；独立生产保持暂停 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。
@@ -248,3 +250,31 @@ K6e1d原普通02/P18隐栏Home/plainforeground状态栏仍在，原345帧/all11�
 
 
 2026-10-08T13:44:17.706496+08:00 本轮前台窗口计划八行最终判定：E实际managed owner两hunk/K已有Monitor加foreground；Window canPresent仍经entry/root settled且nativecurrent guard，Surface仅重发真实chrome不写session/asset/rail/pref。N当前命名结果正常未改。三宿主当前显/隐Home/同源Back完整原片和物理终态完成；原E受影响横屏/缩略图保留原绑定。未观测组合/FPS/全量替换仍未证明；不会由源码未改自动提升运行验收。原自然uncached/moving-cancel路线已执行，不以完整late tuple未凑齐等待或无限复测；E原P3实际保存403失败记录真实外部条件与不同URL/Legacy不能接受原请求的替代边界。用户暂挂增强/较大布局复用/独立K生产不自动开启。回执foreground-window-eight-row-final-disposition-20261008.json与网页同源，无第二队列。
+
+
+## 2026-10-08T14:13:32.005559+08:00 · 197当前Shared原图往返命名区间
+
+E7978普通4203217/P3：实际原生Info由WEBP60.9KB/800×1130重采样→JPEG864.7KB/4299×6071原图→WEBP→JPEG→WEBP，原按钮/页码一致；普通Back同Detail继续P3。原MOV15d4a1a9/70.442s、782decoded/774distinct、全部25联排与14关键原图完整审阅，准备/百分比提示在同页旧正文上、交接后退场，两次切回均未观察整页黑屏。首次ON成功后的约30秒Info判定等待保留原片，不当作产品输入延迟/FPS；没有request/asset/epoch整组日志，未推广未观察回调、其他布局、Save403或整体替换。
+
+本地原片保留后仅自建1542精确delete/query0，原120000/120000超时恢复AWAKE；清理终截图为锁屏，不冒充源页证据。原片终态DetailP3已审阅。bm版本40/1.3.5与原正向安装链保留，补充读安装包sha权限拒绝虽exit0，不声称设备hash读回。无产品编辑/构建/安装/缓存或backend设置更改。回执E-original-roundtrip-current-acceptance-receipt-20261008.json；唯一下一动作仍取工作单。
+
+
+## 2026-10-08T15:47:58+08:00 · Legacy原图OFF反例与最小候选撤回
+
+当前E d217（合并三图片叶图源Monitor）已在197同4203217/P3完整ON/OFF/ON/OFF/Back执行。两次OFF都持续整页黑屏，Info虽然为62382B WebP但尺寸停在4299×6071；两次ON正文恢复。完整35.626s/615decoded/607distinct、全部19首次RGB联排与原生OFF正文图审阅，明确REJECTED，未以文件命中或协议命令pass接受正文。持久AppSink只有ON JPEG解码，无OFF800×1130解码。26c9单边界诊断8.384s/96decoded/95distinct全部3联排及79/85原图另审阅：OFF父层提交普通URI但原生图片节点缺失；日志候选已完全撤。后取PID6417的15:42原生buffer有较晚EAWorkerslimit，不能据此确定15:37黑屏原因。
+
+合并回调候选的全部自有hunk已撤回，双页与连续恢复原字节。新7b2c候选仅删除旧版单页4处换源时清空显示URI，保持既有Image分支而用src更新；实际失败/屏蔽/显式重试清空不变。代码前因果影响记录E-Legacy-original-retained-node-cause-impact-20261008.json；签名构建成功、绑定正向安装，尚未运行接受。既有canonical缓存元数据11行候选保留；冷进程没有resolver元数据时的能力不由本次Sharedprime接受。回执E-original-atomic-monitor-rejected-receipt-20261008.json和E-original-native-source-diagnostic-rejected-receipt-20261008.json。原自建1543–1545已全片导出审阅后待精确清理，本地原片不删；原Shared/P3/120秒必须恢复。唯一当前动作仍取工作单，不产生第二队列。
+
+### 197 NextE 原图同页往返 2026-10-08T16:05:41.154126+08:00
+
+当前 `7b2c` 的普通 retainedLegacy 4203217/P3 ON/OFF/ON/OFF：两次OFF实际正文、NativeImage和WebP800×1130恢复；两次ON JPEG4299×6071。完整36.010秒582原帧（581唯一）/19联排全部审阅，另审178/179/180/300/418原帧。179/300/418为现有准备提示黑底，故不声明全程无黑底或视觉性能等价。普通Back回同Detail ContinueP3。有限接受仅暖进程单页切回恢复，冷进程按钮能力尚未由此接受。精确两文件检查点 `9fab5a71` 已提交，其他WIP保留。收据 `E-original-retained-node-roundtrip-acceptance-receipt-20261008.json`。首次终态恢复脚本的SharedSelected实际为P18正文、restoredSource实际为Settings，未作恢复通过；下一短gate实际为锁屏，正在普通解锁后按原生前台恢复原Shared/P3。媒体1543–1546本地原片已全审阅并保留，设备精确清理待执行。
+
+
+### 197 NextE 冷进程原图能力与收尾 2026-10-08T16:30:42.896324+08:00
+
+当前0fc3签名包force-stop/noClear后，从普通公开4203217详情直接ContinueP3进入retainedLegacy，未经Shared预热、Debug override或缓存改写。baseline原生Info WebP60.9KB/800×1130且原图可用，ON JPEG864.7KB/4299×6071，OFF重新WebP800×1130且正文实际可见，正常Back同DetailP3。22.357秒410decoded/409distinct、全部13联排与30/200/249/250/251/252/320/409原图审阅；251是现有准备提示黑底，250/252正文完整，不能称无黑帧或性能等价。源码前因果/影响E-original-cold-availability-cause-impact-20261008.json，仅canonical能力OR既有hasCachedOriginal；单文件一行提交51d516df。保持Image节点的两文件9fab5a71已提交；12绑定hash及两commit blob逐项与当前相等，构建绑定不改写为新HEAD。
+
+真实原生Reading行Legacy及匹配勾选→正常选择Shared后的行文字→普通同DetailContinueP3全部整图确认，PowerAWAKE/Timeout120000/Override120000读回。此前错误恢复脚本结果仍保留为未接受，未用exit0替代原生结果。自建1543–1547均保留完整本地原片/全联排审阅后逐个正向delete success/query0；预检首次拒绝把raw清理放measurement，没有设备动作，调整至postflight后执行。收据E-original-cold-roundtrip-acceptance-receipt-20261008.json与E-original-owned-media-cleanup-receipt-20261008.json。仅此冷缓存单页能力及切回恢复接受，Shared整体/其他布局/FPS/全量替换不推广。网页同源记录原片、失败候选、提交与边界；唯一当前动作仍取工作单。
+
+
+2026-10-08T16:42:23.221427+08:00 原图新增两份源码修改八项最终影响核定：仅保留Legacy同页节点、canonical能力及对应按钮/正文直接改变，现有入口/预载/rail/selection/进度/Window/SourceGate/媒体/其他宿主writer不变；初始imageUrl仍为空，四处删除只改变已有同页节点。当前12绑定hash及提交blob读回、暖/冷实际结果和恢复/清理完成见E-original-current-eight-row-final-disposition-20261008.json。冻结仅命名修复，未观察native晚回调/其他布局/FPS仍未推广。系统增强、较大布局和独立K生产保持原用户暂挂；E同URL403已有真实请求证据及安全替代边界，不重复。当前有限原图附项实际完成，不把整体替换声明为已实现。网页同源显示实际完成状态，文档提交继续完成。

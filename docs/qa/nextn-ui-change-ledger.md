@@ -13466,3 +13466,14 @@ Source-hidden readiness impact before edit: N common primitive completes on the 
 2026-10-08T13:25:05.596851+08:00 持续授权的共享Reader一致性修复。当前K6e1d普通02/P18隐栏Home/plainforeground保留同17/18正文但状态栏仍显示；原345帧/all11联排及raw294和wholehidden.png审阅，撤销把黑色上下留白判作正文黑屏的错误。当前原生全屏Toggle checked=true，设置只读未改。窗口owner为Index传入的ReaderTrialWindow；原syncChromeVisible(false)500ms隐藏在后台被foreground guard退休，恢复前台没有重发实际chrome。最小候选仅将foreground加到既有偏好/chromeRepublish Monitor，复用Surface真实chrome和现有队列/500ms/current/admission门控。保留源/入口/转场/正文树/几何/菜单/设置/持久化/Kit及N/E原样；当前包同显/隐Home和normalBack完整原片与nativeviewport是反证边界。详细原因、原设置和影响范围见K-foreground-hide-intent-cause-plan-20261008.json。构建不是验收。
 
 - 2026-10-08T13:40:27.489749+08:00 bounded disposition: currentK2d0e/commitdb1a622c ordinary02P18 visible/hidden Home/plainforeground/normalBack accepted in351originals/all11contacts andraw145/260/263/285/340 plusnativewhole127/0/127. Existing500ms/current/admission unchanged; no body/menu/entry/Kit/geometry modification. Prior6e1d statusvisible/fullscreenTRUE counterexample retained, bodyblack misreading withdrawn. Own1538–1541 retained/fullreviewed/exactdeletequery0, original18/19+Library95%/120000 preserved. Freeze onlynamedforeground path; allentry/Legacy/rotation retainoriginal bindings.
+
+
+## UI-197-E-original-single-node-20261008 · 同页换源保持图片节点
+
+- 用户既有目标：反复原图/普通图切换必须保留可读正文，避免黑屏、错误勾选与无提示；不允许扩大重建。
+- 所有者：NextE保留Legacy ReaderPage→HorizontalReader稳定page/sUrl/translation key→ReaderImagePage本地显示URI→ReaderInterpolatedImage→原生Image；同页原图只改变src与既有请求身份。Shared、双页、连续、菜单、缩略图栏、窗口及缓存writer本候选不改。
+- 修改前依据：9183/d217两次OFF原生图片缺失且普通decode没有发生；26c9父URI发布却节点缺失。E-Legacy-original-retained-node-cause-impact-20261008.json在源码修改前写入，列明异步开始清空URI→条件分支删除节点与反证边界。此ledger是该先行记录的同步，非补写为已执行验收。
+- 最小候选：撤回无效三叶Monitor合并，仅删除单页4处源切换前清空URI；保留原imageLoaded加载/opacity、immutable SourceGate、屏蔽/失败/显式重试路径。不新增key、延时、同步刷新或默认UI。
+- 验收边界：当前7b2c正向安装，待同197/同4203217/P3原图ON/OFF/ON/OFF全片和原生Info/正文核验；构建和命令pass不接受图片。不得扩展为所有布局、超分、FPS或全量替换。
+
+- 2026-10-08T16:30:42.896324+08:00 bounded disposition: 7b2c warm Legacy P3 ON/OFF/ON/OFF recovers both normal bodies; 582decoded/all19contacts and five raw frames reviewed. 0fc3 force-stop/noClear ordinary cold Legacy P3 cached-original availability and ON/OFF/Back accepted in410decoded/all13contacts and8raw frames. Existing preparation black preserved (cold raw251); no all-frame/FPS/full-reader promotion. 9fab5a71 keeps same Image node;51d516df only canonical availability OR existingdisk cache. Native originalShared/P3/120000 restored; own1543–1547 exactdelete/query0, all local originals retained. See currentcold receipt and cleanup receipt.
