@@ -375,3 +375,10 @@ K双页正常翻页保存首项17，与旧ReaderPage spreadIndexes/setPage及共
 启动补证时误用`--ttl 60`（60秒），mode gate被租约拒绝且未执行UI；改成`--ttl 60m`正常取得新租约后执行，错误不计产品失败/通过。两本地原片SHA/完整解码判读保留，精确自建1571/1572各deleteSUCCESS及准确名query0，自有tmp导出副本移除。03:30实际PowerManager AWAKE/120000/120000；截图为超时后锁屏，最后K书架02P18门槛是03:27，不称稍后仍在书架。租约正常释放。
 
 回执`basic-user-flow-targeted-tail-receipt-20261009.json`与三宿主汇总互联，既有网页登记两补证原片。本轮规定的基本使用动作和恢复已执行完，不增加补丁/矩阵、不重跑冻结专项；全量替换/所有布局和FPS不由有限样本证明，原用户暂挂与独立Koma生产暂停保留。
+
+
+### 2026-10-09 06:33 · Koma生产lane的197检查点
+
+用户已转向Koma生产开发，唯一生产动作仍取Koma工作单。FOLDER-001本地普通目录确认/持久READ授权/cold封面与P2/同根重导入/取消保数据已接受并提交7f8ad4e6。KAV-001普通安全保存的Asset群组因果修复d7e8089a，当前自有配置/未收藏读/显式收藏/冷读命名路径已接受。KAV-COVER-001三文件协议地址与详情身份修复d3d3c6c7：当前197签名Release44089b81，cold原书架卡/继续卡/详情真实封面，原15书及Reader字节保持，样本通过原UI移出。本地receipt为/private/tmp/koma-production-20261005/.hermes-artifacts/20261005-production/kav-cover001-197-acceptance-receipt.json。
+
+这些是Koma生产路径证据；Reader/Kit两份原WIP字节保留，未重跑或提升旧Reader全量替换/FPS结论，N/E冻结路径不重开。Koma下一有限包为既有目录维护FOLDER-002，只读owner评估后一个自有根新增章的普通重扫，不从本回执调度重复验收。
