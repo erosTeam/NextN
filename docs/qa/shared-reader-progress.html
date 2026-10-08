@@ -24,8 +24,9 @@ function render(d){
  hero.append(badge(d.package+' · '+d.state),el('h1',d.title),el('p',d.outcome,'summary'),el('div','最近实质更新：'+date(d.updatedAt)+' · '+d.owner,'timestamp'));
  const notice=el('div',null,'notice');notice.id='stale';hero.append(notice);fragment.append(hero);
  if(d.assessment){const summary=el('section',null,'assessment');summary.setAttribute('aria-label','总体完成边界');for(const a of d.assessment){const card=el('article');card.append(el('h3',a.label),badge(a.status,a.kind),el('p',a.detail));summary.append(card)}fragment.append(summary)}
- const activity=el('section',null,'panel activity');activity.append(el('h2','当前在做什么'),el('div',d.activity.title,'activity-title'),el('p',d.activity.detail,'muted'));
- const meta=el('div',null,'meta');meta.append(el('span','目标：'+d.target),el('span','开始：'+date(d.activity.startedAt)),el('span','范围：'+d.scope));activity.append(meta,el('p','下一项实际动作：'+d.nextAction,'next'));fragment.append(activity);
+ const actionCompleted=d.activity.state==='completed';
+ const activity=el('section',null,'panel activity');activity.append(el('h2',actionCompleted?'本轮完成记录':'当前在做什么'),el('div',d.activity.title,'activity-title'),el('p',d.activity.detail,'muted'));
+ const meta=el('div',null,'meta');meta.append(el('span','目标：'+d.target),el('span','开始：'+date(d.activity.startedAt)),el('span','范围：'+d.scope));activity.append(meta,el('p',(actionCompleted?'本轮处置：':'下一项实际动作：')+d.nextAction,'next'));fragment.append(activity);
  const hostPanel=el('section',null,'panel');hostPanel.append(el('h2','三个应用：证据到了哪一层'),el('p','构建和安装不能替代运行验收；每一项结论都有明确范围。','small muted'));
  const hosts=el('div',null,'hosts');hosts.style.marginTop='16px';
  for(const h of d.hosts){const card=el('article',null,'host'),heading=el('div',null,'host-title');heading.append(el('h3',h.name),badge(h.verdict,h.verdictKind));card.append(heading);const proof=el('div',null,'proof');const live=d.liveKitHeads[h.name],same=live===h.kit;
