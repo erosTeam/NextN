@@ -8,9 +8,9 @@
 
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |
-| N | 当前197 `9af69d41` / Kit `3468fa41`+共同源策略候选：命名显栏后横屏当前返回源0→后续竖屏124；235原帧全审阅。历史菜单/设置/加载/入口证据只沿用各自未变依赖与绑定，详见工作单 | 保留Legacy受影响源策略、未命中分支、全布局/FPS/完全替换 |
-| E | 当前197 `35f8769d` / Kit `3468fa41`+共同源策略候选：普通P3实际chrome/返回源0→竖屏124；竖屏缩略图P3源栏颜色保持→根飞行/图片交接→actualchrome→当前P3反向返回。261/134原帧全审阅 | 保留Legacy、委托/Debug及其他加载/布局分支、FPS/整体替换 |
-| K | 当前197 `6e1d043d` / Kit `3468fa41`+共同源策略候选：原Library02話/P18·95%普通入场/实际chrome/返回横屏源0→竖屏124；221原帧全审阅。历史章节/冷启/History投影仅沿用各自未变依赖 | 保留Legacy受影响源策略、可信自动end/start未命中、全布局/FPS/替换；独立生产工作暂停 |
+| N | 当前197 `9af69d41`：Shared及保留Legacy普通返回/源旋转命名区间已留证；实际音量键P2→P3→P2及原OFF恢复留证。历史菜单/设置/加载/入口仅沿未变依赖与原绑定 | 未观察回调组合、全布局/FPS/完全替换 |
+| E | 当前197 `413c9e3d`：Shared/Legacy实际外部替换新正文/chrome/返回源旋转及Shared阅读中旋转留证；实际音量键P3→P4→P3留证。历史35f8普通/缩略图记录保留其原绑定 | 未观察委托/Debug或加载/布局分支、FPS/整体替换 |
+| K | 当前197 `6e1d043d`：Shared及保留Legacy原Library02/P18普通返回/源旋转留证；实际双页音量往返及原OFF/P18恢复留证。历史章节/冷启/History投影仅沿未变依赖 | 197当前02/03自动start/end及旧版有限对照、右P18真实单图保存留证；全布局/FPS/替换仍未接受；独立生产工作暂停 |
 
 完整 HAP/源码 SHA、原 MOV/PTS、失败样本及五个入场判定行在工作单快照和其 currentEntryReceipts。
 `c09` 初始白图标闪现仍为失败证据，E `73af87d8` normal-finished 但操作不完整，不能当成整段通过。
@@ -182,3 +182,27 @@ Current953d positively installed on physical197 (ALN-AL80/API26/1260x2720), ordi
 - 三宿主actual intent accepted=true与离开/关闭设置released=true均有本次时间戳；八路音量保持12/3/0/8/0/3/12/3、VIBRATE、Timeout/Override120000。1516/1517/1518各自完成原片导出/全覆盖审阅后精确删除，query0；原始本地录像保留。
 - 证据：本地reader-entry-statusbar-20261006下E/N/K-ordinary-volume-receipt-20261008.json与对应完整录像；已注册现有网页。平台UITest按键不等于实体按钮硬件、FPS、缩放/边缘/后台/方向替代或全量Reader验收。
 - 操作例外保留：K首个源gate拷贝hostlabel时误替换本地artifact/codeIdentity根，原run未改写，实际输出原样复制回NextN证据根，后续用正确绑定；该gate本身不能证明包绑定。初次OFF快照被同manifest的末态缩略图dump覆盖，未用于OFF接受；独立fresh P18宿主设置确认false及原方向。N继承actionlabelP2但实际down文件/native为P3，按实际证据记账。
+
+
+本次 material physical result（2026-10-08 09:08–09:35+08）：197现有Library14书中6书有可信序列，原02/P18所在chapter组177章；此前无序列记录来自模拟器，不可判197。初段MOV743ab5b8/178帧全5联排仅02P18→19→17，未跨章，保留为无效边界前提。源码odd_left/firstPageAlone=false使19页最后display为P19单页，纠正离散前提后MOV572a2e03/160帧159首次RGB全5联排及原92/97/132/136审阅：02P19→03P1/15→02P19/19，PID30404 next/start与previous/end日志及native标题一致。只接受这对起止页；原92–96及132–135存在准备图片空白区间，保留并继续Legacy同章对照，未称显示连续/性能/全部替换通过。
+
+恢复03/P10与02/P18经原生和ReaderSession逐章读回：pageIndex9/17、15/19页、原isRead/completed/odd_left保留；Library原02/P18·95%及root[0,124][1260,2720]、railhidden、Timeout/Override120000已实际恢复。首次恢复链遇ScreenLock/SLEEP，保留；02滑块点落P19，未假称恢复，后用实际rkit-thumbnail-17精确恢复。1519/1520有效导出且全首次RGB审阅后设备精确删除/query0，原片本地保留。无产品源码、构建、安装、缓存/源激活/延时修改。回执`K-current-chapter-edge-acceptance-receipt-20261008.json`；当前对照动作仅取唯一工作单。
+
+## 2026-10-08T10:01:26.187322+08:00 · Koma197当前可信章节旧版有限对照与恢复
+
+当前6e1d安装包，原左右分区/水平翻转、Dual/LTR/odd_left保持：Legacy一次实际左侧next、右侧previous点按完成02P19→03P1→02P19；Shared原单次快速滑动同起止页保留。Legacy原片c75edf51/10.176s、157decoded/139distinct、全部4联排审阅；顺序RGB关键原图70/71解码提示、72无图、73正文、121逆向解码提示均与完整原片RGB hash相同。Shared既存92–96/132–135准备图片无图保留，两者新章节请求都有准备区间；此有限区间不足以证明Shared新增退化。Legacy打开章时Index会清chrome，Shared保留；原片不冒充同输入/时长/FPS或缩略图入场黑帧验收，未修改产品。
+
+前两段旧版对照均不计跨章通过：42131a5e原快速滑动停19/19后返回17/19（原Swiper无边缘章请求）；e13ad161首次点按遗漏当前水平翻转而19→17→19。213/138原帧所有首次RGB的6/4联排均已审阅并保留。清理初次delete -u输出FAIL但exit0，未计成功；修正已知delete URI后自有1521/1522/1523均正向success/query0，本地三原片全保留。
+
+原Shared实际rkit页身份返回，03原10/15和02原18/19通过现有UI准确恢复，持久chapters[position]的pageId/index/total/ratio/completed/columnMode及isRead逐项与基线一致（仅正常updatedAt更新）；Library Continue02/P18·95%白卡与120000/Override120000读回确认。回执K-current-chapter-Legacy-comparison-receipt-20261008.json；唯一当前动作转有限八行影响映射，不重新打开Koma独立生产或重复已冻结路径。
+
+## 2026-10-08T10:13:33.202507+08:00 · 本轮八项行为影响映射
+
+读取Kit05542ecf/N4410e2c/E351fae7c/K62bfa97b实际diff与调用链，并重新核对当前HAP绑定的7/9/8份源码hash一致；这仅证明源码对应，不新增运行接受。八项入场/加载/翻页预载/缩略图/菜单设置/原图/进度/K宿主媒体的直接、间接及未改逻辑边界，已记录reader-current-eight-row-impact-map-20261008.json并由同一工作单展示。当前源栏/按键/可信章节原片沿各自有限命名接受；旧E显栏及Legacy“OPEN”字段被实际回执替代。全量替换、FPS和特殊late tuple未接受。实际媒体保存仍为既有未验证可操作边界，不以面板取消充当完成。保持当前K原Shared/02P18/03P10及所有WIP；没有产品修改、构建、安装或额外设备动作。下一项只读工作单唯一动作。
+
+
+## 2026-10-08T10:44:18.485319+08:00 · Koma197当前实际单图保存
+
+原Shared/02P18、Dual/LTR/odd_left从右侧P18保存一次，实际原生许可显示1张图片；允许后同名JPG由0条变1条，正向导出250413B/980×1394 RGB，完整解码并查看原图，与右页及原生预览内容一致。许可框和toast仅辅助；实际导出内容是完成证据。仍18/19，02index17/19及03index9/15的pageId/ratio/completed/isRead/columnMode与基线一致，Library原02/P18·95%。
+
+全原片2338090a/197.65s及4487帧映射保留；只审阅000/001/124功能节点联排及实际原生整图，未称125联排全审或FPS/全程动画接受，调查门等待不当作产品耗时。自建1525/1526导出后精确delete success/query0；首次清理末态自动休眠锁屏，未当Library接受，已知中性解锁+普通前台后实际K root[0,124][1260,2720]/原书库整图与AWAKE120000/Override120000再确认。App私有save-temp列举拒绝，源码finally release不能冒充物理清理接受。回执K-current-actual-save-acceptance-receipt-20261008.json。无产品/构建/安装/设置/缓存/源改动；其他宿主/双图/变化中保存/发送未由此接受。
