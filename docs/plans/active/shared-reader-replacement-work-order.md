@@ -3,21 +3,21 @@
 <!-- reader-progress-snapshot
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T12:53:11.742906+08:00",
+  "updatedAt": "2026-10-08T13:44:17.706496+08:00",
   "owner": "主代理 / root",
   "package": "Package 5",
-  "state": "OPEN · E前台颜色命名修复已提交；核对其他宿主前台所有权",
+  "state": "本轮前台窗口修复已完成命名验收 · 整体替换与性能结论不扩大",
   "title": "共享阅读器 · 三应用既有行为一致性复核",
   "outcome": "保留旧版既有行为，完成 NextN、NextE、Koma 的共享阅读器一致性修复与受影响运行验收。当前不能认定已完全替换旧版。",
   "target": "197 · 192.168.50.197:12345; ALN-AL80/API26/portrait1260x2720",
   "scope": "逐项对照既有行为基准：三个宿主共享生命周期横向一致性、各自Shared对Legacy的入口/菜单/设置/加载/翻页/缩略图/原图/退出重进；只修源证明的差异，不新增功能。",
   "activity": {
-    "state": "active",
-    "title": "同步最终修复与核对跨宿主前台责任",
-    "detail": "NextE单文件两处窄修改已本地提交eec20a92；最终7978普通P3显/隐Home恢复与正常Back全359原帧/10联排及3原图已审阅。8ca横屏/缩略图三条影响路径原绑定保留，1533–1536均留存后精确清理。没有全量或FPS结论。",
-    "startedAt": "2026-10-08T12:20:05.263181+08:00"
+    "state": "completed",
+    "title": "本轮前台窗口修复与证据归档完成",
+    "detail": "E eec20a92 / K db1a622c窄修复及N9af6现状检查完成；三宿主各自当前显/隐前台和同源返回原片已完整审阅。八项行为影响已核定，原片、反例、当前安装绑定和本地提交已登记。系统增强、较大布局复用及独立K生产仍按原用户暂挂。",
+    "startedAt": "2026-10-08T13:40:27.489749+08:00"
   },
-  "nextAction": "从当前N/K实际普通入口核对 foreground→retained chrome→原窗口意图的owner/writer链，确定本次E修复是否存在需要同步的同源缺口；仅对源码明确的未验证分支安排一次有边界动作。",
+  "nextAction": "本轮E/N/K前台窗口意图计划及证据收口已实际完成；不重新执行冻结路线。原全量替换、FPS及未观测组合不写为通过；暂挂项目保持原状态，E原P3保存HTTP403按明确外部失败条件保留，详情见本轮八行最终判定。",
   "hosts": [
     {
       "name": "NextN",
@@ -40,7 +40,7 @@
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
       "installedHap": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
-      "progressSummary": "当前9af6 Shared及保留Legacy正常返回/旋转源栏命名路径接受；进程临时覆盖已清除。 原OFF临时ON无需重入：17→P3/16→P2有限接受，308原帧审阅，OFF/P2已恢复。 当前P2单图实际保存WEBP63548B/1280×1101可读且内容一致，原P2返回；1527/1528已清理。",
+      "progressSummary": "当前9af6 Shared及保留Legacy正常返回/旋转源栏命名路径接受；进程临时覆盖已清除。 原OFF临时ON无需重入：17→P3/16→P2有限接受，308原帧审阅，OFF/P2已恢复。 当前P2单图实际保存WEBP63548B/1280×1101可读且内容一致，原P2返回；1527/1528已清理。 当前9af6普通P2显/隐Home/plain前台359帧/12联排及3原图审阅，白字/无栏/源黑字命名路径接受；1537清理query0，无源码修改。",
       "installedPackage": {
         "sha256": "9af69d4149ba0e5b72e870702e1ab6af5780c4be730d80d8f34830ff90076740",
         "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-N-hidden-ready-20261008.hap",
@@ -49,7 +49,8 @@
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage",
       "ordinaryVolumeReceipt": "N-ordinary-volume-receipt-20261008.json",
-      "actualSaveReceipt": "N-current-actual-save-acceptance-receipt-20261008.json"
+      "actualSaveReceipt": "N-current-actual-save-acceptance-receipt-20261008.json",
+      "foregroundReceipt": "N-ordinary-foreground-acceptance-receipt-20261008.json"
     },
     {
       "name": "NextE",
@@ -91,12 +92,12 @@
       "kit": "05542ecf7d3275cb63bf9b53719f1dbc1ae95cb5",
       "hap": "9b85a661b0c68ba34d80c6ce198d0c9a25c14b6aef006336c889f9448f2f2b68",
       "build": "签名候选构建通过；Koma 保留原 default release 构建标记。 三份共同源策略一致，几何 WIP 未改动。",
-      "install": "197 已安装更新候选 6e1d043d；构建/安装不能替代运行验收。",
-      "verdict": "命名路径留证 · 总体未验收",
+      "install": "13:29当前2d0e正向无clear安装；13:31显/隐前台及同02/P18正常返回全片审阅",
+      "verdict": "当前隐栏前台恢复命名路径接受 · 整体替换未接受",
       "verdictKind": "open",
       "runtime": "c168144c同Catalogue102 P1/1 own sheet Double/RTL覆盖、普通/cold保留、Legacy互读，global及另一书Single/LTR隔离；底栏原四项Double→同会话green/own sheet、普通重入保留→Reset Single/LTR/no badge/Single check；Animation OFF→ON后cold保留；最终原Library P1/100%。独立两新增连续区间0–255/0–831和root核对。 当前r4标题命名五行接受、原Shared/Library102P1恢复；当前Store/queue/preference正文未变，仅复用titleleaf。 Current55c manual upper3->lower1->upper3 and force-stop/plain cold actual3 accepted in all first-unique RGB originals. Rejected c504 manual1 retained. Return today cards dark from frame725; cold restores white, so whole exit not accepted. Original Library102P1 restored. Currentb4fb Shared ordinaryHistory1->3->Back and nativeLegacy3->4->Back complete RGB reviews14/17contacts: all Today/Yesterday remain white, rowupdates3/4; publication follows ownedOnDisappear exactly once. RestoredShared/upper1/Library102P1/timeout30000. Earlier55c dark return retained as rejected baseline. 当前6e1d保留Legacy原Library02/P18：实际18/19旧工具栏→normalBack横屏source0→竖屏SCB123/cleanroot124；233原帧/all7contacts全审阅。原Shared冷启后行文字/视觉勾选一致，原02/P18·95%保留。 当前197右侧P18单图真实保存，媒体同名before0→after1→精确清理0；导出JPG250413B/980×1394完整解码并与实际右页/确认预览一致，原02P18/03P10和Library95%恢复。只接受这条保存，不接受双图/发分享/全部媒体与性能。",
       "remaining": "其他关闭/入口分支、FPS/整体替换未由本次源栏路径接受。",
-      "appHead": "62bfa97bb970d6ac053c72229eb25172b93e5aa7",
+      "appHead": "db1a622c76542caedcd3bdf361512ce2139d0349",
       "installedKit": "构建时3468fa41 + 同字节源策略候选；现提交为05542ecf。所列两几何WIP仍在安装包/工作区，未进入此提交。",
       "kitWorkingTree": "共同源策略05542ecf已提交；仅原几何WIP f715588a/ac0c8c90保留",
       "kitDocumentation": "共同策略及三宿主接入本地提交完成，构建时源绑定原样保留；六条Shared/Legacy正常返回与方向区间有限接受，E另含缩略图路径。几何WIP和未观察分支不由此接受。",
@@ -104,48 +105,49 @@
         "hap": "86a4fe112980f5b5832c724fbe4c11cbf041e8bff0b6304ced9b77d2bd505c6f",
         "disposition": "已否决并撤除，不是当前安装版本；原始反例留存。"
       },
-      "installedHap": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
-      "progressSummary": "6e1d双版本普通返回/旋转源栏、Shared原OFF音量16→15/16与17→17/18、当前可信02P19→03P1→02P19命名区间留证；原Shared/P18/P10/OFF/120秒恢复。Legacy原水平翻转单点按同起止页留证，两者均有跨章无图准备；不接受全量/FPS或入场黑帧。 当前右P18实际保存JPG可读/内容一致，原Reader/Library位置保留，自建1525/1526已精确清理；只接受此单图。",
+      "installedHap": "2d0e875f2c5cfcf2f545af2953aa6edd37e8fe1c9caa286870917183f1091de2",
+      "progressSummary": "db1a622c仅将foreground接入已有chrome Monitor；当前2d0e显栏白字、隐栏前台无状态栏、同17/18正文和返回Library02/P18·95%保留。351原帧/11联排及145/260/263/285/340原图审阅；原6e1d反例留存，正文黑屏误判已撤回；1538–1541正向清理，本地原片保留。",
       "installedPackage": {
-        "sha256": "6e1d043d5e0e04e184f1dd52a30d16fcf49748646de3ea86dbfe80b86954ef59",
-        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/source-policy-K-hidden-ready-20261008.hap",
-        "binding": "source-policy-K-hidden-ready-binding-20261008.json",
-        "status": "positive native install; named Shared and Legacy normal source-policy close/rotation intervals accepted"
+        "sha256": "2d0e875f2c5cfcf2f545af2953aa6edd37e8fe1c9caa286870917183f1091de2",
+        "path": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006/K-foreground-hide-intent-20261008.hap",
+        "binding": "K-foreground-hide-intent-binding-20261008.json",
+        "status": "positive native install; current ordinary02P18 visible/hidden Home/plainforeground/normalBack fullmovie accepted; prior entry/Legacy receipts retainoriginalbindings"
       },
       "hapLayer": "历史包绑定；当前安装候选见 installedHap 与 installedPackage",
-      "appHeadLayer": "本地源策略接入检查点；已安装HAP及构建时绑定保留不变，所列源码字节逐项与当前一致。",
+      "appHeadLayer": "单文件2+/2-窄修正本地检查点；原构建head62bfa绑定不改写，10个已列源码hash与当前字节一致。",
       "ordinaryVolumeReceipt": "K-ordinary-volume-receipt-20261008.json",
       "chapterEdgeReceipt": "K-current-chapter-edge-acceptance-receipt-20261008.json",
-      "chapterLegacyReceipt": "K-current-chapter-Legacy-comparison-receipt-20261008.json"
+      "chapterLegacyReceipt": "K-current-chapter-Legacy-comparison-receipt-20261008.json",
+      "foregroundReceipt": "K-foreground-hide-intent-current-acceptance-receipt-20261008.json"
     }
   ],
   "gaps": [
     {
       "id": "source-status-restoration",
       "title": "源页面状态栏：横屏返回与竖屏恢复",
-      "status": "E前台颜色及受影响转场/旋转命名路径已修；跨宿主责任核对",
-      "kind": "open",
-      "detail": "普通managed owner前台漏replay与actualvisible事件空处理已从源码定位；复用既有Monitor与Window队列。8ca显/隐Home返回、横屏前台/返回旋转、缩略图根飞行和normalBack均已全片审阅；最终7978对应物理终态观察。具体Native第二writer只保留机制推断，温热源白字历史起点不冒充已全量归因。 最终包359原帧/10联排及140/266/338原图已审阅，P3/source黑字保持；eec20a92已提交，1536精确清理/query0。",
-      "action": "从当前N/K实际普通入口核对 foreground→retained chrome→原窗口意图的owner/writer链，确定本次E修复是否存在需要同步的同源缺口；仅对源码明确的未验证分支安排一次有边界动作。",
+      "status": "本轮源栏/前台命名路径已接受",
+      "kind": "accepted",
+      "detail": "普通managed owner前台漏replay与actualvisible事件空处理已从源码定位；复用既有Monitor与Window队列。8ca显/隐Home返回、横屏前台/返回旋转、缩略图根飞行和normalBack均已全片审阅；最终7978对应物理终态观察。具体Native第二writer只保留机制推断，温热源白字历史起点不冒充已全量归因。 最终包359原帧/10联排及140/266/338原图已审阅，P3/source黑字保持；eec20a92已提交，1536精确清理/query0。 N9af6当前P2显/隐Home及同源返回359帧/all12联排接受，无补丁。K当前fullscreentrue的原反例由现有foreground漏通知定位；2d0e当前同路线351帧/all11+5raw接受，db1a622c本地提交。Kbody缺失误判撤回，原片留证。",
+      "action": "冻结已审阅的命名源栏及前台修复路径，保留前后原片/源码因果；不将其扩大为全量替换、所有入口或FPS接受。",
       "reportedAt": null,
       "reportedAtSource": "此次具体旋转缺口由实机发现，未冒充原始用户消息时间。",
       "firstEvidenceAt": "2026-10-08T01:19:00+08:00",
-      "closedAt": null,
+      "closedAt": "2026-10-08T13:44:17.706496+08:00",
       "handling": {
         "trackingSince": "2026-10-08T03:23:03.448303+08:00",
-        "recordedSeconds": 11964.302729,
-        "activeSince": "2026-10-08T12:49:10.312102+08:00",
+        "recordedSeconds": 14711.67793,
+        "activeSince": null,
         "note": "此前工时未完整分段，不能由墙钟经过时间回填。",
-        "activeUntil": "2026-10-08T13:04:10.312102+08:00"
+        "activeUntil": null
       }
     },
     {
       "id": "reader-validation-strategy",
       "title": "验证策略与完整行为基准",
-      "status": "完整影响行与当前原片核验推进；未宣称全量替换",
+      "status": "本轮影响核定与原片审阅完成；全量替换未证明",
       "kind": "open",
       "detail": "K/N实际可读单图输出及原进度/媒体清理有限接受。E当前P3内部下载三次403、无确认/新图片；失败原片11联排和原尺寸0/14/222审阅，原尺寸证实黑色区域属于原页内容，撤销缺图误判；不接受全量/FPS。",
-      "action": "从当前N/K实际普通入口核对 foreground→retained chrome→原窗口意图的owner/writer链，确定本次E修复是否存在需要同步的同源缺口；仅对源码明确的未验证分支安排一次有边界动作。",
+      "action": "本轮八行影响核定及当前窗口修复原片审阅已完成；保留每条真实路径/包绑定，未观测组合不等于通过。现有自然缓存缺失/取消路线已经执行，不以未凑齐全部tuple无限重测。",
       "reportedAt": null,
       "reportedAtSource": "本轮用户明确要求先改验证方式，原始消息时间未逐项核实。",
       "firstEvidenceAt": "2026-10-06T13:16:27+08:00",
@@ -856,6 +858,22 @@
     }
   ],
   "milestones": [
+    {
+      "at": "2026-10-08T13:44:17.706496+08:00",
+      "text": "本轮E/K前台窗口窄修复及N实况计划完成：三个当前包显/隐前台和返回均全片审阅；八项行为影响核定。网页原片/回执可访问，保留未证明与用户暂挂范围，不新增功能、不推送发版。"
+    },
+    {
+      "at": "2026-10-08T13:40:27.489749+08:00",
+      "text": "Koma db1a622c：仅补既有chrome Monitor前台恢复通知。当前2d0e197显/隐前台与Back全351原帧、11联排和5raw接受；同02/P18正文/原书库进度保留。1538–1541精确清理，本地原片、反例与设置只读证据保留。"
+    },
+    {
+      "at": "2026-10-08T13:29:26.359220+08:00",
+      "text": "K原生全屏Toggle checked=true已只读确认。仅补原Monitor foreground，无新状态/延时/树变化；签名2d0e构建完成。第一次只读恢复终态是锁屏，未误称Library，已中性解锁确认原设置；当前继续同普通路径验收。"
+    },
+    {
+      "at": "2026-10-08T13:18:35.672181+08:00",
+      "text": "N当前普通P2显/隐Home前台与正常返回359原帧已审阅，1537精确清理/query0。K原尺寸图片证实正文存在，撤销留白黑屏误判；全屏设置未核对，不提前判窗口缺陷。"
+    },
     {
       "at": "2026-10-08T12:53:11.742906+08:00",
       "text": "NextE前台修复单文件2处hunk已本地提交eec20a92；最终7978实际显/隐/Home/plainforeground/normalBack全359帧审阅、原P3保持，1536精确清理/query0。跨宿主前台责任核对继续，不推广整体替换。"
@@ -1813,6 +1831,76 @@
       "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-E-foreground-intent-visible-hidden-return-20261008/hidden.png",
       "kind": "PNG",
       "storage": "device197"
+    },
+    {
+      "id": "n-foreground-current-receipt",
+      "label": "NextN当前前台显隐回执",
+      "path": "N-ordinary-foreground-acceptance-receipt-20261008.json",
+      "kind": "JSON",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-cause-plan",
+      "label": "Koma前台隐栏源码因果与影响计划",
+      "path": "K-foreground-hide-intent-cause-plan-20261008.json",
+      "kind": "JSON",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-current-binding",
+      "label": "Koma当前2d0e签名源码绑定",
+      "path": "K-foreground-hide-intent-binding-20261008.json",
+      "kind": "JSON",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-current-receipt",
+      "label": "Koma前台隐栏修复完整回执",
+      "path": "K-foreground-hide-intent-current-acceptance-receipt-20261008.json",
+      "kind": "JSON",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-current-movie",
+      "label": "Koma修复后显隐前台与返回完整原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-K-current-own1541-export-20261008/device197-K-foreground-hide-current-acceptance-20261008.mp4",
+      "kind": "MP4",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-baseline-movie",
+      "label": "Koma修复前隐栏状态栏反例原片",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-K-own1538-foreground-counterexample-export-20261008/device197-K-ordinary-foreground-visible-hidden-return-20261008.mp4",
+      "kind": "MP4",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-current-visible",
+      "label": "Koma当前显栏白字",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-K-foreground-hide-current-acceptance-20261008/visible.png",
+      "kind": "PNG",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-current-hidden",
+      "label": "Koma当前隐栏无状态栏",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-K-foreground-hide-current-acceptance-20261008/hidden.png",
+      "kind": "PNG",
+      "storage": "device197"
+    },
+    {
+      "id": "k-foreground-current-source",
+      "label": "Koma当前返回书库原第18页",
+      "path": "device197__ALN-AL80/not-applicable/portrait-1260x2720/device197-K-foreground-hide-current-acceptance-20261008/source.png",
+      "kind": "PNG",
+      "storage": "device197"
+    },
+    {
+      "id": "foreground-eight-row-final",
+      "label": "本轮前台窗口修复：八项行为最终影响判定与范围",
+      "path": "foreground-window-eight-row-final-disposition-20261008.json",
+      "kind": "JSON",
+      "storage": "device197"
     }
   ],
   "evidenceNote": "当前197回执与旧模拟器记录均来自已登记本地文件。历史回执仅覆盖当时命名范围，已否决方案不能由通过项抵消。",
@@ -1833,8 +1921,11 @@
     "originalGoalDisposition": "原全量替换目标未达成；由本次有限收尾指令取代当前执行范围，不能标为达成。",
     "currentBindingReceipt": "status-intent-current-acceptance-receipt.json",
     "currentRestorationReceipt": "e-post-controls-warm-entry-result.json",
-    "readerSpecificWorkActive": true,
-    "state": "OPEN · E前台命名修复与K/N实际单图保存留证；E下载403独立失败，全部替换及性能优越未达成。"
+    "readerSpecificWorkActive": false,
+    "state": "本轮前台窗口计划完成；原全量替换及性能优越未达成，独立生产和明确暂挂项不自动恢复。",
+    "currentForegroundRepairPlanCompleted": true,
+    "currentForegroundRepairReceipt": "foreground-window-eight-row-final-disposition-20261008.json",
+    "finiteCurrentPlan": "本轮源栏与前台窗口意图修复命名范围完成；保留整体未证明/外部失败和原用户暂挂，不把这些改成通过。"
   },
   "currentEntryReceipts": {
     "root": "/Users/honjow/.codex/worktrees/b744/NextN/.hvigor/outputs/reader-entry-statusbar-20261006",
@@ -1938,17 +2029,17 @@
     }
   },
   "currentPhysicalState": {
-    "at": "2026-10-08T12:53:00+08:00",
-    "host": "NextE",
+    "at": "2026-10-08T13:31:22.015705+08:00",
+    "host": "Koma",
     "target": "192.168.50.197:12345",
     "device": "ALN-AL80/API26/portrait1260x2720",
-    "lease": "20261008-021626-2c0dfe10 renewed through13:37:23+08",
-    "foreground": "Lastactual UI12:46 NextE sameDetail/P3 root127 blacktext/light wholePNG; cleanup doesnot reassertUI aftersleep",
-    "source": "Original4203217/P3 retained; Noriginal682531/P2 andKoriginal02P18/03P10 earlierrestored, no fresh allhostreadback claim",
-    "settings": "No new backend/theme/source/cache/reading setting change",
-    "power": "latestcleanupPower SLEEP, Timeout120000/Override120000; no newwake/audio/performance writes",
-    "recording": "Own1533–1536 positiveexport/fullreview/exactdevicecleanup SUCCESS/query0; originalmovies locallyretained",
-    "nextUnverified": "从当前N/K实际普通入口核对 foreground→retained chrome→原窗口意图的owner/writer链，确定本次E修复是否存在需要同步的同源缺口；仅对源码明确的未验证分支安排一次有边界动作。",
+    "lease": "20261008-021626-2c0dfe10 renewed13:27:44 through14:27:44+08",
+    "foreground": "actual com.honjow.koma Library root127 whileRecorder; originalContinue02/P18·95%, lightbackground/darkclock wholePNG",
+    "source": "OriginalK02/P18 preserved; N682531/P2 andE4203217/P3 previouslyrestored, no new allhostreadback claim",
+    "settings": "K原全屏checked=true只读，未修改任何偏好/缓存/源",
+    "power": "runtime末态AWAKE Timeout120000/Override120000；清理媒体无UI操作不冒充新前台读回",
+    "recording": "own1538–1541原片全部保留/全联排审阅/正向精确deletequery0于13:37:35",
+    "nextUnverified": "本轮E/N/K前台窗口意图计划及证据收口已实际完成；不重新执行冻结路线。原全量替换、FPS及未观测组合不写为通过；暂挂项目保持原状态，E原P3保存HTTP403按明确外部失败条件保留，详情见本轮八行最终判定。",
     "timeout": "Timeout120000/Override120000 readback"
   },
   "nextNOnlineHandoffObservation": {
@@ -2498,9 +2589,9 @@
     "state": "executing"
   },
   "documentCheckpoint": {
-    "commit": "164a48e2",
-    "scope": "Owned sourceimpact/Ksave/page records; unrelatedledger/geometryWIP preserved",
-    "at": "2026-10-08T10:47:18+08:00"
+    "commit": "49d9fcc1",
+    "at": "2026-10-08T13:01:07.468591+08:00",
+    "scope": "Owned current foreground/save/QA/web data; unrelated PRIVATE-HISTORY ledger and Kit geometry preserved"
   },
   "ordinaryVolumePlan": {
     "sourcePlan": "E-ordinary-volume-source-plan-20261008.json",
@@ -2523,7 +2614,7 @@
     "legacyReceipt": "K-current-chapter-Legacy-comparison-receipt-20261008.json"
   },
   "impactReview": {
-    "at": "2026-10-08T11:29:39.396176+08:00",
+    "at": "2026-10-08T13:44:17.706496+08:00",
     "title": "本轮修改：八项基本行为的影响与证据",
     "note": "“未改逻辑”不等于运行通过；旧记录仅沿原版本、普通路线、设备及依赖边界适用。此表不是新增开发队列。",
     "rows": [
@@ -2532,10 +2623,10 @@
         "behavior": "入场与返回",
         "impact": "直接改变",
         "kind": "open",
-        "status": "E前台显/隐和受影响转场/横屏命名路径留证",
+        "status": "E/N/K当前前台显隐及同源返回命名路径接受",
         "reason": "共同SourceWindowPolicy→TrialWindow/宿主原窗口队列→close避让区/源颜色/当前目标返回；E已有Navigation可见时显式提交pending route。没有改变根飞行、缩略图取得或绘制就绪标准。",
-        "evidence": "六条普通Shared/Legacy返回、E35f8缩略图入场和E413c双版本外部替换。 E eec20a92/final7978 ordinary前台359帧，prior8ca横屏430帧与缩略图119帧全部首次RGB联排审阅；原P3/源色恢复。",
-        "limit": "只接受命名路径；历史温热源白字具体起点未全量归因，Native第二writer仅机制推断。全提前退出/全部窗口模式/NK前台/FPS未推广。",
+        "evidence": "六条普通Shared/Legacy返回、E35f8缩略图入场和E413c双版本外部替换。 E eec20a92/final7978 ordinary前台359帧，prior8ca横屏430帧与缩略图119帧全部首次RGB联排审阅；原P3/源色恢复。 当前N9af6普通前台显隐/同源359原帧all12接受；K当前2d0e同02P18前台显隐/同Library351原帧all11+5raw接受。原源返回/旋转及入场仍各绑定原包，不推广性能/其他入口。",
+        "limit": "原前台修复计划中定义的显/隐Home/plainforeground/同源Back已完成；E先前受影响横屏和缩略图原片留绑定。未观测入口、早退、全窗口模式、FPS及全量替换不由此接受。",
         "receipts": [
           "source-policy-N-visible-close-receipt-20261008.json",
           "source-policy-N-Legacy-current-return-receipt-20261008.json",
@@ -2546,8 +2637,11 @@
           "source-policy-K-Legacy-current-return-receipt-20261008.json",
           "E-foreground-intent-final-acceptance-receipt-20261008.json",
           "E-foreground-intent-landscape-acceptance-receipt-20261008.json",
-          "E-foreground-intent-thumbnail-acceptance-receipt-20261008.json"
-        ]
+          "E-foreground-intent-thumbnail-acceptance-receipt-20261008.json",
+          "N-ordinary-foreground-acceptance-receipt-20261008.json",
+          "K-foreground-hide-intent-current-acceptance-receipt-20261008.json"
+        ],
+        "foregroundChangeDisposition": "直接窗口事件变化；E/K真实显隐前台和同源返回全原片接受；N当前观察正常。原根飞行/admission/target及close源码未改变；旧横屏/缩略图回执保留原绑定。"
       },
       {
         "id": "image-loading",
@@ -2562,7 +2656,8 @@
           "e-online-pending-P9-current-acceptance-receipt-20261007.json",
           "n-online-pending-P3-current-acceptance-receipt-20261008.json",
           "K-current-chapter-Legacy-comparison-receipt-20261008.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "只重发真实chrome事件与既有Window准备；无snapshot/asset/request/slot/feedback写入，当前原片正文保持。自然取消回调仅沿原N/E实测命名证据，不把未观测tuple写为通过。"
       },
       {
         "id": "paging-preload",
@@ -2578,7 +2673,8 @@
           "N-ordinary-volume-receipt-20261008.json",
           "K-ordinary-volume-receipt-20261008.json",
           "K-current-chapter-edge-acceptance-receipt-20261008.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "新Monitor不调用session选择/seek/open/预载配置；原序列及资源窗未改，保留原版本命名回执。"
       },
       {
         "id": "thumbnail-state",
@@ -2592,7 +2688,8 @@
         "receipts": [
           "nextn-thumb-rail-rolling-return-current-review.json",
           "K-current-chapter-Legacy-comparison-receipt-20261008.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "没有触碰rail/Scroller/list/selection或几何；不新增FPS结论，不重复冻结缩略图路线。"
       },
       {
         "id": "menu-settings",
@@ -2609,7 +2706,8 @@
           "source-policy-E-visible-admission-Shared-receipt-20261008.json",
           "N-ordinary-volume-receipt-20261008.json",
           "K-ordinary-volume-receipt-20261008.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "显示/隐藏Window回放间接影响chrome；使用Surface实际chrome而非新投影。K全屏只读TRUE，visible/hidden实际图和同源返回接受；choice/options/persisted writer未改。"
       },
       {
         "id": "original-effects",
@@ -2622,7 +2720,8 @@
         "limit": "本轮没有新原图往返/增强成功证明；不恢复用户已暂挂系统超分、不为此换模型或修改缓存。",
         "receipts": [
           "f2-after-restart-functional-reviewed.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "无原图状态/请求variant/处理结果writer；旧原图记录原绑定保留，系统增强用户暂挂。未执行新的ON/OFF或成功增强，不宣称运行通过。"
       },
       {
         "id": "progress-return",
@@ -2636,7 +2735,8 @@
         "receipts": [
           "K-current-chapter-Legacy-comparison-receipt-20261008.json",
           "source-policy-current-final-source-bindings-20261008.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "同当前N/P2、E/P3、K02/P18返回保留；新Monitor无progress writer/session rebuild；K新包前后sourceLibrary同18/95%实际读回。"
       },
       {
         "id": "host-media",
@@ -2655,7 +2755,8 @@
           "K-current-actual-save-acceptance-receipt-20261008.json",
           "N-current-actual-save-acceptance-receipt-20261008.json",
           "E-current-actual-save-failure-receipt-20261008.json"
-        ]
+        ],
+        "foregroundChangeDisposition": "Monitor不调用源/章节prepare/媒体save/share。K/N单图完成与E同URL403单次失败保留原绑定；不重复取消或403请求，独立K生产暂停。"
       }
     ],
     "receipt": "reader-current-eight-row-impact-map-20261008.json"
@@ -2678,7 +2779,12 @@
   },
   "sourceColorManagedReceipt": "E-managed-foreground-color-diagnostic-receipt-20261008.json",
   "sourceColorForegroundIntentPlan": "E-managed-foreground-window-intent-plan-20261008.json",
-  "sourceColorForegroundIntentReceipt": "E-foreground-intent-current-acceptance-receipt-20261008.json"
+  "sourceColorForegroundIntentReceipt": "E-foreground-intent-current-acceptance-receipt-20261008.json",
+  "foregroundOwnerSourcePlan": "NK-ordinary-foreground-owner-source-plan-20261008.json",
+  "KForegroundHideIntentPlan": "K-foreground-hide-intent-cause-plan-20261008.json",
+  "KForegroundHideIntentBinding": "K-foreground-hide-intent-binding-20261008.json",
+  "KForegroundHideIntentReceipt": "K-foreground-hide-intent-current-acceptance-receipt-20261008.json",
+  "foregroundEightRowFinalReceipt": "foreground-window-eight-row-final-disposition-20261008.json"
 }
 -->
 

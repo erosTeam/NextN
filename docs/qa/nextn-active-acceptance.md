@@ -234,3 +234,17 @@ Current953d positively installed on physical197 (ALN-AL80/API26/1260x2720), ordi
 ## 2026-10-08T12:53:11.742906+08:00 · E最终前台窗口意图修复
 
 实际managed owner漏foreground replay且actualvisible事件空处理，官方Navigation backup/restore源码只支持第二writer机制推断，未把具体Native writer称为已追踪。LabPage复用既有Monitor与prepareStatusBarVisible两处窄修复，单文件9+/2-本地提交eec20a92。临时observer日志已撤，最终7978正向native安装/无clear；实际ordinaryP3显栏Home/plainforeground白字、隐栏Home/plainforeground无栏、show后normalBack同Detail/ContinueP3深色源栏。359decoded/354distinct全部10联排及原140/266/338、三native整图核对；原片f7a29d6e/15.125s。先前8ca横屏430/420/all12与缩略图119/113/all4及原25/44/68/84/95分别留原绑定，不把构建当全运行。三个被影响命名范围完成，N/K当前foreground未由E推广。1534/1535/1536正向导出后精确delete success/query0，原片保留；原Timeout120000/Override120000，最终cleanup实际PowerSLEEP不冒充当前UI。E单次HTTP403保存失败独立保留，不重复同URL。下一动作只读唯一工作单。
+
+
+## 2026-10-08T13:40:27.489749+08:00 · N/K当前前台窗口边界
+
+N9af6普通682531/P2显栏Home/plainforeground白字、隐栏无状态栏、normalBack同Detail/P2；359decoded/359distinct、全部12联排和140/276/346原图及三native整图已审阅。无源码补丁，不能因Lab源路径不重发就推断失败；实际Index声明样式命名结果保留。1537正向导出原片3623294c、精确deletequery0，回执N-ordinary-foreground-acceptance-receipt-20261008.json。
+
+K6e1d原普通02/P18隐栏Home/plainforeground状态栏仍在，原345帧/all11、raw294/297和wholehidden.png证实正文17/18始终存在；先前正文黑屏误判撤回。原生全屏checked=true经过只读真实设置确认，未改偏好。源码既有500ms hide在后台被foreground guard退休，而既有chrome Monitor未订阅foreground；仅加该字段到同Monitor，沿真实Surfacechrome及既有Window队列/current/admission守卫重发。本地单文件2+/2-提交db1a622c，Kit/几何WIP/入场/菜单/图片路径不变。
+
+当前release非debug2d0e正向native无clear安装，真实Library安装前后同02/P18·95%。13:31同显/隐Home/plainforeground及normalBack完整路线，351decoded/351distinct、全部11联排及145/260/263/285/340原尺寸图审阅：显栏白字黑底，隐栏前台按原时序无状态栏，正文17/18及18/19保留，返回同Library darkclock/light。native实际root127/0/127，PowerAWAKE/Timeout120000/Override120000。接受仅这条命名路线，不接受FPS/全量替换、所有旋转/入口/Legacy。回执K-foreground-hide-intent-current-acceptance-receipt-20261008.json；构建时原head62bfa不改写，10文件sha与提交后字节一致。
+
+修复前1538、两段只读设置1539/1540与当前1541原片均有效导出并全联排审阅后，13:37:31–35逐条正向delete success/query0；本地原片保留，未清用户媒体。锁屏恢复gate未冒充书库，实际中性解锁确认原设置后才正常Back并安装。网页登记当前绑定、前后原片、native终态及回执；下一动作只取唯一工作单。
+
+
+2026-10-08T13:44:17.706496+08:00 本轮前台窗口计划八行最终判定：E实际managed owner两hunk/K已有Monitor加foreground；Window canPresent仍经entry/root settled且nativecurrent guard，Surface仅重发真实chrome不写session/asset/rail/pref。N当前命名结果正常未改。三宿主当前显/隐Home/同源Back完整原片和物理终态完成；原E受影响横屏/缩略图保留原绑定。未观测组合/FPS/全量替换仍未证明；不会由源码未改自动提升运行验收。原自然uncached/moving-cancel路线已执行，不以完整late tuple未凑齐等待或无限复测；E原P3实际保存403失败记录真实外部条件与不同URL/Legacy不能接受原请求的替代边界。用户暂挂增强/较大布局复用/独立K生产不自动开启。回执foreground-window-eight-row-final-disposition-20261008.json与网页同源，无第二队列。
