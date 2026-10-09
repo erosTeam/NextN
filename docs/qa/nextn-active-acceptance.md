@@ -391,3 +391,12 @@ Koma唯一生产队列继续取/private/tmp/koma-production-20261005/docs/CURREN
 FOLDER-PROGRESS-001两文件a27af54f：原页ID在目录前插后的继续序号消费修正，与书架摘要共用纯解析；常态返回原进度对象，不改树/菜单/窗口/Kit。197当前signedRelease9bdec103的实际普通同root前插书架P3/75、原详情Continue实际原002蘑菇图3/4、no-data-clear cold同图；FileManager只删除本轮新增000后重扫书架P2/67，实际同图2/3、当前DetailContinue2/3，正常回Library。其他14本、其他progress/章状态、sourceHistory/remoteHistory完全相同；原章页ID/URI恢复。自身扫描章createdAt/updatedAt及真实阅读时间变动如实保留，未宣称Library整文件字节相同。前插阶段Detail标签未独立拍摄，Legacy单独选择/全部布局/FPS不由本包证明。
 
 回执：Koma ignored artifact root .hermes-artifacts/20261005-production中的folder-id001-197-acceptance-receipt.json、private-history-kav001-197-acceptance-receipt.json、folder-progress001-197-acceptance-receipt.json；后者绑定当前签名HAP/source并记录902秒。实际端点192.168.50.197:12345、lease20261008-195528-c6642941，原高性能与120000ms观测超时保持。本轮首锁屏点击不计正文接受；其后刷新锚点后的实际图单独记录。BAK197 signal0实际Operation not permitted，仅限制直接精确中断仪器，不限制其他可执行工作，不以hdc exit0称允许；没有重复抢窗口/注入checkpoint/延时。当前转入原私库历史备份保留边界，未进行全历史清空，不推送或发版，不提升Reader全量替换结论。
+
+
+### 2026-10-09 08:20 · Koma私库历史备份与本地候选交付
+
+Koma当前a27af54f/signedRelease9bdec103，197原管理页创建本轮普通备份→本地预览15本/16进度→确认恢复同一快照一次→实际成功。刚恢复Library/Reader语义相同；不清数据cold原History重开自有未收藏Kavita章2原图2/3，Back原3章9页目录仍加入书架。原15本、其他progress/章状态、sourceHistory/remoteHistory、filter和queue相同；三个源代码字节/启停/network保留，安装路径与capabilities顺序变化如实记录。自己的实际阅读时间正常更新，不声称Reader最终整文件字节相同。仅原UI删除本轮新备份回原0个，正常回原LibraryNemoP2/67。private-history-backup001-197-acceptance-receipt.json记录906秒；当前同快照普通恢复不接受其他协议/凭据迁移/加密组合/global clear/PREPARED中断。全过程未新增生产代码。
+
+08:11最终Library原图/layout及PowerManager实际AWAKE/Timeout120000/Override120000已观察；原高性能模式本轮未写入。195528-c6642941租约正常释放，不沿用旧租约执行设备命令。当前转本地交付：App基底69af0c1→a27af54f的39提交bundle、Kit cb4f2f54→05542ecf增量bundle与原两WIP精确补丁，隔离基底仓库重建后App tree/五源码/两Kit字节与HAP绑定一致。只接受源码保存，不冒充干净HEAD构建/正式CI/全量运行通过。产物在/private/tmp/koma-production-20261005/.hermes-artifacts/20261005-production/delivery-current-20261009/；当前Koma工作单与8766网页同步，N/E冻结路径不重开。
+
+本地交付材料有限包已收口，首版仍OPEN。下一仅SEA-002搜索合同选择：197原生配置已满足，旧Asset阻塞不再调度；官方跨授权库搜索最多15项且与旧库名/sortName匹配不等价，已向用户提交两种明确选择，决定前不修改搜索、不循环验收。其他中断/真实Tracker/正式签名与推送条件在Koma工作单逐项记录；不从本回执另立测试矩阵或推送发版。
