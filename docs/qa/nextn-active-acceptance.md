@@ -2,7 +2,7 @@
 
 当前 Reader 调度仅取 [唯一工作单](../plans/active/shared-reader-replacement-work-order.md)。
 本文件记录当前事实与证据边界，不复制 nextAction，不按每次点击追加日志。
-用户最新指令已将重心切换至Koma生产开发（2026-10-09）；N/E命名证据保留，等待后续反馈，不自动继续全量阅读器验收。Koma唯一开发动作转至其docs/CURRENT_STATUS.md；197目录闭环已接受并提交7f8ad4e6，当前接续KAV-001普通安全配置。
+用户最新指令已将重心切换至Koma生产开发（2026-10-09）；N/E命名证据保留，等待后续反馈，不自动继续全量阅读器验收。Koma唯一开发动作取 `/private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md` 的实时当前包，不在本入口写死旧包。197当前1a0e9f47 Release的两图导入/实际冷读2/2及原UI清理已按命名路径接受，文档检查点d2790d7b；原15本及原进度/历史/偏好逐项保持。本次先前回合failed429由heartbeat读回并从原动作续做，回执在Koma `.hermes-artifacts/20261005-production/continuity-429-actual-resume-20261009.json`。此项不重开N/E、不接受完整Reader替换或全产品无缺陷。
 
 历史失败记录（现已由0fc3替代，临时日志与合并回调候选已撤除）：197 E original-source 当时9183 REJECTED (2026-10-08 14:42–14:44+08): normalSharedP3 primesexistingresolverfacts, normalsettingsLegacy actual sameP3 nowreportsoriginalavailable (11-linecanonicalVM restorationgate). Continuous LegacyON/OFF/ON/OFF movie6d014b50/31.018s/591decoded/580distinct: all19orderedoriginalcontacts andraw0/169/188/590 reviewed. BothOFF actualbody staysblack throughnativeInfo untilON/normalBack; Info WebP62382B retains4299x6071. Existingredactedappsession144045 records two normaldiskhits perOFF, no resampleddecode, and4299x6071 perON. FileInfo/binding/commandcompletion is NOT bodyacceptance. OriginalShared7978 accepted70.442s namedroute keepsitsownbinding, not current9183 wholeacceptance. PlainDetailContinueP3/120000 restored, Sharedselection temporarydiagnosticroutepending. Receipt E-original-Legacy-roundtrip-current-rejected-receipt-20261008.json. Temporary26c9 current source-edge logs only, not productfix; no keys/cache/delay/source/geometry changes. Unique nextaction workorder.
 
