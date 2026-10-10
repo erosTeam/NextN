@@ -1,12 +1,22 @@
 # NextN current acceptance evidence
 
+当前人类指令（2026-10-11）重开的 **N-ENTRY-LOADING-001** 已按下述NextN命名普通分页区间接受；未经观察的布局/失败/旧版分支仍OPEN，不写成全软件通过。Koma保持用户暂停。旧执行规划已退出队列，当前动作只取唯一工作单。
+
+修复前实机反例：197旧NextN1.0.5/code7普通686630首缩略图进入，Reader Kit id13；原112帧灰底“正在准备图片”，113帧正文可读、灰底撤去、裸“正在解析图片”仍覆盖。11.179秒/374帧留存，nativeACK/displayed已发生。旧c0ad记录也有正文上灰底叠层，因此不能证明历史曾完整修好后才复活；原失败不删除。实际源原因与整个组件父树/状态边界见 [生命周期审查](reader-image-placeholder-lifecycle-20261011.md)。
+
+当前Kit生命周期切片3c7ffce（五文件），N/E源码同切片及签名Release编译成功；N197实际5d6af7eb。另一真实686616首缩略图，11.328秒/337帧全部联排及原101–104帧审阅：背景和占位一起退，正文及后续处理出现后无裸Stage重开。后续同包系统原片329.104秒/3603帧/101联排全部顺序审阅；原411/683/2512/3331/3355/3468–3473/3482核对。实际P1→P7、回P6再P7、chrome显隐、Back/ContinueP7/Back，重入正文3470首帧时占位已退，最后详情继续P7。接受此普通分页实际区间；未证完整缓存族进入前不存在性，不能称全无缓存或把有限区间推广。
+
+随后N仅两中文名称资源变更，当前安装0a366a99；九份ABC/native与5d包逐字节相同。197现有实现菜单原生显示“旧版阅读器/新阅读器（默认）”、当前checkmark保持新阅读器；未选择，正常Back回Browse。E英文两value及编译完成，未部署或原生英文接受；连续/Legacy未独立实机接受。N/Kit两份原geometry WIP保留未提交；Koma未构建/安装/改pin。两包、录像、源SHA及范围回执：`/Users/honjow/git/NextN/.hvigor/outputs/reader-loading-background-20261011/nextn-placeholder-lifecycle-accepted-receipt-20261011.json`。数据/缓存/偏好未清除；普通阅读更新本内容进度，不声称整个状态文件字节不变。租约已正常release。
+
+以下2026-10-09及更早调度句只作历史记录；不授权恢复Koma或替代当前唯一工作单。
+
 当前 Reader 调度仅取 [唯一工作单](../plans/active/shared-reader-replacement-work-order.md)。
 本文件记录当前事实与证据边界，不复制 nextAction，不按每次点击追加日志。
 用户最新指令已将重心切换至Koma生产开发（2026-10-09）；N/E命名证据保留，等待后续反馈，不自动继续全量阅读器验收。Koma唯一开发动作取 `/private/tmp/koma-production-20261005/docs/CURRENT_STATUS.md` 的实时当前包，不在本入口写死旧包。197当前1a0e9f47 Release的两图导入/实际冷读2/2及原UI清理已按命名路径接受，文档检查点d2790d7b；原15本及原进度/历史/偏好逐项保持。本次先前回合failed429由heartbeat读回并从原动作续做，回执在Koma `.hermes-artifacts/20261005-production/continuity-429-actual-resume-20261009.json`。此项不重开N/E、不接受完整Reader替换或全产品无缺陷。
 
 历史失败记录（现已由0fc3替代，临时日志与合并回调候选已撤除）：197 E original-source 当时9183 REJECTED (2026-10-08 14:42–14:44+08): normalSharedP3 primesexistingresolverfacts, normalsettingsLegacy actual sameP3 nowreportsoriginalavailable (11-linecanonicalVM restorationgate). Continuous LegacyON/OFF/ON/OFF movie6d014b50/31.018s/591decoded/580distinct: all19orderedoriginalcontacts andraw0/169/188/590 reviewed. BothOFF actualbody staysblack throughnativeInfo untilON/normalBack; Info WebP62382B retains4299x6071. Existingredactedappsession144045 records two normaldiskhits perOFF, no resampleddecode, and4299x6071 perON. FileInfo/binding/commandcompletion is NOT bodyacceptance. OriginalShared7978 accepted70.442s namedroute keepsitsownbinding, not current9183 wholeacceptance. PlainDetailContinueP3/120000 restored, Sharedselection temporarydiagnosticroutepending. Receipt E-original-Legacy-roundtrip-current-rejected-receipt-20261008.json. Temporary26c9 current source-edge logs only, not productfix; no keys/cache/delay/source/geometry changes. Unique nextaction workorder.
 
-## Reader 当前有效边界
+## 截至2026-10-08的历史Reader边界（各自原HAP绑定，不是当前安装）
 
 | 接入 | 当前安装绑定与命名结论 | 未接受范围 |
 | --- | --- | --- |

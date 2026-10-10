@@ -13484,3 +13484,32 @@ Authorized Koma first-production scope, source-confirmed consumer mismatch follo
 
 
 - 2026-10-09 07:51 FOLDER-PROGRESS-001 bounded result: a27af54f/current signed Release9bdec103, same original Nemo002 after ordinary front insertion3/4, cold3/4, own000 native deletion/rescan original2/3. Live Library summariesP3/75 thenP2/67, final DetailContinue2/3 and two original chapters. Other14 comics and other reader/source/private-history records exact; original chapter/page identity/URI restored. Actual reading times and existing scan chapter timestamps changed, not claimed whole-file exact. Insertion-stage Detail label not separately captured, no Legacy-only/FPS/all-layout promotion. Receipt: /private/tmp/koma-production-20261005/.hermes-artifacts/20261005-production/folder-progress001-197-acceptance-receipt.json. No builders, menus, windows or foreign Kit WIP changed.
+
+
+## N-ENTRY-LOADING-001 — 图片占位生命周期（2026-10-11，OPEN）
+
+- 用户授权/新反例：普通阅读入口前10秒背景中途消失；最新明确图片占位与已呈现原图互斥，要求组件自己管理生命周期。197实际原112→113帧及nativeACK/displayed已复现；旧有限通过不足，当前边界重开。
+- 错误假设：把“仍在处理/准备”当成“容器无可读图片”；再用entry/decode决定背景，产生两个互不一致的退出条件。影响：裸Stage覆盖正文，旧小联排漏检。防止：同一图片快照决定空容器占位，原视频关键帧按原分辨率审阅。
+- 父树：ReaderSurface/canvas → entry preview/WithTheme → paged Swiper/viewport 或continuous list → cell → 原生image及retained replacement；chrome/页码/底部处理/失败/提示等兄弟保留。无路由、窗口、滚动、几何、间距、手势、布局或样式改变。
+- 前后：cell条件assetLoading||preparing → 内部ReaderImagePlaceholder读取asset的呈现/retained事实；preparing不再决定占位。背景从entry phase/decoded guard改为同request尚需占位的preview材料；分页catalog只在空frames显示。Stage视觉值、真实传输进度、错误/重试不改。
+- 最小性：一个ReaderSnapshot呈现事实方法+一个内部组件+分页/连续两个既有消费者+entry材料条件；不在N/E宿主写特例，不改处理队列和nativeACK。预存两文件geometryWIP逐字节保存，不归入提交。
+- 新影响状态：首次asset/decoding，呈现后处理，保留原图的刷新/variant，空catalog和保留正文catalog，失败/notice/关闭；目前仅首次普通入口失败实机已证，其他状态仅有源所有权审查，不能宣称全部运行通过。
+- 验证：签名HAP与相关源绑定后197保持既有设置/数据，普通选择另一真实内容从预览进入，完整录像原PTS观察所有状态；再连续正常阅读、菜单、返回重入，不预设通过或用源码断言替代。未见加载区间只能接受其实际缓存路径。
+- 风险：nativeACK与entry预览存在独立运动交接；保留既有交接资源释放，检查原分辨率帧是否仍有空隙/叠加；连续和Legacy未实际观察的路径保持OPEN。
+
+
+## N-E-READER-NAMES — 既有阅读器选项名称（2026-10-11，OPEN）
+
+- 用户明确要求几个App的两种阅读器名字统一；当前资源证明N中文“现有阅读器/共享阅读器”和E英语“Existing reader/Shared reader”与其余语言/宿主不一致。最新“不一定统一NextE”指本次生命周期实现，不撤销此前名称纠正。
+- 父树保持：既有阅读器设置页 → 实现设置行 → 现有选择弹窗/两个选项。布局、顺序、radio/action、选中值和持久化ReaderBackend身份均不改。
+- 精确变化：N zh_CN旧值→“旧版阅读器/新阅读器（默认）”；E en_US旧值→“Legacy reader/New reader (default)”。base/en/ja/其余中文现行一致值保留，不改settings key/default/backend映射。Koma用户暂停，本轮不修改其名称。
+- 最小性：仅两个现有资源文件的四个value；不增副标题或实现说明。现有源中字节格式和无关WIP保留。
+- 实机边界：197保留当前backend，普通设置打开现有实现选择查看中文两选项；不为名称验收更换系统语言或默认阅读器。E英语只作源一致性与编译核对，没有原生英语结果不声称运行接受。
+- 风险/未证：文本长度与当前弹窗几何需实际截图确认。新的N HAP仅名称资源变化，之前5d加载区间证据保持其原绑定；不以它冒充新包完整普通阅读。
+
+
+### 2026-10-11 — N-ENTRY-LOADING-001 / N-E-READER-NAMES 实际限定结果
+
+- N Kit3c7ffce与HAP5d6af7eb：686616普通首缩略图337帧全序审阅及原101–104；同包后续329.104秒3603帧/101联排全序审阅及原411/683/2512/3331/3355/3468–3473/3482。原图呈现和后处理期间未见中央占位；实际P1→7、P6→7、chrome显隐、Back/ContinueP7/Back保持正文及最终P7。重入3469空容器占位→3470正文且占位整套退出。只接受该命名普通分页区间；连续/Legacy/失败等未观察状态仍OPEN，完整无缓存/FPS/全软件不接受。旧112→113裸Stage反例留存。
+- N0a366a99名称包九份ABC/native与5d逐字节相同；197现有实现弹窗实际显示中文两名、checkmark仍新阅读器，未选择；普通返回Browse已核实com.erosteam.nextn及1260×2720原viewport。E英文两value与共同Kit源码仅编译，未部署/原生英语接受。偏好/缓存未清除，正常阅读进度变化分别记录。
+- 构建仍含原两份geometry WIP，原字节与未暂存状态保留，不归入本轮切片。Koma未恢复，未推送/发版。所有原片保留，当前租约正常release。精确包/源/录像SHA及范围：`/Users/honjow/git/NextN/.hvigor/outputs/reader-loading-background-20261011/nextn-placeholder-lifecycle-accepted-receipt-20261011.json`。

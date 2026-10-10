@@ -5070,11 +5070,11 @@
     },
     {
       "name": "settings_reader_backend_legacy",
-      "value": "现有阅读器"
+      "value": "旧版阅读器"
     },
     {
       "name": "settings_reader_backend_shared",
-      "value": "共享阅读器"
+      "value": "新阅读器（默认）"
     },
     {
       "name": "settings_reader_group_implementation",
