@@ -1,6 +1,8 @@
 # NextN current acceptance evidence
 
-当前人类指令（2026-10-11）重开的 **N-ENTRY-LOADING-001** 已按下述NextN命名普通分页区间接受；未经观察的布局/失败/旧版分支仍OPEN，不写成全软件通过。Koma保持用户暂停。旧执行规划已退出队列，当前动作只取唯一工作单。
+当前2026-10-12人类反馈重开 **N-SR-PREPROCESS-001 / E-SR-STATUS-001 / SHARED-IMAGE-PIPELINE-001**：NextN未提前超分、NextE翻页状态闪回及整个共同处理职责。源码已确认E独有预处理调度，N仅原图预加载，K未注册SR/翻译能力；本轮尚无新的N/E设备结果。下述占位命名接受不覆盖这些反馈，保持其原限定范围。设计与下一未验证动作仅取[唯一工作单](../plans/active/shared-reader-replacement-work-order.md)，不在本页复制队列。
+
+以下2026-10-11命名证据保留：当时重开的 **N-ENTRY-LOADING-001** 已按下述NextN命名普通分页区间接受；未经观察的布局/失败/旧版分支仍OPEN，不写成全软件通过。当时Koma暂停，随后用户已恢复开发；此历史状态不调度当前工作。当前动作只取唯一工作单。
 
 修复前实机反例：197旧NextN1.0.5/code7普通686630首缩略图进入，Reader Kit id13；原112帧灰底“正在准备图片”，113帧正文可读、灰底撤去、裸“正在解析图片”仍覆盖。11.179秒/374帧留存，nativeACK/displayed已发生。旧c0ad记录也有正文上灰底叠层，因此不能证明历史曾完整修好后才复活；原失败不删除。实际源原因与整个组件父树/状态边界见 [生命周期审查](reader-image-placeholder-lifecycle-20261011.md)。
 
