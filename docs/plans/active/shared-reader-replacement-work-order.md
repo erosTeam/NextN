@@ -51,11 +51,15 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
 
 **Koma实际受影响原图消费者**：41旧包原body3/145，42正常返回P3/2%；43当前共同候选升级后同Library保持。44原片20.096秒/235帧全部审阅，实际3→2→3，chrome及正常Back到LibraryP3/2%；原body3与同态41一致，无中央占位覆盖正文。只接受现有原图路径，不能冒充K已具超分/翻译或全阅读器通过。
 
-**新观察的未闭环问题**：N两页增强Info和原图Info的大小都“未知”；文件header提供格式/尺寸，ReaderImageInformation.byteLength仍默认0，大小显示保持OPEN，未擅改可见信息。新翻译上传/额度本轮未扩授权，公共翻译本地链已验证而真实新服务路径未执行。未观察布局/Legacy、native在途取消和配置晚到结果保持OPEN，不以构建、同源代码或有限无异常推广。
+**新观察的未闭环问题**：N两页增强Info和原图Info的大小都“未知”；文件header提供格式/尺寸，ReaderImageInformation.byteLength仍默认0，大小显示保持OPEN，未擅改可见信息。N新自动翻译现已按追加的人类两页Torii许可实际执行，有限证据如下；E本轮新服务路径仍未执行，不能由N替代。未观察布局/Legacy、native在途取消和配置晚到结果保持OPEN，不以构建、同源代码或有限无异常推广。
 
 三份有限回执：`.hvigor/outputs/reader-preprocess-shared-20261012/device197__ALN-AL80/not-applicable/portrait-1260x2720/` 下 `30-nextn-final1-ordinary-new-nonh-entry-turns`、`21-nexte-final1-ordinary-entry-turns`、`44-k-common-original-entry-turns` 的 `finite-observation-receipt.json`。原片、全部帧时间线、raw hilog、命令账本和checked manifest保留。
 
-精确diff复核已完成，共同Kit本地检查点：N/E同commit842a5ea，K旧基线兼容91eb4f7，原六geometryWIP保持。N遗留sequencer三文件完全保持，没有继续或删除旧待办。下一未验证动作：保存宿主精确范围检查点，然后实际读取N现有自动翻译确认和服务配置；不提交新的上传/额度请求，不重复首次加载接受。native新自动翻译服务路径需明确新上传/额度范围，不以旧E两页授权扩到N或其他页。该具体分支不阻止K独立App/书源工作，其动作仍取K当前工作单。
+精确diff复核及本地范围检查点已保存：共同Kit N/E同842a5ea、K旧基线91eb4f7；宿主N32ee03b6、E7557210e、K175cacda。原六geometry与K其他AppWIP精确保持，N遗留sequencer三文件未继续/删除。E仅移除类结尾一个空行，TS输出逐字节相同；实际原4395e6be安装绑定保留原EOF字节，不伪称新字节已部署。未推送/发版。
+
+**追加NextN两页真实自动翻译**：197正常读取确认和当前Torii云端整图设置后，用户另明确允许686744最多两页上传/额度。72只开启一次，实际两次request/response；source0在04:44:19.455、source1在04:44:23.785 translated ready，第2页早于普通翻页命令04:44:44.574约20.789秒。原片35.690秒/304帧全部按顺序审阅，第一页面文字实际改变，随后普通1→2直接采用已准备的第2页译图；处理内联状态期间原正文可读，无中央图片准备占位覆盖。动画中HUD仍1/2，frame298/PTS32.038944后2/2，不宣称运动中每帧页码一致。75原生Info明确当前译图/PNG1280×1793，大小仍未知。正常关闭后77重入恢复原字/HDpink，79翻译当前页和auto未选中，80正常退出保留下载；81原KLibrary/P3/2%及原120000/86400000电源参数保持，租约已释放。只接受此两页服务准备/采用/会话退休，不接受翻译语言质量、E新服务、native在途取消或所有布局。回执为72目录finite-observation-receipt.json。
+
+下一未验证动作：当前N许可两页路径已闭环且不重复上传；E新自动翻译需要独立当前配置/素材与上传额度范围，native在途取消/其他布局保持OPEN，不造状态/抢窗口补证。K独立安全App/源工作继续取当前工作单，Pixiv官方图标切片Root复核仍可执行；单个云服务分支不作为全产品停止条件。
 
 ## 普通用户观察与判定
 
@@ -69,20 +73,20 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
 {
   "schemaVersion": 1,
   "title": "共享阅读器：预处理与图片生命周期",
-  "state": "OPEN · common N/E/K deployed; finite native observations retained",
-  "updatedAt": "2026-10-12T04:15:17.075031+08:00",
+  "state": "OPEN · N/E/K deployed; N bounded2page Torii native accepted",
+  "updatedAt": "2026-10-12T04:54:06.414959+08:00",
   "activeId": "SHARED-IMAGE-PIPELINE-001",
   "outcome": "共同管理资源准备、预处理、结果采用及呈现状态；NextN获得同一超分预处理能力，NextE已准备页不闪回原图状态，Koma按真实可选能力接入。",
-  "scope": "相同六文件与N/E处理桥接；三签名部署，N381/E299/K235原帧完整观察及原图选择；真实新翻译/native在途取消/Info大小仍OPEN。",
-  "nextAction": "共同Kit本地检查点842a5ea（N/E同commit）及K91eb4f7已保存；完成宿主精确范围提交后，实际读取N现有自动翻译确认/服务配置，不提交新上传/额度请求；未观察分支保持OPEN。",
+  "scope": "Same6files/N/Ebridges deployed; N381+31+304/E299/K235 all-frame finite evidence; E newservice/nativeinflightcancel/InfoBytes/otherlayouts remainOPEN",
+  "nextAction": "N授权686744两页Torii准备/采用/退出已实际闭环，不重复上传；E新自动翻译取独立当前配置/素材与额度范围；native在途取消/其他布局保留OPEN。K安全独立App/源动作取当前K工作单，Pixiv官网图标切片Root复核仍可执行。",
   "items": [
     {
       "id": "SHARED-IMAGE-PIPELINE-001",
       "title": "共同资源准备、处理、采用及生命周期",
       "status": "OPEN · same6files and3consumers deployed; finite native evidence",
       "kind": "active",
-      "detail": "共同协调器和双桥接完成；N381/E299/K235全原帧已顺序审阅，当前原图选择已观察；未观察服务/在途取消/布局和新Info大小问题仍OPEN。",
-      "action": "共同Kit本地检查点842a5ea（N/E同commit）及K91eb4f7已保存；完成宿主精确范围提交后，实际读取N现有自动翻译确认/服务配置，不提交新上传/额度请求；未观察分支保持OPEN。"
+      "detail": "共同六文件/三消费者部署；N真实两页Torii自动提前处理+译图采用/关闭已观察，304原帧全审；E新服务、native在途取消/其他布局及Info大小仍OPEN。",
+      "action": "N授权686744两页Torii准备/采用/退出已实际闭环，不重复上传；E新自动翻译取独立当前配置/素材与额度范围；native在途取消/其他布局保留OPEN。K安全独立App/源动作取当前K工作单，Pixiv官网图标切片Root复核仍可执行。"
     },
     {
       "id": "N-SR-PREPROCESS-001",
@@ -91,6 +95,14 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
       "kind": "reported",
       "detail": "自行普通下载非成人6867442/2；未来页在page0已开始准备、翻页动画中ready、实际page1确认前完成；两页InfoEnhanced5120×7172；原图选择50实际1280×1793，51恢复。",
       "action": "冻结此有限命名证据；native在途取消/其他布局/翻译不由此接受。"
+    },
+    {
+      "id": "N-AUTO-TRANSLATION-PREPROCESS-001",
+      "title": "NextN自动翻译提前处理",
+      "status": "ACCEPTED / bounded6867442P current native service/preparation/adoption/session retirement",
+      "kind": "reported",
+      "detail": "人类686744两页Torii追加授权；2次请求，future译图ready早于翻页20.789秒，304原帧全审+原生TranslatedInfo，正常退出/重入auto关闭；非语言质量接受。",
+      "action": "冻结此有限路径，不重复上传；其他宿主/服务/在途取消不由此替代。"
     },
     {
       "id": "E-SR-STATUS-001",
@@ -105,7 +117,7 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
       "title": "实际图片信息大小未知",
       "status": "OPEN · N enhanced andoriginal native observed",
       "kind": "reported",
-      "detail": "33/35增强JPEG5120×7172与50原WEBP1280×1793均大小未知；当前文件information只读取header，byteLength未赋真实大小。",
+      "detail": "33/35增强JPEG5120×7172与50原WEBP1280×1793均大小未知；当前文件information只读取header，byteLength未赋真实大小。 N75译图PNG1280x1793大小也未知。",
       "action": "保持可见信息问题OPEN；后续改动须有真实文件stat依据并遵循现有可见UI授权边界。"
     },
     {
@@ -134,7 +146,25 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
     "NextN": "842a5ea428ef542946636fab962ac7057c8865e3",
     "NextE": "842a5ea428ef542946636fab962ac7057c8865e3",
     "Koma-production-20261010": "91eb4f77252b7dcaeac9e421697b3b02c8dff45d"
-  }
+  },
+  "hostCheckpoints": {
+    "N": {
+      ".": "32ee03b61d21bcd3c8aa1ce6950bff300c6333dd",
+      "third_party/reader-kit": "842a5ea428ef542946636fab962ac7057c8865e3"
+    },
+    "E": {
+      ".": "7557210e79c87778237771cc5ae4f0e777980938",
+      "third_party/reader-kit": "842a5ea428ef542946636fab962ac7057c8865e3"
+    },
+    "K": {
+      ".": "175cacda7b91397808c25a65c2e5e552c81164b6",
+      "third_party/reader-kit": "91eb4f77252b7dcaeac9e421697b3b02c8dff45d"
+    },
+    "sixOriginalGeometryWipExact": true,
+    "originalKAppWipExceptOwnedStatusExact": true,
+    "pushed": false
+  },
+  "nAutoTranslationReceipt": "/Users/honjow/git/NextN/.hvigor/outputs/reader-preprocess-shared-20261012/device197__ALN-AL80/not-applicable/portrait-1260x2720/72-nextn-authorized-auto-translation-two-pages/finite-observation-receipt.json"
 }
 -->
 
