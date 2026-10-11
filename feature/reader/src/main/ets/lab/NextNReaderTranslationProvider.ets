@@ -108,10 +108,14 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
   private configuration: (page: ReaderPage) => NextNReaderTranslationConfiguration
   private sourcePaths: Map<string, string> = new Map<string, string>()
   private cropStrength: () => string
+  private preloadSource: ((page: ReaderPage, cancellation: ReaderCancellation) => Promise<ReaderAsset>) | null
+  private queue: Promise<void> = Promise.resolve()
 
   constructor(context: common.UIAbilityContext, provider: ReaderAssetProvider,
     configuration: (page: ReaderPage) => NextNReaderTranslationConfiguration,
-    cropStrength: () => string = (): string => '') {
+    cropStrength: () => string = (): string => '',
+    preloadSource: ((page: ReaderPage, cancellation: ReaderCancellation) => Promise<ReaderAsset>) | null = null) {
+    this.preloadSource = preloadSource
     this.context = context
     this.provider = provider
     this.configuration = configuration
@@ -144,19 +148,42 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
       if (this.provider.prepareVariant === undefined) throw new Error('reader_variant_unavailable')
       return this.provider.prepareVariant(page, variant, identity, cancellation)
     }
+    const operation = this.queue.then((): Promise<ReaderVariantAssetPlan> =>
+      this.translate(page, identity, cancellation))
+    this.queue = operation.then((): void => {}, (): void => {})
+    return operation
+  }
+
+  private async translate(page: ReaderPage, identity: string,
+    cancellation: ReaderCancellation): Promise<ReaderVariantAssetPlan> {
     cancellation.check()
     const configuration = this.configuration(page)
     if (configuration.identity().length === 0 || configuration.identity() !== identity) {
       throw new Error('reader_translation_configuration_unavailable')
     }
-    const sourcePath = this.sourcePaths.get(this.pageIdentity(page)) ?? ''
-    if (sourcePath.length === 0) throw new Error('reader_translation_source_unavailable')
     const detach = cancellation.onCancel((): void => {
       console.info(`[NextNSharedTranslation] cancelled source=${page.sourceIndex} identity=${identity}`)
       connectNextNReaderTranslationProbe().deliver(
         this.context, page.unit.work, page.sourceIndex, 'cancelled', identity)
     })
+    let sourceAsset: ReaderAsset | null = null
     try {
+      sourceAsset = this.preloadSource === null ? null : await this.preloadSource(page, cancellation)
+      cancellation.check()
+      if (sourceAsset !== null) {
+        const path = NextNReaderTranslationProvider.localPath(sourceAsset.uri)
+        if (sourceAsset.notice !== null || path.length === 0) throw new Error('reader_translation_source_unavailable')
+        this.sourcePaths.set(this.pageIdentity(page), path)
+      }
+      const sourcePath = this.sourcePaths.get(this.pageIdentity(page)) ?? ''
+      if (sourcePath.length === 0) throw new Error('reader_translation_source_unavailable')
+      let sourceWidth = page.width
+      let sourceHeight = page.height
+      if (sourceAsset?.information !== null && sourceAsset?.information !== undefined) {
+        const facts = await sourceAsset.information.read()
+        cancellation.check()
+        sourceWidth = facts.width; sourceHeight = facts.height
+      }
       const probe = connectNextNReaderTranslationProbe()
       const localResultPath = probe.result(this.context, page.unit.work)
       if (localResultPath.length > 0) {
@@ -176,8 +203,8 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
       input.projectId = configuration.projectId
       input.pageIndex = page.sourceIndex
       input.imageFilePath = sourcePath
-      input.imageWidth = page.width
-      input.imageHeight = page.height
+      input.imageWidth = sourceWidth
+      input.imageHeight = sourceHeight
       input.sourceLanguage = configuration.sourceLanguage
       input.targetLanguage = configuration.targetLanguage
       console.info(`[NextNSharedTranslation] prepare source=${page.sourceIndex} identity=${identity}`)
@@ -195,7 +222,7 @@ export class NextNReaderTranslationProvider implements ReaderAssetProvider {
         this.context, page.unit.work, page.sourceIndex, 'unavailable', identity)
       throw error as Error
     } finally {
-      detach()
+      detach(); sourceAsset?.release()
     }
   }
 

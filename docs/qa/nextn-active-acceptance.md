@@ -1,6 +1,6 @@
 # NextN current acceptance evidence
 
-当前2026-10-12人类反馈重开 **N-SR-PREPROCESS-001 / E-SR-STATUS-001 / SHARED-IMAGE-PIPELINE-001**：NextN未提前超分、NextE翻页状态闪回及整个共同处理职责。源码已确认E独有预处理调度，N仅原图预加载，K未注册SR/翻译能力；本轮尚无新的N/E设备结果。下述占位命名接受不覆盖这些反馈，保持其原限定范围。设计与下一未验证动作仅取[唯一工作单](../plans/active/shared-reader-replacement-work-order.md)，不在本页复制队列。
+当前2026-10-12 **SHARED-IMAGE-PIPELINE-001**共同六文件及N/E桥接已实现，三签名Release实际部署197。N3ff06568自行下载Non-H6867442/2，首次381原帧实际1→2→1全审，未来页处理在翻页动画中完成且早于实际page1确认；33/35两页原生InfoEnhanced/JPEG5120×7172。47原图选择31帧全审，50实际source/WEBP1280×1793，51增强恢复、52正常返回。E4395e6be普通4212986的299原帧实际13→14→15→16→15无HD回退/中央占位叠正文，原SRfalse和实际P13恢复；K6703338b原图235帧实际3→2→3/LibraryP3保持。只接受这些命名区间，native新翻译/在途取消/其他布局仍OPEN。N原图和增强Info大小未知是实际新问题，未隐藏或宣称完整信息通过。证据、设计与下一动作仅取[唯一工作单](../plans/active/shared-reader-replacement-work-order.md)，本页不复制队列。
 
 以下2026-10-11命名证据保留：当时重开的 **N-ENTRY-LOADING-001** 已按下述NextN命名普通分页区间接受；未经观察的布局/失败/旧版分支仍OPEN，不写成全软件通过。当时Koma暂停，随后用户已恢复开发；此历史状态不调度当前工作。当前动作只取唯一工作单。
 

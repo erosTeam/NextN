@@ -4,7 +4,7 @@ import { common } from '@kit.AbilityKit'
 import { window } from '@kit.ArkUI'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
-  ReaderObservedPosition, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider } from '@reader-kit/core'
+  ReaderObservedPosition, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider, ReaderAsset, ReaderCancellation } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase,
   ReaderRootEntryHandoff, ReaderRootEntryHandoffHost } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
@@ -154,14 +154,13 @@ export struct NextNReaderLabPage {
   private adapter: NextNReaderLabAdapter | null = null
   @Local private currentSourceIndex: number = -1
   @Local private translationRequestedPages: number[] = []
-  @Local private translationAppliedPages: number[] = []
+  @Local private translationReadyPages: number[] = []
   @Local private translationHiddenPages: number[] = []
   @Local private translationAutoFailedPages: number[] = []
   @Local private translationAutoEnabled: boolean = false
   @Local private translationBusyPage: number = -1
   @Local private translationErrorPage: number = -1
   @Local private translationPreferenceRevision: number = 0
-  private translationAutoScheduleEpoch: number = 0
   @Local private comicVisualRoute: string = COMIC_VISUAL_ROUTE_LOCAL
   @Local private toriiRuntimeProfileId: string = ''
   @Local private toriiRuntimeModelId: string = ''
@@ -238,10 +237,12 @@ export struct NextNReaderLabPage {
       new NextNReaderOriginalProbeCatalog(adapter, this.request.work, this.request.pageIndex) : adapter
     const variantProvider = new NextNReaderSuperResolutionProvider(context, this.originalProbe ?? productionProvider,
       (): NextNReaderSuperResolutionConfiguration => this.superResolutionConfiguration(),
-      (): string => this.cropStrength())
+      (): string => this.cropStrength(),
+      (page: ReaderPage, cancellation: ReaderCancellation): Promise<ReaderAsset> => adapter.preloadAsset(page, cancellation))
     const translationProvider = new NextNReaderTranslationProvider(context, variantProvider,
       (page: ReaderPage): NextNReaderTranslationConfiguration => this.translationConfiguration(page),
-      (): string => this.cropStrength())
+      (): string => this.cropStrength(),
+      (page: ReaderPage, cancellation: ReaderCancellation): Promise<ReaderAsset> => adapter.preloadAsset(page, cancellation))
     const assetProvider: ReaderAssetProvider = lab === null ? translationProvider :
       new ReaderLabAssetProbe(translationProvider, lab.thumbnailFailurePage,
         lab.informationProbe, this.request.readingChrome ? lab.failurePage : -1,
@@ -518,7 +519,6 @@ export struct NextNReaderLabPage {
 
   aboutToDisappear(): void {
     this.volumeDisposed = true
-    this.translationAutoScheduleEpoch += 1
     this.translationPreferenceRevision += 1
     this.translationBusyPage = -1
     this.adapter = null
@@ -757,40 +757,6 @@ export struct NextNReaderLabPage {
     return page === null || page === undefined ? '' : this.translationConfiguration(page).identity()
   }
 
-  private scheduleNextAutoTranslation(sourceIndex: number): void {
-    const epoch = ++this.translationAutoScheduleEpoch
-    const prepare = (attempt: number): void => {
-      if (epoch !== this.translationAutoScheduleEpoch || !this.translationAutoEnabled ||
-        this.currentSourceIndex !== sourceIndex || this.volumeDisposed || this.closeRequested || this.hostClosing) return
-      const state = this.session?.snapshot()
-      const session = this.session
-      const next = sourceIndex + 1
-      if (session === null || state?.phase !== 'ready' || state.unit === null || next >= state.unit.pageCount ||
-        this.pageIncluded(this.translationAppliedPages, next) ||
-        this.pageIncluded(this.translationAutoFailedPages, next) ||
-        this.pageIncluded(this.translationHiddenPages, next)) return
-      const frame = this.translationWindowFrame(next)
-      if (frame?.asset.phase !== 'displayed') {
-        if (attempt < 20) setTimeout((): void => prepare(attempt + 1), 100)
-        return
-      }
-      const identity = this.translationIdentity(next)
-      if (identity.length === 0) {
-        if (attempt < 20) setTimeout((): void => prepare(attempt + 1), 100)
-        return
-      }
-      this.translationBusyPage = next
-      this.translationPreferenceRevision += 1
-      const preference = new ReaderVariantPreference('translated', identity)
-      void session.prepareVariantForSource(next, state.unit.key.copy(), state.navigationRevision,
-        'translated', identity).then((result: 'changed' | 'unchanged' | 'unavailable' | 'stale'): void => {
-          if (result === 'stale' && this.currentSourceIndex === next) return
-          this.handleVariantSelection(next, preference, result)
-        })
-    }
-    setTimeout((): void => prepare(0), 0)
-  }
-
   private pageIncluded(values: number[], sourceIndex: number): boolean {
     return values.includes(sourceIndex)
   }
@@ -801,6 +767,18 @@ export struct NextNReaderLabPage {
 
   private excludePage(values: number[], sourceIndex: number): number[] {
     return values.filter((value: number): boolean => value !== sourceIndex)
+  }
+
+  private processingPreference(page: ReaderPage, automatic: boolean): ReaderVariantPreference {
+    const index = page.sourceIndex
+    const requested = this.pageIncluded(this.translationRequestedPages, index) ||
+      (this.translationAutoEnabled && automatic && !this.pageIncluded(this.translationAutoFailedPages, index))
+    const identity = this.translationConfiguration(page).identity()
+    if (requested && !this.pageIncluded(this.translationHiddenPages, index) && identity.length > 0) {
+      return new ReaderVariantPreference('translated', identity)
+    }
+    const enhancement = this.superResolutionConfiguration()
+    return enhancement.enabled ? new ReaderVariantPreference('enhanced', enhancement.identity()) : new ReaderVariantPreference()
   }
 
   private variantPreference(sourceIndex: number): ReaderVariantPreference {
@@ -821,8 +799,8 @@ export struct NextNReaderLabPage {
     if (!this.request.productionSources || this.currentSourceIndex < 0) return []
     const hidden = this.pageIncluded(this.translationHiddenPages, this.currentSourceIndex)
     const translated = !hidden &&
-      (this.translationFrame(this.currentSourceIndex)?.asset.variant === 'translated' ||
-        this.pageIncluded(this.translationAppliedPages, this.currentSourceIndex))
+      (this.translationFrame(this.currentSourceIndex)?.asset.phase === 'displayed' &&
+        this.translationFrame(this.currentSourceIndex)?.asset.variant === 'translated')
     const label = translated ? AppStrings.get('reader_comic_translation_show_original') :
       hidden ? AppStrings.get('reader_comic_translation_show_result') :
         AppStrings.get('reader_comic_translation_action')
@@ -853,8 +831,8 @@ export struct NextNReaderLabPage {
     // keep reading as "translated shown" and the action could never re-show it.
     // Hidden therefore takes priority, matching the legacy Reader label.
     const translated = !hidden &&
-      (this.translationFrame(sourceIndex)?.asset.variant === 'translated' ||
-        this.pageIncluded(this.translationAppliedPages, sourceIndex))
+      (this.translationFrame(sourceIndex)?.asset.phase === 'displayed' &&
+        this.translationFrame(sourceIndex)?.asset.variant === 'translated')
     if (translated) {
       this.translationHiddenPages = this.includePage(this.translationHiddenPages, sourceIndex)
       this.translationRequestedPages = this.excludePage(this.translationRequestedPages, sourceIndex)
@@ -873,7 +851,6 @@ export struct NextNReaderLabPage {
     if (this.translationBusyPage >= 0) return
     if (this.translationAutoEnabled) {
       this.translationAutoEnabled = false
-      this.translationAutoScheduleEpoch += 1
       this.translationPreferenceRevision += 1
       return
     }
@@ -889,7 +866,6 @@ export struct NextNReaderLabPage {
           this.translationHiddenPages = this.excludePage(this.translationHiddenPages, sourceIndex)
           this.translationAutoEnabled = true
           if (this.translationFrame(sourceIndex)?.asset.variant !== 'translated') this.translationBusyPage = sourceIndex
-          else this.scheduleNextAutoTranslation(sourceIndex)
           this.translationPreferenceRevision += 1
         },
       },
@@ -902,12 +878,9 @@ export struct NextNReaderLabPage {
     if (this.translationBusyPage === sourceIndex) this.translationBusyPage = -1
     if (result === 'changed' || result === 'unchanged') {
       this.translationRequestedPages = this.includePage(this.translationRequestedPages, sourceIndex)
-      this.translationAppliedPages = this.includePage(this.translationAppliedPages, sourceIndex)
+      this.translationReadyPages = this.includePage(this.translationReadyPages, sourceIndex)
       this.translationAutoFailedPages = this.excludePage(this.translationAutoFailedPages, sourceIndex)
       if (this.translationErrorPage === sourceIndex) this.translationErrorPage = -1
-      if (this.translationAutoEnabled && sourceIndex === this.currentSourceIndex) {
-        this.scheduleNextAutoTranslation(sourceIndex)
-      }
       return
     }
     if (result === 'unavailable') {
@@ -917,7 +890,6 @@ export struct NextNReaderLabPage {
       }
       if (sourceIndex === this.currentSourceIndex) {
         this.translationErrorPage = sourceIndex
-        this.scheduleNextAutoTranslation(sourceIndex)
       }
       this.translationPreferenceRevision += 1
     }
@@ -962,9 +934,8 @@ export struct NextNReaderLabPage {
     'mangaRenderingService.selectionEpoch', 'comicVisualRoute', 'toriiRuntimeProfileId', 'toriiRuntimeModelId')
   private onTranslationRuntimeChanged(): void {
     this.translationAutoFailedPages = []
-    this.translationAppliedPages = []
+    this.translationReadyPages = []
     this.translationErrorPage = -1
-    this.translationAutoScheduleEpoch += 1
     if (this.translationAutoEnabled && this.translationIdentity(this.currentSourceIndex).length === 0) {
       this.translationAutoEnabled = false
       this.translationBusyPage = -1
@@ -1000,9 +971,6 @@ export struct NextNReaderLabPage {
       if (this.translationAutoEnabled && !this.pageIncluded(this.translationAutoFailedPages, pageIndex) &&
         !this.pageIncluded(this.translationHiddenPages, pageIndex) &&
         this.translationFrame(pageIndex)?.asset.variant !== 'translated') this.translationBusyPage = pageIndex
-      else if (this.translationAutoEnabled && this.translationFrame(pageIndex)?.asset.variant === 'translated') {
-        this.scheduleNextAutoTranslation(pageIndex)
-      }
       this.translationPreferenceRevision += 1
     }
     this.progressWrites.save(this.progressEpoch, this.request.work, pageIndex)
@@ -1031,6 +999,9 @@ export struct NextNReaderLabPage {
   @Monitor('routeActive', 'labVisibility.foreground', 'entryPhase', 'readerPresentation.volumeKeyTurn',
     'presentationReady', 'closeRequested', 'hostClosing', 'readerSettingsSheetShown', 'session')
   syncReaderActivity(): void {
+    this.session?.setProcessingActive(this.request.readingChrome && !this.volumeDisposed &&
+      !this.closeRequested && !this.hostClosing && this.hostRouteActive() &&
+      this.labVisibility.foreground && !this.readerSettingsSheetShown)
     this.syncKeepScreenOn()
     const enabled = this.labRequest?.volumeKeysOverride ??
       (this.presentationReady && this.readerPresentation.volumeKeyTurn)
@@ -1170,7 +1141,8 @@ export struct NextNReaderLabPage {
                 (sourceIndex: number, preference: ReaderVariantPreference,
                   result: 'changed' | 'unchanged' | 'unavailable' | 'stale'): void => {
                   this.handleVariantSelection(sourceIndex, preference, result)
-                }),
+                }, (page: ReaderPage, automatic: boolean): ReaderVariantPreference =>
+                  this.processingPreference(page, automatic), this.translationAutoEnabled),
               temporaryVariantControl: new ReaderTemporaryVariantControl(
                 this.presentationReady && this.readerPresentation.superResolutionEnabled,
                 (enabled: boolean): void => {

@@ -51,7 +51,13 @@ class CacheEntry {
   mtime: number = 0
 }
 
+export enum ReaderSuperResolutionTaskPriority { CURRENT = 0, PREFETCH = 1 }
+
 class InFlightEnhancement {
+  priority: number = ReaderSuperResolutionTaskPriority.CURRENT
+  operation: (() => Promise<ReaderSuperResolutionResult>) | null = null
+  resolve: (value: ReaderSuperResolutionResult) => void = (): void => {}
+  reject: (error: Error) => void = (): void => {}
   requestId: number = 0
   owners: Set<string> = new Set<string>()
   promise: Promise<ReaderSuperResolutionResult> = Promise.resolve(new ReaderSuperResolutionResult())
@@ -64,6 +70,8 @@ class InFlightEnhancement {
  */
 export class ReaderSuperResolutionService {
   private static sequence: number = 0
+  private static pending: InFlightEnhancement[] = []
+  private static activeTask: InFlightEnhancement | null = null
   private static inFlight: Map<string, InFlightEnhancement> = new Map<string, InFlightEnhancement>()
   /** Fixed outcome codes for mounted Reader owners; never file paths or image data. */
   private static ownerOutcomeReasons: Map<string, string> = new Map<string, string>()
@@ -94,6 +102,7 @@ export class ReaderSuperResolutionService {
     enabled: boolean,
     model: NhReaderSuperResolutionModel,
     maxSourceHeight: number,
+    priority: number = ReaderSuperResolutionTaskPriority.CURRENT,
   ): Promise<ReaderSuperResolutionResult> {
     ReaderSuperResolutionService.clearOwnerOutcome(ownerKey)
     if (!enabled) {
@@ -156,40 +165,68 @@ export class ReaderSuperResolutionService {
     }
     const existing: InFlightEnhancement | undefined = ReaderSuperResolutionService.inFlight.get(outputPath)
     if (existing !== undefined) {
+      if (existing.owners.size === 0) {
+        try { await existing.promise } catch (_error) {}
+        return ReaderSuperResolutionService.process(context, sourcePath, ownerKey, enabled,
+          model, maxSourceHeight, priority)
+      }
       existing.owners.add(ownerKey)
+      if (priority < existing.priority) existing.priority = priority
       return ReaderSuperResolutionService.rememberOwnerOutcome(ownerKey, await existing.promise)
     }
     const inFlight: InFlightEnhancement = new InFlightEnhancement()
     ReaderSuperResolutionService.sequence += 1
     inFlight.requestId = ReaderSuperResolutionService.sequence
     inFlight.owners.add(ownerKey)
-    const task: Promise<ReaderSuperResolutionResult> = model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
+    inFlight.priority = priority
+    const operation = (): Promise<ReaderSuperResolutionResult> =>
+      model === NhReaderSuperResolutionModel.SYSTEM_CORE_VISION
       ? ReaderSuperResolutionService.processNowSystem(
-        context,
-        sourcePath,
-        sourceKey,
-        outputPath,
-        normalizedMaxSourceHeight,
-        inFlight,
-      )
+        context, sourcePath, sourceKey, outputPath, normalizedMaxSourceHeight, inFlight)
       : ReaderSuperResolutionService.processNow(
-        context,
-        sourcePath,
-        sourceKey,
-        outputPath,
-        modelPaths as ReaderSuperResolutionModelPaths,
-        nativeConfig as ReaderNativeSuperResolutionConfig,
-        normalizedMaxSourceHeight,
-        inFlight,
-      )
-    inFlight.promise = task
+        context, sourcePath, sourceKey, outputPath, modelPaths as ReaderSuperResolutionModelPaths,
+        nativeConfig as ReaderNativeSuperResolutionConfig, normalizedMaxSourceHeight, inFlight)
+    const task = new Promise<ReaderSuperResolutionResult>((resolve, reject): void => {
+      inFlight.resolve = resolve; inFlight.reject = reject
+    })
+    inFlight.promise = task; inFlight.operation = operation
     ReaderSuperResolutionService.inFlight.set(outputPath, inFlight)
+    ReaderSuperResolutionService.pending.push(inFlight)
+    ReaderSuperResolutionService.drainQueue()
     try {
       return ReaderSuperResolutionService.rememberOwnerOutcome(ownerKey, await task)
     } finally {
       if (ReaderSuperResolutionService.inFlight.get(outputPath) === inFlight) {
         ReaderSuperResolutionService.inFlight.delete(outputPath)
       }
+    }
+  }
+
+  /** Native execution admission is shared with Legacy; Reader-kit owns page demand. */
+  private static drainQueue(): void {
+    if (ReaderSuperResolutionService.activeTask !== null) return
+    ReaderSuperResolutionService.pending.sort((a: InFlightEnhancement, b: InFlightEnhancement): number =>
+      a.priority === b.priority ? a.requestId - b.requestId : a.priority - b.priority)
+    const next = ReaderSuperResolutionService.pending.shift()
+    if (next === undefined) return
+    if (next.owners.size === 0 || next.operation === null) {
+      next.resolve(new ReaderSuperResolutionResult())
+      ReaderSuperResolutionService.drainQueue()
+      return
+    }
+    ReaderSuperResolutionService.activeTask = next
+    const finish = (): void => {
+      if (ReaderSuperResolutionService.activeTask === next) ReaderSuperResolutionService.activeTask = null
+      ReaderSuperResolutionService.drainQueue()
+    }
+    void next.operation().then((value: ReaderSuperResolutionResult): void => {
+      next.resolve(value); finish()
+    }, (error: Error): void => { next.reject(error); finish() })
+  }
+
+  static promoteOwner(ownerKey: string): void {
+    for (const task of ReaderSuperResolutionService.inFlight.values()) {
+      if (task.owners.has(ownerKey)) task.priority = ReaderSuperResolutionTaskPriority.CURRENT
     }
   }
 
@@ -203,6 +240,12 @@ export class ReaderSuperResolutionService {
         continue
       }
       if (inFlight.owners.size === 0) {
+        const pending = ReaderSuperResolutionService.pending.indexOf(inFlight)
+        if (pending >= 0) {
+          ReaderSuperResolutionService.pending.splice(pending, 1)
+          inFlight.resolve(ReaderSuperResolutionService.original('', 'cancelled'))
+          continue
+        }
         try {
           ReaderNativeSuperResolution.setRequestActive(inFlight.requestId, false)
         } catch (_error) {

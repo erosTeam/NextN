@@ -160,6 +160,13 @@ export class NextNReaderLabAdapter implements ReaderCatalog, ReaderAssetProvider
     console.info(`[NextNReaderPreload] source=${page.sourceIndex} result=ready`)
   }
 
+  /** A retained source file for processing; this does not create a native image owner. */
+  async preloadAsset(page: ReaderPage, cancellation: ReaderCancellation): Promise<ReaderAsset> {
+    const asset = await this.load(page, 'original', cancellation, false)
+    if (cancellation.isCancelled()) { asset.release(); cancellation.check() }
+    return asset
+  }
+
   /** Resolve one automatic-reading target without changing thumbnail availability. */
   async prepareAutoReadSource(page: ReaderPage, cancellation: ReaderCancellation): Promise<ReaderPage> {
     cancellation.check()

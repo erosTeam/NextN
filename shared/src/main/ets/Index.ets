@@ -401,7 +401,7 @@ export { NhPageCacheService } from './services/NhPageCacheService'
 export { GalleryTagStrip } from './components/GalleryTagStrip'
 export { ReaderNativeSuperResolution, ReaderNativeSuperResolutionResult } from './services/ReaderNativeSuperResolution'
 export { ReaderSuperResolutionModelDefinition, ReaderSuperResolutionModelService } from './services/ReaderSuperResolutionModelService'
-export { ReaderSuperResolutionResult, ReaderSuperResolutionService } from './services/ReaderSuperResolutionService'
+export { ReaderSuperResolutionResult, ReaderSuperResolutionService, ReaderSuperResolutionTaskPriority } from './services/ReaderSuperResolutionService'
 export {
   ComicAnalysisState,
   ComicTranslationState,

@@ -1,13 +1,13 @@
 import { common } from '@kit.AbilityKit'
 import {
-  ReaderAsset, ReaderAssetKind, ReaderAssetProvider, ReaderCancellation, ReaderImageInformation,
+  ReaderAsset, ReaderAssetKind, ReaderAssetProvider, ReaderCancellation, ReaderProcessingCancellation, ReaderImageInformation,
   ReaderImageCropBounds, ReaderImageCropSource, ReaderOriginalAssetPlan, ReaderPage,
   ReaderProcessedAssetVariant, ReaderVariantAssetPlan,
 } from '@reader-kit/core'
 import { ReaderFileInformation } from '@reader-kit/ui'
 import {
   DiagnosticLogger, NhReaderSuperResolutionModel, ReaderPageCropService, ReaderSuperResolutionResult,
-  ReaderSuperResolutionService,
+  ReaderSuperResolutionService, ReaderSuperResolutionTaskPriority,
 } from 'shared'
 import { connectNextNReaderSuperResolutionProbe } from './NextNReaderSuperResolutionProbe'
 
@@ -68,6 +68,8 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
     this.saveUri = saveUri
   }
 
+  release(): void { ReaderSuperResolutionService.releaseOwner(this.ownerKey) }
+
   async load(cancellation: ReaderCancellation, _forceReload: boolean): Promise<ReaderAsset> {
     cancellation.check()
     const facts = new ReaderImageInformation()
@@ -84,13 +86,15 @@ class NextNReaderSuperResolutionPlan implements ReaderVariantAssetPlan {
 
 /**
  * NextN owns enhancement configuration, source-file discovery and service lifetime.
- * reader-kit receives only an exact resolved plan for the currently displayed page.
+ * reader-kit owns demand and receives an exact resolved recipe independent of native presentation.
  */
 export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
   private static sequence: number = 0
   cancellationMode: 'consumer-only' | 'transport'
   informationSupported: boolean
   prepareOriginal?: (page: ReaderPage, cancellation: ReaderCancellation) => Promise<ReaderOriginalAssetPlan>
+  private preparationSequence: number = 0
+  private preloadSource: ((page: ReaderPage, cancellation: ReaderCancellation) => Promise<ReaderAsset>) | null
   private provider: ReaderAssetProvider
   private context: common.UIAbilityContext
   private configuration: () => NextNReaderSuperResolutionConfiguration
@@ -101,7 +105,9 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
 
   constructor(context: common.UIAbilityContext, provider: ReaderAssetProvider,
     configuration: () => NextNReaderSuperResolutionConfiguration,
-    cropStrength: () => string = (): string => '') {
+    cropStrength: () => string = (): string => '',
+    preloadSource: ((page: ReaderPage, cancellation: ReaderCancellation) => Promise<ReaderAsset>) | null = null) {
+    this.preloadSource = preloadSource
     this.context = context
     this.provider = provider
     this.configuration = configuration
@@ -144,18 +150,29 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
       throw new Error('reader_variant_unavailable')
     }
     const key = this.pageIdentity(page)
-    const sourcePath = this.sourcePaths.get(key) ?? ''
-    const saveUri = this.sourceSaveUris.get(key) ?? ''
-    if (sourcePath.length === 0 || saveUri.length === 0) throw new Error('reader_variant_source_unavailable')
-    const ownerKey = `${this.ownerPrefix}:${page.unit.scope}:${page.unit.work}:${page.unit.unit}:${page.key}:${identity}`
+    const ownerKey = `${this.ownerPrefix}:task:${++this.preparationSequence}:${page.unit.scope}:${page.unit.work}:${page.unit.unit}:${page.key}:${identity}`
     const detach = cancellation.onCancel((): void => {
       console.info(`[NextNSharedSuperResolution] cancelled source=${page.sourceIndex} identity=${identity}`)
       connectNextNReaderSuperResolutionProbe().deliver(
         this.context, page.unit.work, page.sourceIndex, 'cancelled', identity)
       ReaderSuperResolutionService.releaseOwner(ownerKey)
     })
+    const promotion = cancellation instanceof ReaderProcessingCancellation
+      ? cancellation.onPromotion((): void => ReaderSuperResolutionService.promoteOwner(ownerKey)) : (): void => {}
+    let sourceAsset: ReaderAsset | null = null
     let retained: boolean = false
     try {
+      if (this.preloadSource !== null) {
+        sourceAsset = await this.preloadSource(page, cancellation)
+        cancellation.check()
+        const path = NextNReaderSuperResolutionProvider.localPath(sourceAsset.uri)
+        if (sourceAsset.notice !== null || path.length === 0) throw new Error('reader_variant_source_unavailable')
+        this.sourcePaths.set(key, path)
+        this.sourceSaveUris.set(key, sourceAsset.saveUri)
+      }
+      const sourcePath = this.sourcePaths.get(key) ?? ''
+      const saveUri = this.sourceSaveUris.get(key) ?? ''
+      if (sourcePath.length === 0 || saveUri.length === 0) throw new Error('reader_variant_source_unavailable')
       console.info(`[NextNSharedSuperResolution] prepare source=${page.sourceIndex} identity=${identity}`)
       const probe = connectNextNReaderSuperResolutionProbe()
       probe.deliver(this.context, page.unit.work, page.sourceIndex, 'prepare', identity)
@@ -168,6 +185,8 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
         true,
         configuration.model,
         configuration.maxSourceHeight,
+        cancellation instanceof ReaderProcessingCancellation && cancellation.priority === 'prefetch'
+          ? ReaderSuperResolutionTaskPriority.PREFETCH : ReaderSuperResolutionTaskPriority.CURRENT,
       )
       cancellation.check()
       if (this.configuration().identity() !== identity || !this.configuration().enabled || !result.applied) {
@@ -187,7 +206,7 @@ export class NextNReaderSuperResolutionProvider implements ReaderAssetProvider {
         this.context, page.unit.work, page.sourceIndex, 'unavailable', identity)
       throw error as Error
     } finally {
-      detach()
+      detach(); promotion(); sourceAsset?.release()
       if (!retained) ReaderSuperResolutionService.releaseOwner(ownerKey)
     }
   }

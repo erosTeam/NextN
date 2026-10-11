@@ -57,6 +57,7 @@ vm.runInNewContext(ts.transpileModule(source, {
     if (name === '@reader-kit/core') return core
     if (name === '@reader-kit/ui') return { ReaderFileInformation: class { constructor(file, facts) {
       this.file = file; this.facts = facts
+      this.read = async () => ({ width: 1024, height: 1536 })
     } } }
     if (name === 'shared') return shared
     if (name === './NextNReaderTranslationProbe') {
@@ -136,5 +137,37 @@ result = { renderedPage: { localFilePath: '/cache/stale.png', identity: {
 } } }
 await assert.rejects(provider.prepareVariant(page, 'translated', currentIdentity, new core.ReaderCancellation()),
   /reader_translation_result_stale/)
+
+// A future page with no catalog dimensions uses its retained file header, without provider.load().
+result.renderedPage.identity.translationSourceRevision = 5
+let sourceLeases = 0, sourceReleases = 0
+const futureProvider = new NextNReaderTranslationProvider({}, backend, () => configuration, () => '', async () => {
+  sourceLeases++
+  const asset = new core.ReaderAsset('file:///cache/future.jpg', () => { sourceReleases++ })
+  asset.information = { async read() { return { width: 1024, height: 1536 } } }
+  return asset
+})
+const futurePage = new core.ReaderPage(unit, 'future', 1)
+const futurePlan = await futureProvider.prepareVariant(futurePage, 'translated', currentIdentity, new core.ReaderCancellation())
+assert.equal(calls.at(-1).imageFilePath, '/cache/future.jpg')
+assert.deepEqual([calls.at(-1).imageWidth, calls.at(-1).imageHeight], [1024, 1536])
+assert.equal(sourceLeases, 1); assert.equal(sourceReleases, 1)
+assert.equal(futurePlan.page.sourceIndex, 1)
+let finishQueued
+runPromise = new Promise(resolve => { finishQueued = resolve })
+const beforeQueued = calls.length
+const active = futureProvider.prepareVariant(futurePage, 'translated', currentIdentity, new core.ReaderCancellation())
+for (let step = 0; step < 20 && calls.length === beforeQueued; step++) await Promise.resolve()
+assert.equal(calls.length, beforeQueued + 1)
+assert.equal(sourceReleases, 1, 'processor retains the source while running')
+const queuedCancellation = new core.ReaderCancellation()
+const queued = futureProvider.prepareVariant(new core.ReaderPage(unit, 'queued', 2), 'translated', currentIdentity, queuedCancellation)
+queuedCancellation.cancel()
+finishQueued(result)
+await active
+await assert.rejects(queued, /reader_request_cancelled/)
+assert.equal(calls.length, beforeQueued + 1, 'cancelled queued page performs no external translation')
+assert.equal(sourceLeases, 2); assert.equal(sourceReleases, 2)
+runPromise = null
 
 console.log('reader translation provider runtime: ok')

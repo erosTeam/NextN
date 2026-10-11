@@ -1,6 +1,6 @@
 # 共享阅读器：预处理与图片生命周期
 
-当前优先事项来自用户的新反馈：NextE 翻页时超分状态短暂回到原始状态；NextN 没有相同的超分预处理。用户要求重新规划整个共同组件与宿主边界。两个问题均 OPEN。本次为当前源码审查和具体设计，尚未写产品代码、构建、安装或取得新的 N/E 运行接受。
+当前优先事项来自用户的新反馈：NextE 翻页时超分状态短暂回到原始状态；NextN 没有相同的超分预处理。共同处理链及N/E适配已实现，三份签名Release已实际部署197。N新Non-H686744、E4212986和K原图消费者取得下述有限原生证据；共同目标仍OPEN，未观察的服务/布局/在途取消不能由这些命名区间替代。
 
 ## 为什么这次只有 E 改动
 
@@ -39,6 +39,24 @@ Harmony 表达：现有 ArkTS/V2、ReaderAsset 文件租约、既有处理服务
 
 K 不自动新增超分/翻译模型或设置；本次在共同协议中按真实 unavailable 能力运行原图，并审查共同加载、裁边、进度与保留原图影响。共享能力代码进入 K 不等于 K 的产品能力已实现。Legacy 和共享处理服务的调用者都纳入间接影响，不改已接受入口几何、菜单布局或持久化格式。
 
+## 当前实施与证据（2026-10-12）
+
+共同 `ReaderProcessingCoordinator` 已进入N/E/K相同六文件：有界页级准备、当前优先、相同任务合并/提升、配置与单位变化退休、独立文件/原生槽位租约、首次绑定采用ready plan。N/E宿主页级自动翻译调度已移除；N SR/翻译从租用原文件启动，未来页无需displayed；E私有ProcessingPreloadHost已删除，仅保留SourcePreloadHost文件适配。N native队列与Legacy共享执行，已运行任务不承诺立即抢占；E保留已有硬件服务行为。K只接实际原图能力，没有擅自新增SR/翻译。
+
+本地Core原73、新5共同生命周期及N/E四Provider检查通过；N零catalog尺寸翻译从文件header读取，串行取消未调用服务。K055旧基线另缺两个现有公共占位生命周期方法，11行同源API补齐后Core78/78，未更改几何/状态策略。三签名Release成功；N `3ff06568`1.0.7/code9、E `4395e6be`1.3.6/code41、K `6703338b`0.1.0/code1均通过checked manifest实际安装和native readback。精确源/包绑定及六份原geometryWIP保护见ignored artifact root；K原AppWIP保持。K仅临时合入现有本地签名配置构建，公共build-profile已恢复，没有执行会改hook/index的setup脚本。
+
+**NextN实际新样本**：自行普通搜索 `tag:non-h`，选择686744《My Invisible Childhood Friend Chapter06》，原生non-h及两页预览已核对；普通下载后29实际2/2完成，原六下载保留。30首次进入原片18.668589秒/381帧全部按顺序审阅，实际1→2→1；无正文上中央图片占位，增强采用后HD未闪回原始。两页真实nativeSystemSR执行及ready分别留证；未来source1于03:37:12.706已准备，03:37:22.913在翻页动画期间完成，早于03:37:23.945该页实际确认，但晚于22.543点击开始，不能说点击前完成。33/35原生Info两页均Enhanced/JPEG5120×7172。原图选择47的31帧全部审阅，50实际source/WEBP1280×1793，ready结果未在观察区间反写选择；51临时HD恢复，52正常返回下载。现有缓存/全族前置不存在性没有被冒称；在途处理取消未由这条ready路径接受。
+
+**NextE实际候选**：21原片25.533522秒/299帧全部按顺序审阅，普通4212986实际13→14→15→16→15，HD始终橙色，正文后无中央图片占位。未来source13等ready早于后续翻页，但这些未来结果缓存复用；source11真实800×450→3200×1800处理1476ms是前邻页，不能说所有future无缓存。23原SR=false普通恢复，39同图册实际原body13/19/未应用HD，40正常返回。修复前旧E191帧HD也未复现人类所报闪回，frame114正文叠“正在准备图片”的失败事实保留；本次不声明唯一历史成因或所有闪回分支已修好。
+
+**Koma实际受影响原图消费者**：41旧包原body3/145，42正常返回P3/2%；43当前共同候选升级后同Library保持。44原片20.096秒/235帧全部审阅，实际3→2→3，chrome及正常Back到LibraryP3/2%；原body3与同态41一致，无中央占位覆盖正文。只接受现有原图路径，不能冒充K已具超分/翻译或全阅读器通过。
+
+**新观察的未闭环问题**：N两页增强Info和原图Info的大小都“未知”；文件header提供格式/尺寸，ReaderImageInformation.byteLength仍默认0，大小显示保持OPEN，未擅改可见信息。新翻译上传/额度本轮未扩授权，公共翻译本地链已验证而真实新服务路径未执行。未观察布局/Legacy、native在途取消和配置晚到结果保持OPEN，不以构建、同源代码或有限无异常推广。
+
+三份有限回执：`.hvigor/outputs/reader-preprocess-shared-20261012/device197__ALN-AL80/not-applicable/portrait-1260x2720/` 下 `30-nextn-final1-ordinary-new-nonh-entry-turns`、`21-nexte-final1-ordinary-entry-turns`、`44-k-common-original-entry-turns` 的 `finite-observation-receipt.json`。原片、全部帧时间线、raw hilog、命令账本和checked manifest保留。
+
+精确diff复核已完成，共同Kit本地检查点：N/E同commit842a5ea，K旧基线兼容91eb4f7，原六geometryWIP保持。N遗留sequencer三文件完全保持，没有继续或删除旧待办。下一未验证动作：保存宿主精确范围检查点，然后实际读取N现有自动翻译确认和服务配置；不提交新的上传/额度请求，不重复首次加载接受。native新自动翻译服务路径需明确新上传/额度范围，不以旧E两页授权扩到N或其他页。该具体分支不阻止K独立App/书源工作，其动作仍取K当前工作单。
+
 ## 普通用户观察与判定
 
 从普通入口自然找内容、进入阅读、翻页、使用现有控件、退出再打开，完整连续录像覆盖点击前及首十秒、相邻页的真实处理/呈现。先按时间顺序看原片，记录全部异常，再对齐请求与配置代际；不从“修过了”倒推通过，不挑只支持结论的终点。选择另一尚未访问的内容并核实实际缓存证据；保留缓存和用户数据，不人为网络限速、加延时或反复打开同一本直到通过。
@@ -51,36 +69,44 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
 {
   "schemaVersion": 1,
   "title": "共享阅读器：预处理与图片生命周期",
-  "state": "OPEN · N/E 新反馈；共同职责审查与重构设计",
-  "updatedAt": "2026-10-12T02:31:28.021848+08:00",
+  "state": "OPEN · common N/E/K deployed; finite native observations retained",
+  "updatedAt": "2026-10-12T04:15:17.075031+08:00",
   "activeId": "SHARED-IMAGE-PIPELINE-001",
   "outcome": "共同管理资源准备、预处理、结果采用及呈现状态；NextN获得同一超分预处理能力，NextE已准备页不闪回原图状态，Koma按真实可选能力接入。",
-  "scope": "最新人类要求重新规划整个共同处理链；当前无新产品代码或新的 N/E 实机接受。Koma有限接受保留，其主代理下一动作随本次优先级调整保留。",
-  "nextAction": "先在197保留当前已安装N/E普通阅读与翻页连续录像，核对设置、实际处理请求和当前页呈现时序；随后实现共同处理协议及N/E适配，Koma原图路径作受影响消费者审查。不得复制E宿主调度器到N作为最终架构。",
+  "scope": "相同六文件与N/E处理桥接；三签名部署，N381/E299/K235原帧完整观察及原图选择；真实新翻译/native在途取消/Info大小仍OPEN。",
+  "nextAction": "共同Kit本地检查点842a5ea（N/E同commit）及K91eb4f7已保存；完成宿主精确范围提交后，实际读取N现有自动翻译确认/服务配置，不提交新上传/额度请求；未观察分支保持OPEN。",
   "items": [
     {
       "id": "SHARED-IMAGE-PIPELINE-001",
       "title": "共同资源准备、处理、采用及生命周期",
-      "status": "OPEN · source audit and design",
+      "status": "OPEN · same6files and3consumers deployed; finite native evidence",
       "kind": "active",
-      "detail": "NextE fa6ee0f 仅改E十二文件；现行Kit只共享滚动预加载目标与处理后变体选择。E宿主独有预处理Host；N仍直接传原图Adapter；K无SR/翻译Provider。",
-      "action": "先在197保留当前已安装N/E普通阅读与翻页连续录像，核对设置、实际处理请求和当前页呈现时序；随后实现共同处理协议及N/E适配，Koma原图路径作受影响消费者审查。不得复制E宿主调度器到N作为最终架构。"
+      "detail": "共同协调器和双桥接完成；N381/E299/K235全原帧已顺序审阅，当前原图选择已观察；未观察服务/在途取消/布局和新Info大小问题仍OPEN。",
+      "action": "共同Kit本地检查点842a5ea（N/E同commit）及K91eb4f7已保存；完成宿主精确范围提交后，实际读取N现有自动翻译确认/服务配置，不提交新上传/额度请求；未观察分支保持OPEN。"
     },
     {
       "id": "N-SR-PREPROCESS-001",
       "title": "NextN未提前超分",
-      "status": "OPEN · human report and missing source path confirmed",
+      "status": "ACCEPTED / named6867442P native preprocessing and adoption",
       "kind": "reported",
-      "detail": "NextNReaderLabPage将adapter传入preloadHost，adapter仅暖原图；NextNReaderSuperResolutionProvider无未来页文件处理入口。没有本次当前包的普通原生接受。",
-      "action": "共同协议中注册N已有SR后端，不能把原图文件命中当作SR预处理完成。"
+      "detail": "自行普通下载非成人6867442/2；未来页在page0已开始准备、翻页动画中ready、实际page1确认前完成；两页InfoEnhanced5120×7172；原图选择50实际1280×1793，51恢复。",
+      "action": "冻结此有限命名证据；native在途取消/其他布局/翻译不由此接受。"
     },
     {
       "id": "E-SR-STATUS-001",
       "title": "NextE翻页HD状态闪回原始状态",
-      "status": "OPEN · human report; exact native timing pending",
+      "status": "ACCEPTED / named4212986 prepared adoption interval; human other timing OPEN",
       "kind": "reported",
-      "detail": "现有Surface等frame.displayed后异步selectVariant；图标从anchor对应frame.asset.variant推导。未来处理缓存不等于该页已被选中/呈现，这是源码时序风险，尚未用新录像确认本次实际闪回的唯一原因。",
-      "action": "绑定同一page/request的原片与处理/呈现记录，修复共同结果采用时机，不保留上一页HD、不延时或表面隐藏图标。"
+      "detail": "4395e6be候选299原帧实际13→14→15→16→15无HD回退或中央占位叠正文；旧包也未复现HDflash，不能确定唯一历史原因或所有分支。",
+      "action": "保留原人类反馈及未命中边界；不重复已接受缓存命名区间或表面隐藏HD。"
+    },
+    {
+      "id": "READER-INFO-BYTES-001",
+      "title": "实际图片信息大小未知",
+      "status": "OPEN · N enhanced andoriginal native observed",
+      "kind": "reported",
+      "detail": "33/35增强JPEG5120×7172与50原WEBP1280×1793均大小未知；当前文件information只读取header，byteLength未赋真实大小。",
+      "action": "保持可见信息问题OPEN；后续改动须有真实文件stat依据并遵循现有可见UI授权边界。"
     },
     {
       "id": "N-ENTRY-LOADING-001",
@@ -103,6 +129,11 @@ K 不自动新增超分/翻译模型或设置；本次在共同协议中按真�
     "workOrder": "../archive/shared-reader-work-order-before-entry-loading-recheck-20261011.md",
     "sha256": "5851f1a3c75fde5b07d465b3cc7daea963e8a66003ba576794230b79c098116d",
     "authority": "仅保留历史事实和原证据；其规划、派发和待办全部退出执行队列。"
+  },
+  "commonKitCheckpoints": {
+    "NextN": "842a5ea428ef542946636fab962ac7057c8865e3",
+    "NextE": "842a5ea428ef542946636fab962ac7057c8865e3",
+    "Koma-production-20261010": "91eb4f77252b7dcaeac9e421697b3b02c8dff45d"
   }
 }
 -->
