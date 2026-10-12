@@ -1,96 +1,36 @@
 # NextN agent controls
 
-This file is the repository entrypoint, not a copy of detailed protocols.
-Read each linked document when its lane applies; the full protocol overrides
-the summary here.
+**未经用户明确允许，禁止更改样式；修 bug 也不例外。**
 
-## Always
+## 每次开始
 
-- Before planning, editing, validating, delegating, or reporting, read
-  `docs/controls/nextn-execution-integrity.md`.
-- The latest user instruction wins. A temporary execution hold stops
-  conflicting work but keeps its outcome `OPEN`; resume after the prerequisite
-  unless the user explicitly stops or replaces it.
-- Before editing an existing behavior, query
-  `docs/controls/rejected-approaches.md` with the affected file and symbol
-  names. A matching `REJECTED` entry requires explicit user reopening.
-- Keep the active outcome and next unverified action explicit. Questions,
-  intermediate results, command failures, builds, and commits do not close an
-  unfinished runtime or device-acceptance path.
-- Make narrow, evidence-backed changes. Review the exact diff and preserve
-  unrelated work.
+- 先读 [执行规则](docs/controls/nextn-execution-integrity.md)，再进行计划、修改、验证、派工或汇报。
+- 最新用户指令优先；不从旧计划、自动唤醒或历史记录自行扩大任务。
+- 修改已有行为前，用文件名和符号查询 [已拒绝方案](docs/controls/rejected-approaches.md)；禁止恢复被拒方案，除非用户明确重新允许。
+- 查看当前工作区，保护用户数据和无关改动。未完成的问题保留结果、证据和下一动作。
 
-## HarmonyOS work
+## 按工作读取
 
-- Before inspecting HarmonyOS source, editing, building, or using a device,
-  apply `harmony-mandatory-preflight`; it requires `harmony-next`.
-- Device, HDC, ArkWeb, screenshot, log, or UI-automation work also requires
-  `harmony-run-device-diagnostics`.
-- The signed-build entrypoint is `scripts/build-hvigor-signed.sh`. The legacy
-  underscore spelling does not exist; resolve the current filename before use.
-- Every device-affecting command must use
-  `scripts/device-lease --device <full-target>` per `docs/device-lease.md`.
-  A lease coordinates agents; it neither selects a device nor grants authority.
-- After transport recovery, stateful or evidentiary HDC work must use
-  `scripts/run-device-protocol` with the full target, active lease ID, and a
-  project-owned manifest. The entrypoint performs the mandatory dry-run and
-  then invokes the checked manifest runner inside the lease. Direct lease-
-  wrapped HDC is limited to target discovery/reconnect, `shell echo`, boot-
-  completion readback, and artifact receive; the lease helper rejects other
-  direct HDC forms.
+| 工作 | 必读 |
+| --- | --- |
+| HarmonyOS 源码、构建 | `harmony-mandatory-preflight` 和 `harmony-next` 技能 |
+| 设备、截图、日志、UI 操作 | 另读 `harmony-run-device-diagnostics` 和 [设备协议](docs/device-lease.md) |
+| 共享 Reader | [共同职责](third_party/reader-kit/README.md#consumer-contract)、[唯一工作单](docs/plans/active/shared-reader-replacement-work-order.md) |
+| 当前运行证据 | [验收状态](docs/qa/nextn-active-acceptance.md) |
+| 可见界面修改 | [界面记录](docs/qa/nextn-ui-change-ledger.md)，以及当前参考页的完整父树 |
+| 登录、凭据 | [S0–S6 协议](docs/device-protocols/nextn-account-login-acceptance.md)、[当前验收](docs/qa/nextn-active-acceptance.md)、[尝试记录](docs/qa/nextn-login-attempt-ledger.md) |
 
-## Shared Reader work
+## 操作要点
 
-- Read the common ownership and preservation contract in
-  [Reader Kit](third_party/reader-kit/README.md#consumer-contract).
-- The only cross-host queue is
-  [the active work order](docs/plans/active/shared-reader-replacement-work-order.md).
-  QA receipts and archives supply evidence; their old next actions are not live.
+- 签名构建入口：`scripts/build-hvigor-signed.sh`；没有下划线版本。
+- 用户选择设备后，实时解析完整 target，使用有效租约。租约不产生授权。
+- 状态操作和取证通过 `scripts/run-device-protocol --device <完整 target> --lease <ID> <项目 manifest>`；manifest 保留在忽略的产物目录。
+- 直接租约包装 HDC 仅限发现/重连、`shell echo`、启动完成读回和文件接收。
+- 参考 NextE/ErosN 时保留完整页面结构、滚动所有者、菜单、顺序、几何和动作；产品差异只能替换有依据的局部内容。
+- 登录授权持续有效：按协议自主填写、处理挑战并提交，不重复索要同一许可；字段使用语义锚点，不用坐标输入凭据，不在同一次尝试中重复提交。
+- 登录通过须证明原生 Account/Favorites 生效及不清数据冷启动保持；Web、CAPTCHA 或命令成功不算登录通过。秘密不写入消息或产物。
+- 材料改动先审精确 diff，再作范围提交；不自动推送或发布。
 
-## Reference-derived UI
+## 汇报前
 
-For visible work based on NextE or ErosN, treat the reference page's full parent
-tree as the default contract.
-
-- Map the scroll/scaffold owner, chrome, sections, ordering, geometry, actions,
-  and state transitions before editing. Product differences may replace a leaf,
-  not silently restructure its parent.
-- Do not replace a reference composite with a convenient generic assembly
-  without source evidence for that boundary.
-- Source similarity and build success are not visual acceptance. Compare a
-  current same-state, same-viewport NextN capture with the reference.
-- Review the whole affected page and sibling regions. Follow the UI ledger and
-  freeze rules in the execution-integrity protocol.
-
-## Authorized account/login acceptance
-
-Before credential or login work, read the authoritative S0-S6 protocol at
-`docs/device-protocols/nextn-account-login-acceptance.md`. Before resuming an
-existing device/login lane, also read `docs/qa/nextn-active-acceptance.md`.
-
-- Supplied test credentials plus authorization to test permit autonomous form
-  entry, CAPTCHA/challenge interaction, and submission. That authorization
-  persists across turns and context compaction: do not ask for another
-  confirmation, pause at a visible CAPTCHA, or hand the challenge back to the
-  user. Redaction is not a manual-user handoff.
-- Start from current safe native Account and Favorites evidence. Before a new
-  credential epoch, create the required redacted record in
-  `docs/qa/nextn-login-attempt-ledger.md`.
-- Use semantic field anchors; coordinate-based credential input is forbidden.
-  Never repeat credential entry or submit within one attempt epoch.
-- Acceptance requires native promotion, force-stop/cold start without clearing
-  data, native Account state, and authenticated Favorites state. Builds,
-  installs, a visible or completed CAPTCHA, compatibility diagnostics, Web
-  state, and input-command success are supplementary and must never be
-  reported as a completed login.
-- Keep secrets and sensitive session data out of messages and artifacts. After
-  interruption, resume the next pending physical action; do not request manual
-  submission when autonomous authority already exists.
-
-## Before status, lane switch, or finish
-
-Recover the active outcome, its next unverified runtime/physical action, and
-whether that action was actually performed in this run. Update
-`docs/qa/nextn-active-acceptance.md` after a material physical result. Report
-only observed evidence, what remains unproven, and the next safe action or exact
-external block.
+核对原目标是否仍未完成、下一动作是否实际执行。实质设备结果更新验收状态；只报告观察到的结果、未证实部分和下一安全动作。

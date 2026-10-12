@@ -23,7 +23,7 @@ user explicitly reopens the entry after reviewing its failure evidence.
   movement can exhaust the close gate and replace the custom return with the
   system POP.
 - **Evidence:** `git show f1c27d1`; `REJECTED CANDIDATE — fullscreen Reader
-  return measurement gate` in `docs/qa/nextn-ui-change-ledger.md`.
+  return measurement gate` in `docs/qa/nextn-ui-change-ledger-history-through-20261013.md`.
 
 ## REJ-READER-002 — Restore the status bar after the return flight
 
@@ -36,7 +36,7 @@ user explicitly reopens the entry after reviewing its failure evidence.
 - **Why rejected:** it visibly toggles fullscreen after the transition and
   revives a repeatedly fixed timing regression.
 - **Evidence:** Reader transition sections in
-  `docs/qa/nextn-ui-change-ledger.md`.
+  `docs/qa/nextn-ui-change-ledger-history-through-20261013.md`.
 
 ## REJ-READER-003 — Reuse Reader-entry geometry as the close target
 
@@ -48,7 +48,7 @@ user explicitly reopens the entry after reviewing its failure evidence.
 - **Why rejected:** rotation, folding, resizing, and other window changes make
   entry geometry stale even when the same thumbnail remains the target.
 - **Evidence:** Reader transition acceptance boundary in
-  `docs/qa/nextn-ui-change-ledger.md`.
+  `docs/qa/nextn-ui-change-ledger-history-through-20261013.md`.
 
 ## REJ-READER-004 — Change unrelated transition ownership to fix status-bar timing
 
@@ -61,7 +61,7 @@ user explicitly reopens the entry after reviewing its failure evidence.
 - **Why rejected:** these speculative changes caused system-animation fallback
   and discontinuous corner-radius morphs without proving the landing defect.
 - **Evidence:** Reader transition correction history in
-  `docs/qa/nextn-ui-change-ledger.md`.
+  `docs/qa/nextn-ui-change-ledger-history-through-20261013.md`.
 
 ## REJ-READER-005 — Opaque canvas color as the failure overlay material
 
@@ -94,4 +94,12 @@ user explicitly reopens the entry after reviewing its failure evidence.
   flag is lifecycle-only). Any future NextE-sync port must not reintroduce it.
 - **Evidence:** `git show 930f51a`; `git -C ../NextE show fbc483cd`; the
   2026-09-07 live-progress reversal record in
-  `docs/qa/nextn-ui-change-ledger.md`.
+  `docs/qa/nextn-ui-change-ledger-history-through-20261013.md`.
+
+## REJ-TITLEBAR-GRADIENT-001 — 禁止换效果冒充修复
+
+- **Status:** `REJECTED`
+- **Lookup keys:** `NextNHdsTitleBar`、`nextNHdsTitleBar`、`ImmersiveTitleBar`、`immersiveTitleBarOpts`、`COMMON_BLUR`、`GRADIENT_BLUR`、`bottomBuilder`、`MaskBlur`。
+- 用户要求修复原渐变模糊滚动消失；禁止擅自改成非渐变模糊，无论条件切换还是永久替换。
+- 2026-10-13 已撤回 N/E 源码和197测试包。原缺陷未修好；[实际记录](../qa/nextn-ui-change-ledger.md)。
+- 只有用户明确允许改效果才能重新实施；测试通过不产生授权。

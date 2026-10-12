@@ -1,485 +1,94 @@
-# NextN execution integrity protocol
+# NextN 执行规则
 
-This file is a behavioral control, not a test plan. It governs every claim,
-scope change, agent delegation, and task handoff in this repository.
+本文件规定怎么工作，不替用户决定做什么。入口和专项资料见 [AGENTS.md](../../AGENTS.md)。
 
-## Authority and document ownership
+## 不得擅改
 
-The latest human instruction determines scope and authorization. This protocol
-defines execution discipline; applicable skills and device/account protocols
-define how to perform that work. A work order records state, not new permission.
-If they conflict, identify the exact conflict and follow the human instruction;
-do not silently choose the document that permits the preferred action.
+**未经用户明确允许，禁止更改样式；修 bug 也不例外。**
 
-| Document | Owns | Does not own |
-| --- | --- | --- |
-| `AGENTS.md` and this protocol | Routing and execution discipline | Product queues or device selection |
-| `docs/controls/rejected-approaches.md` | Evidence-backed rejected approaches | Feature backlog or replacement acceptance |
-| Applicable skills, `docs/device-lease.md`, account S0–S6 protocol | Safe operation, lease and evidence procedure | New authorization or a default target |
-| `docs/plans/active/shared-reader-replacement-work-order.md` | One cross-host Reader outcome and next action | A release decision or permission inferred from history |
-| `docs/qa/nextn-active-acceptance.md` | Current evidence disposition and non-Reader limitations | A duplicate Reader queue |
-| `docs/qa/nextn-ui-change-ledger.md` | UI rationale and bounded freeze decisions | A per-run diary or whole-product acceptance |
-| `third_party/reader-kit/README.md` | Shared/host ownership and consumer invariants | Host-specific menus, data schemas or a work queue |
-| `docs/plans/archive/`, `docs/qa/archive/` | Immutable historical evidence | Current instructions, default devices or next actions |
+- 修复必须保留原功能、样式和操作。不能靠删除功能、换效果或绕过故障使现象消失。
+- 用户允许临时测试，就只做该测试，结束后恢复临时代码和设备设置；不得擅自保留改动。
+- 默认设备测试、持续工作、用户未反对、官方 API 或测试通过，都不授权更改样式。
+- 改错就停止错误方向，撤回本轮改动，保留失败证据。原问题没有解决就仍未完成。
 
-Read each applicable control once when beginning its task, then re-read changed
-sections or a concrete conflict. Compaction, a status question and a retry do
-not restart the task or justify repeatedly reading rules instead of acting.
-Keep historical facts and original user quotes; remove superseded dispatch
-text from current entrypoints. Do not add another rule file, checklist or script
-merely because an existing rule was not followed.
+## 权限与当前任务
 
-## 1. The user outcome is the only completion authority
+- 最新用户指令优先于规范、工作单、自动唤醒、摘要、记忆和代理计划。用户暂停后停止冲突操作。
+- 已有授权持续有效；纠正、压缩和工具失败不清空任务，也不要求用户重新批准同一安全动作。
+- 回答用户问题后，继续未取消目标的下一安全动作。临时前置工作完成后恢复原任务。
+- 一个分支缺条件只阻止该分支；继续其他已授权动作。等待须写明具体缺什么以及何时能恢复。
+- 工具拒绝后检查权限和更安全的操作方式；不绕过拒绝，不修改安全机制，不反复重试被安全拒绝的请求。
+- 只在用户目标实际完成、用户明确停止/替换，或没有安全且已授权的下一动作时结束。
 
-- A task stays open until the outcome the user asked for has been observed at
-  the required boundary, the user explicitly stops it, or a concrete external
-  block prevents the next safe action.
-- Source review, a script, a test, a build, installation, a screenshot of an
-  unrelated state, and a no-record diagnostic are intermediate evidence. None
-  may be described as completion of a runtime, persistence, visual, or user
-  flow outcome.
-- The latest explicit user instruction wins over an active queue, automation,
-  heartbeat, previous plan, or sub-agent assignment. Stop conflicting work
-  immediately, including already-running sub-agents.
-- A temporary prohibition on executing one lane is an **execution hold**, not
-  closure of its user outcome. Keep that outcome explicitly `OPEN`, preserve
-  its evidence boundary and next permitted action, and do not remove its
-  continuity record just because an intervening control or review task must
-  happen first.
-- An already granted authorization remains continuous across that hold. When
-  the user-directed prerequisite is actually finished, resume the recorded
-  next action automatically; do not ask for a second authorization, invent a
-  per-turn permission boundary, or make a stale hold permanent. Only an
-  explicit user stop or explicit instruction not to resume changes that.
-- A heartbeat is a scheduling mechanism. It must never be used to imply that
-  a task was completed, paused, abandoned, or handed back to the user.
-- An idle unfinished outcome with an authorized safe action must resume even
-  without a 429 or abnormal-interruption log. “No source-proven code patch” is
-  not “no investigation or acceptance action”. A waiting disposition must name
-  the exact unavailable action, its observed prerequisite, safe alternatives
-  already considered, and the event that makes it actionable. An agent-written
-  generic `no next action` sentence cannot close or suspend the outcome.
+## 修改依据
 
-### 1.1 No autonomous termination or abandonment
+- 先查旧行为、当前源码、相关提交和 [已拒绝方案](rejected-approaches.md)。未知原因写未知。
+- 追踪状态所有者、全部写入/失效路径、异步顺序、调用者、父级/相邻状态和所有消费者；找出能够否定所猜原因的观察。
+- 修改必须针对有证据的错误。调查日志只能用于区分原因，不能变成产品功能或外观替换。
+- 每次修改和提交前核对精确 diff：每一处都必须服务用户原问题，且在已允许范围内。
+- 保护无关 WIP、用户数据和原始素材。不清数据、不注入持久状态、不加延时、不抢窗口制造通过。
+- 不靠参数试错、重复构建、重复测试或新脚本掩盖原因未明。共享改动须审查全部实际消费者及保留旧版路径。
 
-- While an outcome is `OPEN`, the agent must not mark a Goal complete or
-  blocked, send a completion/final handoff, delete its continuity record, or
-  switch to an unrelated lane merely because a source patch, build, test,
-  device command, capture, retry, or explanation has finished.
-- A failed command is an observation, never a task terminal. Record its exact
-  operation and result, preserve the active outcome, and perform the next
-  safe recovery or retry in the same continued run. Only a concrete external
-  condition that prevents that next action may be reported as a block.
-- A user question, criticism, or request for an explanation is a route
-  correction. Answer the question precisely, then recover the active outcome
-  and execute its next safe action; it is not permission to end, park, or
-  silently replace the work.
-- A status report may describe only work already observed and the next action
-  that remains. It must not use an intermediate result as a substitute for
-  that action or imply that the user must re-authorize an already authorized
-  continuation.
-- Material source or control changes are not durable until their exact diff is
-  reviewed and they are committed in a scoped Git commit. A commit records a
-  checkpoint; it never closes the user outcome by itself.
+## 界面与实际使用
 
-### 1.2 Recoverable tool refusals are not user decision points
+- 界面修改前在 [界面记录](../qa/nextn-ui-change-ledger.md) 写清用户允许改的属性、原参考/设备证据、具体差异和验证路径。
+- 参考页面按完整父树核对：滚动/导航所有者、固定栏、内容顺序、尺寸、菜单、动作和状态变化。不得用通用拼装偷偷替换原结构。
+- 顶部、圆角、按钮等局部反馈只授权对应属性；不能顺手改底部、密度、文案或其他页面。
+- HDS 控件的默认值或相同组件名不证明样式相同。设置说明只在不写会影响操作含义时添加。
+- 先核对每份截图的实际前台 App、窗口尺寸、方向、折叠/分屏状态；状态不一致不能拿来比较。
+- 从普通入口使用，先按时间顺序看原始画面，记录所有异常，再核对源码和日志。不能只挑缓存命中、稳定终点或符合预期的帧。
+- 涉及加载、滚动或转场，查看完整动作区间和真实组件交接；联系表只定位帧，不替代原片和原分辨率画面。
+- 键盘、弹层、固定控件的受影响状态分别核对。实际控件必须处于当前有效窗口内；`visible=true` 和输入成功不证明可用。
+- 一个可见反例就否决相关通过结论；其他成功画面不能抵消它。保留原始失败，不改标准迎合实现。
+- 禁止用 UI 正则、源码形状、合成布局、截图数量或机械打勾证明视觉正确；不新增 hook 或拦截器代替判断责任。
 
-- A sandbox, index-lock, lease-lock, or execution-policy refusal is an
-  observation about one command form. It is never a reason to yield, end a
-  status with the refusal, request a fresh authorization, or treat the active
-  lane as blocked when the user has already authorized the underlying work.
-- When an ordinary command cannot write a Git index, repository lease, or
-  local evidence artifact, immediately retry in the same run using the
-  smallest applicable permitted form: one operation, exact staged paths or
-  exact selected device, and no unrelated chained work. Do not first ask the
-  user to approve the retry merely because the tool chose a stricter command
-  mode.
-- If a compound elevated command is refused, decompose it before reporting
-  anything: for example, stage the exact files, inspect the staged diff, then
-  commit; or acquire/renew the exact lease, then run the one device command.
-  A policy decision on the compound command says nothing about those smaller
-  operations. Continue the sequence automatically.
-- For a stateful device protocol, "one device command" means one invocation of
-  `scripts/run-device-protocol` for the checked manifest. Never decompose that
-  manifest into individual HDC wake, timeout, UI input, capture, install,
-  launch, or diagnostic commands. The smaller-operation rule applies to lease
-  acquisition/renewal and transport recovery only; it does not override the
-  continuous UI-chain rule in Section 4.1.
-- A user report is permitted only after the exact minimal operation has itself
-  been refused and no materially narrower in-scope operation remains. That
-  report must name the one failed operation, preserve the active outcome as
-  `OPEN`, and state the next automatic retry or the precise additional
-  authority required. It must never be the turn's terminal message while a
-  safe retry remains.
-- Git checkpoints are part of ordinary requested implementation. After an
-  exact diff review, stage only the declared paths and commit automatically.
-  Do not turn an index-write mode change into a request that the user repeat
-  an existing instruction to commit. If a user interruption occurs between
-  staging and commit, first inspect the index and resume that same commit
-  before changing lanes.
+## 设备与已知路径
 
-## 2. Claim vocabulary is fixed
+- 使用当前用户选定设备、有效租约和 checked manifest；具体操作见 [设备协议](../device-lease.md) 和必读技能。
+- 已知操作连续执行。截图/布局检查只用于首次找路、会改变下一动作的明确判断、终点或异常取证；不逐点击截图猜坐标。
+- 一份 manifest 覆盖完整场景；不能为每次点击、安装或截图拆一份。单次输入留忽略目录，不加入源码。
+- HDC 空输出、失败探针或沙箱错误不是设备离线证据。先确认允许的宿主执行方式，再记录实际失败与恢复动作。
+- 不自行改变模拟器生命周期、清缓存或清用户数据。临时偏好、电源和方向设置结束后恢复并读回。
+- 原图/录像/布局/日志保留本地；未经用户允许不删除，也不提交这些原始产物。
 
-Use only the narrowest true statement.
+## 验收与冻结
 
-| Evidence actually obtained | Permitted wording | Forbidden wording |
-| --- | --- | --- |
-| Code changed, not built | `implemented in source` | `fixed`, `solved`, `works` |
-| Build succeeded | `build succeeded` | `validated`, `works on device` |
-| HAP installed | `installed` | `preserved data`, `works after restart` |
-| One device state observed | `observed <exact state>` | any broader causal or lifecycle claim |
-| Exact requested end-to-end state observed | `accepted for <exact path>` | generalization to unobserved branches |
+| 实际证据 | 可以报告 |
+| --- | --- |
+| 只改源码 | 已实现，未运行验收 |
+| 构建成功 | 构建成功 |
+| 安装成功 | 已安装 |
+| 实际观察一段用户操作 | 仅该 App/版本/设备/路径的观察结果 |
+| 原问题解决且原行为保留 | 对应路径通过，列出未验证范围 |
 
-Never infer a cause from an absence. For example, `record absent` means only
-that the record is absent at that observation; it does not prove which
-historical operation removed it.
+- 验收标准来自修改前的正常用户行为，不能从新实现倒推。每个直接或间接受影响行为都须有结果或明确未验收状态。
+- 构建、日志、布局、终点截图、脚本和代理报告不能互相代替；没有运行证据就不能称已修好。
+- 同一共享代码不代表 N/E/K 都通过；每个适用宿主编译，受影响普通路径分别验证。真实进程死亡与同进程回滚分开记录。
+- 已接受路径按原版本、设备、依赖及范围冻结；只由新反馈、实际反例或相关依赖变化重开，不为增加次数重跑。
+- `OPEN` 保留具体未完成动作；`EVIDENCE-ONLY` 保留事实但不算通过；一个失败不推翻无关有效证据。
 
-### 2.1 A failed transport probe is never device state
+## 文档与派工
 
-The HDC binary is the transport client. Run outside its supported host
-environment it prints `Connect server failed`, returns empty output, or times
-out; none of those outcomes is an observation about the Android/HarmonyOS
-target. They are observations about the probe.
+| 文件 | 用途 |
+| --- | --- |
+| 本文、AGENTS | 执行规则与读取入口 |
+| [Reader 工作单](../plans/active/shared-reader-replacement-work-order.md) | 唯一共同 Reader 队列 |
+| [验收状态](../qa/nextn-active-acceptance.md) | 当前事实、证据边界 |
+| [界面记录](../qa/nextn-ui-change-ledger.md) | 当前改动依据、冻结/拒绝状态 |
+| 已拒绝方案 | 不能恢复的实现及原因 |
+| 历史文件/归档 | 查证旧事实，不调度任务、不授权设备 |
 
-| What was actually observed | Permitted wording | Forbidden wording |
-| --- | --- | --- |
-| One direct probe returned no target | `probe returned no target` | `device offline`, `device unreachable`, `device lost`, `网络不可达` |
-| `hdc list targets -v` row absent in one probe | `that probe showed no row` | any statement that the target is down |
-| Repeated probes all failing after reconnect attempts | `target not reachable from this execution environment` | any claim about the physical device |
+- 规则各写一处；不因未遵守而再加重复规则、清单或脚本。技术细节只在适用专项协议中维护。
+- 当前记录就地更新，只留原目标、限制、已观察事实、未完成动作、恢复状态及证据位置；历史长日志分开保留。
+- 压缩/交接不能丢用户禁止项、已拒方案、未提交 WIP，以及源码和设备是否分别恢复；旧计划不能成为新授权。
+- 一个主执行者负责当前 App 动作；独立源/其他工作只按用户允许的并行范围派工。先接续已有代理，不重复派同一包。
+- 代理只能处理明确范围；主执行者亲自审实际 diff、原始证据与矛盾，不照抄 PASS。
+- 每个完整能力包括共同实现、适用宿主、旧版保留和普通用户路径。先做一致的实现，再统一构建/验证；不按一次断言或截图拆提交。
+- 范围改动审查后作本地提交；提交只是检查点，不表示问题完成，不自动推送。
 
-Rules:
+## 账号专项
 
-- Never start a sandboxed or otherwise unproven HDC invocation in order to
-  establish whether a device is online. Availability is established by a
-  successful stateful operation through the checked protocol path, not by a
-  raw `list targets` probe.
-- ICMP loss, an empty result, or a `Connect server failed` line must not be
-  reported to the user as device status. If such an output appears, treat it
-  as a failed command, re-run the same handle, and only then report.
-- A refused, failed, or truncated device command stays `OPEN`. It is not a
-  block and not a licence to mark a package or device path complete.
-- The only visible blocking sentence permitted about a device is: *the
-  checked protocol path could not complete for `<exact target>` with `<exact
-  error>`*, together with the reconnect attempts already made.
-
-## 3. Root-cause work must precede a fix claim
-
-For a persistence, lifecycle, routing, or data-loss report, map before editing:
-
-1. the authoritative owner and state representation;
-2. every write, delete, invalidation, migration, and replacement path;
-3. the event ordering across startup, background/foreground, request retries,
-   and process death;
-4. the one observation that would disprove the proposed cause.
-
-If that map does not isolate a cause, state `cause not established` and keep
-the task open. Do not manufacture a new login, data reset, preference change,
-or unrelated interaction merely to produce a convenient end state.
-
-A patch is allowed only when it removes a source-proven bad transition or adds
-an observation that distinguishes previously conflated states. A patch may not
-be justified by a test written to mirror the new implementation.
-
-## 4. UI work is reference-first and device-judged
-
-- UI static contracts, source-shape checks, synthetic layout matchers, and
-  locally generated fixtures are prohibited as UI acceptance evidence. Do not
-  create, run, update, or cite them to establish visual correctness.
-- Before a visible edit, identify the nearest reference's whole affected tree:
-  scroll owner, fixed chrome, section ownership, child ordering, geometry,
-  action placement, and state transition.
-- A visible change remains unaccepted until an actual same-state, same-viewport
-  result is reviewed against that reference. If such a comparison is not
-  available, say exactly that; do not substitute source similarity.
-- A reported visual defect triggers a sibling review inside the same parent
-  tree before any patch. Do not turn one reported leaf into a license to
-  redesign unrelated behavior or data semantics.
-
-### 4.1 UI operation chains are continuous, not per-click investigations
-
-- Separate **route discovery** from **route execution**. Discovery may inspect
-  source, screenshots, and current UI state once to establish a semantic
-  entry, explicit decision gate, or generic direct route.
-- Once a route is known, execute its declared UI actions continuously. Do not
-  insert source reading, layout dumping, screenshot capture, coordinate
-  inference, model deliberation, or commentary between ordinary actions.
-- Repeated paths must use a generic direct intent or a proven semantic action;
-  a coordinate inferred from an old screenshot is never a reusable entry
-  anchor. Do not reconstruct a known route by scrolling and guessing a tap.
-- Screenshot or multimodal inspection is allowed only for: (1) first-time
-  route discovery, (2) an explicit visual decision gate whose result changes
-  the next action, or (3) terminal acceptance or exception evidence. It is not
-  a routine step between known actions.
-- Before a capture can be called either the reference or the implementation,
-  verify its foreground identity from the current layout root or ability state
-  and record the root window bounds. A filename, the requested `aa start`
-  command, or a prior foreground observation is not identity evidence.
-- A reference/implementation pair is valid only when each capture has its
-  expected foreground bundle and both have the same effective root viewport
-  (width, height, orientation, and split/window state) and the same reviewed
-  state. If any of those facts differ, retain the raw captures locally and
-  mark the pair rejected; do not visually compare it, infer a defect, or use
-  it to justify a source edit.
-- A failed foreground launch or unsupported window-geometry request is an
-  evidence failure, not a product finding. Diagnose or re-establish the
-  capture precondition first; never relabel the resulting artifact as a
-  reference to make a comparison appear complete.
-- If a terminal state differs from the declared route outcome, preserve one
-  diagnostic capture, mark that chain rejected, and repair its semantic route
-  before another run. Do not mask the failure with repeated coordinate and
-  screenshot loops.
-- When the user requests visual auditability, retain the resulting screenshots
-  in a named local audit directory and report their paths. Do not automatically
-  delete them; deletion requires a later explicit user instruction. Raw images
-  remain local evidence and are never added to source commits unless the user
-  explicitly asks.
-
-### 4.2 UI change rationale and freeze gate
-
-- Before any visible UI source edit, add a record to
-  `docs/qa/nextn-ui-change-ledger.md`: the user instruction or real
-  reference/device evidence, whole parent-tree boundary, exact before/after
-  values or structure, minimality rationale, visual verification plan, and
-  unresolved risk. A UI commit must include that record.
-- “Polish”, “compact”, “balanced”, or a local text/size heuristic are not a
-  rationale for a visible change.
-- Settings copy defaults to title plus selected value or switch state. A
-  subtitle is allowed only when omitting it would change the operation's
-  meaning or outcome; it must not explain routine behavior, storage scope, or
-  implementation detail.
-- Once a value or interaction has current evidence and a user decision, freeze
-  it. Do not reopen, recompute, revalidate, or alter it without new explicit
-  user feedback or same-state counter-evidence.
-- If the user identifies a prior UI change as wrong, record its faulty
-  assumption, ignored evidence, impact, and prevention rule before another
-  edit in that same region.
-
-### 4.2.1 Stateful overlay and IME guard
-
-- For any visible change to a scroll owner, fixed/overlaid control, composer,
-  sheet, or keyboard-aware surface, the pre-change ledger record must name
-  every newly affected user-visible state. A successful ordinary-focus state
-  never accepts a reply, prefilled, expanded, error, empty, or keyboard-open
-  state that was not observed separately.
-- A reference-derived page must preserve the reference's destination and
-  parent ownership before adapting an NH data/action leaf. Missing server data
-  or unsupported actions do not justify locally reassembling the route,
-  scroll/overlay relationship, or keyboard owner.
-- In a resized-keyboard state, `visible=true`, a successful input injection,
-  or a source-level size calculation is not evidence that a control is usable.
-  Review the raw current screen and ensure every affected interactive leaf's
-  original bounds remain within the actual resized application window. If the
-  screen and layout disagree, the screen is counter-evidence and the state
-  remains OPEN.
-
-### 4.3 Frozen-surface register and no-repeat rule
-
-- `docs/qa/nextn-ui-change-ledger.md` is the current register of reviewed UI
-  surfaces. Every visible surface is either **FROZEN**, **OPEN**, or
-  **EVIDENCE-ONLY**. A label records the evidence boundary; it is not a visual
-  completion claim.
-- **FROZEN** prevents speculative edits, value recomputation and repeated UI
-  validation of the accepted behavior. It is bounded by the receipt's route,
-  version, environment and dependencies, not by an entire filename. A narrow
-  source impact trace required by Section 7.1.1 is allowed without rerunning
-  the surface. Reopen only for (a) a relevant direct or indirect dependency
-  change, (b) new explicit user feedback, or (c) same-state counter-evidence;
-  record why the old receipt no longer covers the affected behavior first.
-- **OPEN** means a required decision or evidence boundary has not been reached.
-  Record and perform one concrete available next action. If unavailable, retain
-  its exact prerequisite and recovery event; do not repeatedly replay it or
-  treat the whole outcome as blocked while another in-scope action is safe.
-- **EVIDENCE-ONLY** means a prior observation is retained but lacks a valid
-  same-state comparison or a decisive device state. Do not rerun it merely to
-  obtain another similar capture; retain it until a materially new comparison
-  precondition exists.
-- Before any UI work, select exactly one non-frozen boundary from the register
-  and write why it is newly actionable. If no boundary is newly actionable,
-  do not substitute repeated review, a UI static contract, or a synthetic
-  test for progress.
-
-## 5. Scope and delegation discipline
-
-- There is one active lane. An audit may identify candidates, but it may not
-  create an implementation queue across the product without a user decision.
-- A sub-agent receives a bounded question and may not expand it into feature
-  work, static acceptance tooling, or a new product design.
-- No sub-agent result is a completion claim. The owner must inspect current
-  files and reconcile contradictory findings before making a user-facing
-  statement.
-- Do not change a reference-derived interaction into a different product
-  behavior merely because the reference's data source differs. Preserve the
-  product capability and ask before a material behavior tradeoff.
-
-### 5.1 Reference-audit disposition
-
-- File inventories, count differences, and structural-pattern scans are
-  discovery aids only. Generated or untracked files can change raw counts, so
-  use the tracked source set when a count matters and never treat the count as
-  proof of either a defect or audit completeness.
-- Trace each behavior-relevant candidate in both current parent trees and
-  classify it as a confirmed missing behavior, a product-specific leaf
-  difference, a split owner, or a false positive. Only a confirmed missing
-  behavior with the evidence required by Sections 3 and 4 may become an edit.
-- Stop a broad audit after its candidates have concrete dispositions and no
-  current reproduction or counter-evidence remains. Reopen only for a new
-  reproducible problem, a relevant reference change, or a change inside the
-  affected parent tree; a large number of differing files is not by itself a
-  reason to continue.
-
-## 6. Status and handoff format
-
-Every status contains only:
-
-1. the exact user outcome still open;
-2. evidence newly observed in this run;
-3. what remains unproven; and
-4. the next safe action, or the exact external block.
-
-Do not repeat a catalogue of prior mistakes, call an intermediate milestone a
-completion, or hide an unresolved boundary behind a generic `done` message.
-If a durable task is interrupted, preserve its active state and next action in
-the project ledger without changing its completion status.
-
-## 7. Change history discipline
-
-- Keep every material change narrow and attributable to one source-proven
-  problem.
-- Before claiming a change is ready, inspect its exact diff and check that it
-  does not include unrelated edits. If the workspace is not a Git worktree,
-  say that plainly; do not invent commit or diff evidence.
-- Do not use repeated rewrites as a substitute for locating the owner and
-  causal transition. Revert or remove a speculative change once it is shown
-  to be unsupported.
-
-### 7.1 Long-running migration execution model
-
-Long-running cross-repository migrations use one outcome-oriented work order,
-not a chronological accumulation of probes and checkpoints.
-
-- Keep exactly one **ACTIVE capability package**. A package must end at a real
-  user route and include the shared owner, every applicable host adapter, the
-  retained legacy fallback, and its bounded acceptance path. A method, button,
-  callback, screenshot, build, device action, or commit is not a package.
-- Finish source mapping and the coherent implementation before starting the
-  package's build/device phase. A counterexample may reopen implementation;
-  ordinary green checks may not cause repeated rebuild/install cycles between
-  neighboring assertions.
-- Validate by risk. Run logic/state suites for every changed owner and compile
-  every consumer of a changed shared library. Use a second device only for a
-  distinct form factor, input path, platform behavior, or reproduced
-  counterexample; do not replay an unchanged non-visual path merely to increase
-  an evidence count.
-- Use one complete local device protocol per package and selected device. Keep
-  run inputs, screenshots, layouts, recordings, and logs in ignored artifact
-  storage. Source control records one current package row and stable conclusions,
-  never one protocol or ledger paragraph per click/run.
-- Commit at coherent capability boundaries. Do not create commits whose only
-  product meaning is one extra assertion, one capture, one device checkpoint,
-  or a restatement of an already accepted boundary.
-- A historical architecture or acceptance document is evidence, not an active
-  queue. The current work order must contain one next action, update rows in
-  place, and retire superseded next-step text instead of appending another one.
-- Report progress as replacement capability gained or remaining host gap. Test
-  counts, commit counts, elapsed runs, and document volume are diagnostics, not
-  progress metrics.
-
-### 7.1.1 Acceptance is derived from the existing behavior, not the patch
-
-The implementation target and the acceptance boundary are different. Fixing A
-does not accept changes to B, C, or D. This section operationalizes Sections
-3, 4, and 7.1; it does not create another red-line register or test framework.
-
-Before a product edit, update the current package record in place with:
-
-1. **Existing behavior.** Recover the applicable Legacy/reference contract and
-   prior user decisions independently of the proposed fix. Name the ordinary
-   entry, visible intermediate states, actions, return, and persistent outcome.
-   Required behavior may not be omitted because the current patch does not
-   intend to address it.
-2. **Impact trace.** Follow the actual changed owner through its callers,
-   writers, asynchronous callbacks, parent/sibling state, applicable consumers,
-   and retained Legacy path. For each existing behavior, classify it as directly
-   changed, indirectly exposed, or unaffected with a concrete source reason.
-   File proximity, a small diff, shared code, and author intent do not establish
-   that a behavior is unaffected. An unresolved ownership/write path blocks
-   product editing; it is not permission for trial-and-error implementation.
-3. **Acceptance decision.** Before the first validation run, state the expected
-   observable behavior and a concrete failure condition for every exposed
-   behavior. Reuse an existing valid receipt only when its version, ordinary
-   route, environment and dependency relationship remain applicable. Otherwise
-   the row is unaccepted. Never derive the standard from what the candidate
-   happened to do, or repeatedly tune code until a chosen test looks green.
-
-Review one complete declared user action interval, including the source state
-before the first input and the terminal return, against all exposed behavior
-rows at once. An image-continuity inspection does not accept system chrome;
-endpoint bounds do not accept the intervening motion; a visible control does
-not accept its action; one initial preload does not accept its rolling window.
-Use the observable evidence appropriate to the claim. Do not change menu,
-geometry, preload, state ownership, or rendering identity to make a harness
-easier to pass.
-
-Before a package acceptance or handoff statement, reconcile the exact diff
-against that same record. Every exposed row needs a current accepted receipt
-or an explicit unaccepted/deferred disposition. A failing required row rejects
-the package; missing evidence cannot be silently dropped or compensated for
-by other passes. Report the package's allowed conclusion, not its check count.
-Unchanged, evidenced behaviors remain frozen; this rule does not authorize a
-whole-product retest, speculative redesign, or a new implementation queue.
-
-A user counterexample reopens the affected capability and its dependent
-conclusions, not just the reported visual leaf. Preserve true raw observations;
-withdraw unsupported acceptance claims in the work order, dashboard, and
-retrieved memory. First audit the omitted impact/acceptance relationship before
-resuming a patch. Independent review must use the predeclared behavior record
-and original artifacts; a reviewer repeating the author's target-only question
-is not a second acceptance boundary.
-
-## 8. Conditional preemption — account persistence P0
-
-Account-persistence P0 is **OPEN whenever current native Account or Favorites
-evidence proves that the session is absent or unusable**. It preempts every
-other lane immediately at that point; an older no-record observation, a past
-build result, or an account concern without current S0 evidence does not by
-itself stop the active delivery lane. Once triggered, its completion requires
-both:
-
-1. real-device proof on the user-authorized target appropriate to that account scenario
-   (the prior named real-device path was 237; its address is not authorization
-   to reconnect or switch targets), without clearing data, that a
-   completed login survives force-stop/cold start, native account remains
-   authenticated, and Favorites completes an authenticated read; and
-2. a complete postmortem written in-repository after that proof: the verified
-   root cause and causal code/data path; why the prior multi-hour work did not
-   solve it; each incorrect assumption or premature claim; the missing
-   evidence; and the durable design and execution constraints that prevent a
-   recurrence.
-
-Neither a source patch, build, no-record observation, nor a new login used to
-mask an unresolved regression satisfies either condition. Once P0 is
-triggered, do not close, archive, pause, or switch it before both conditions
-are met or the user explicitly stops it. The original device/login
-authorization remains continuous; do not request a new authorization to
-continue the recorded path.
-
-### 8.1 No invented CAPTCHA authorization boundary
-
-- A user-authorized autonomous login already authorizes interaction with and
-  completion of CAPTCHA, Turnstile, or an equivalent challenge in that real
-  login flow. Do not request a second CAPTCHA-specific confirmation, pause at
-  the challenge, or hand it back to the user.
-- A tool or site-safety refusal on one browser surface applies only to that
-  surface. It does not revoke the existing authorization for the selected
-  device's in-app login flow and must not be generalized into a task-wide
-  execution hold.
-- A coordinator result such as `cf_intervention_required` is an implementation
-  defect when no authorized challenge action was attempted. It is never a safe
-  terminal result and must not be preserved as policy.
-- A visible challenge, a completed compatibility diagnostic, a `4/4` score,
-  field input, or a submit dispatch is not login progress or acceptance. Only
-  native Account promotion is login success; P0 additionally requires the
-  cold-start and authenticated Favorites evidence defined above.
-- Conversation summaries and memory may preserve an explicit user constraint;
-  they may not invent a narrower authorization boundary or carry forward an
-  agent-created restriction that contradicts the repository protocol.
+- 只在当前原生 Account/Favorites 证明会话缺失或不可用时，将账号持久性按 P0 接续；旧担忧不自动停止其他开发。
+- 必须读 [S0–S6 协议](../device-protocols/nextn-account-login-acceptance.md) 和 [当前验收](../qa/nextn-active-acceptance.md)。既有登录授权含流程内挑战处理，不再要求手工提交或重复批准。
+- 一个工具表面的安全拒绝不能被绕过，也不能被泛化成所有已授权路径都停止。
+- 账号 P0 通过需要原生 Account/Favorites、未清数据冷启动保持及仓内因果复盘；输入、Web 成功或挑战完成都不算原生登录成功。
