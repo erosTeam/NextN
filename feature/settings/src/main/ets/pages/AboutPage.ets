@@ -17,6 +17,8 @@ import {
   connectSafeMode,
 } from 'shared'
 
+const TELEGRAM_GROUP_URL: string = 'https://t.me/erosTeamG'
+
 @ComponentV2
 export struct AboutPage {
   @Local safeMode: SafeModeState = connectSafeMode()
@@ -293,6 +295,14 @@ export struct AboutPage {
     })
   }
 
+  private openTelegramGroup(): void {
+    const want: Want = { action: 'ohos.want.action.viewData', uri: TELEGRAM_GROUP_URL }
+    this.ctx().startAbility(want).catch((error: Error) => {
+      DiagnosticLogger.warn('settings', 'about_telegram_open_failed', error.message)
+      this.toast(AppStrings.get('about_telegram_open_failed'))
+    })
+  }
+
   private openReleasePage(): void {
     const release: AppRelease | null = this.selectedRelease()
     if (release === null || release.htmlUrl.length === 0) {
@@ -384,6 +394,15 @@ export struct AboutPage {
         title: AppStrings.get('about_platform'),
         trailingText: AppStrings.get('about_harmony_platform'),
         showChevron: false,
+      })
+      this.DividerRow()
+      NextNListRow({
+        title: AppStrings.get('about_telegram_group'),
+        subtitle: TELEGRAM_GROUP_URL,
+        showChevron: true,
+        onAction: () => {
+          this.openTelegramGroup()
+        },
       })
     }
   }

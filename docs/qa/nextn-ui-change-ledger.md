@@ -2,6 +2,16 @@
 
 执行规则只见 [执行规则](../controls/nextn-execution-integrity.md)。Reader 队列只见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。本页就地更新，不按每次测试追加日志。
 
+## 关于页 Telegram 群组入口（2026-10-14）
+
+- 用户授权：在 NextN 和 NextE 的关于页面添加 `https://t.me/erosTeamG`，点击打开链接加入 Telegram 群组；指定 192.168.50.103 验证。
+- 原参考：当前 `AboutPage.AppInfoSection` 的共享列表行、分隔线及已有 `startAbility(viewData)` 外链方式。
+- 具体差异：在平台信息之后增加“Telegram 群组”行，副标题显示完整链接；沿用已有控件和样式。打开失败使用独立提示，不影响更新入口。
+- 验证路径：普通首页入口 → 关于 → Telegram 群组 → 系统处理链接 → 群组页面 → 返回关于。
+- 实际结果：NextN 1.0.7/code9 与 NextE 1.3.6/code41 签名构建成功；MLR-AL00 竖屏1600×2560，经实时解析的 192.168.50.103:12345 从各自普通入口点击，均在浏览器显示 erosTeam 群组页及 VIEW IN TELEGRAM 按钮，随后返回关于。未执行加入群组的账号动作。
+- 检查与恢复：两仓V1扫描均为0 file(s)，四语言key一致无重复；NextE使用DevEco自带Node24构建。已恢复原override10000ms（正常timeout600000ms），临时设备文件已接收留存后移除，租约已释放。
+- 证据：`/Users/honjow/git/NextE/.hvigor/outputs/about-telegram-20261014/acceptance-summary.json`，原始manifest、layout和截图保留同目录。本次变更作本地提交，未推送。
+
 ## 当前问题：N/E 顶部渐变模糊（未完成）
 
 - 用户要求：修复无状态栏、反复滚动时原渐变模糊背景消失及范围异常；保留原样式。

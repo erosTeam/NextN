@@ -3,6 +3,16 @@
 更新时间：2026-10-13。此页记录实际证据，不能产生任务、授权或全产品通过结论。
 Reader 的下一动作只取 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)；Koma App/源只取 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。
 
+## 关于页 Telegram 群组入口（2026-10-14，具名路径通过）
+
+用户要求的 NextN / NextE 关于页 `https://t.me/erosTeamG` 入口已实现。指定设备实时解析为 `192.168.50.103:12345`；MLR-AL00，竖屏1600×2560，非折叠设备。
+
+NextN 1.0.7/code9 与 NextE 1.3.6/code41 均签名构建成功并保留数据覆盖安装。普通路径分别为“我的 → 关于”和“设置 → 关于”：新增行显示完整链接，点击后系统浏览器实际显示 erosTeam 群组页面和 VIEW IN TELEGRAM 按钮，随后均返回对应关于页。仅验证群组页面与入口，未执行账号加入动作；安装HAP系统路径拒绝shell读取哈希，保留明确安装回执、版本读回和本地构建哈希，不声称取得安装包哈希。
+
+两仓V1扫描均为0 file(s)，四套语言资源key一致无重复。测试结束已恢复原override10000ms，正常timeout600000ms未改；本轮设备临时文件在接收后移除，原始本地证据保留，租约释放。新增列表行沿用原样式，未改其他UI，本次变更作本地提交，未推送。
+
+完整构建身份和原始证据：`/Users/honjow/git/NextE/.hvigor/outputs/about-telegram-20261014/acceptance-summary.json`。下方其他专项记录保留各自范围和状态，不代表本次任务范围。
+
 ## 当前优先：原渐变模糊滚动缺陷（OPEN）
 
 用户要求保留原渐变效果，修复无状态栏反复滚动时背景消失/范围异常。本轮擅自换成非渐变模糊，已被用户拒绝；任何替换后的测试均不能接受原缺陷。

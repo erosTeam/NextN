@@ -2657,6 +2657,14 @@
       "value": "アプリ情報"
     },
     {
+      "name": "about_telegram_group",
+      "value": "Telegram グループ"
+    },
+    {
+      "name": "about_telegram_open_failed",
+      "value": "Telegram グループのリンクを開けませんでした"
+    },
+    {
       "name": "about_platform",
       "value": "プラットフォーム"
     },
