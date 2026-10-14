@@ -29,6 +29,51 @@ candidate still lacks matching runtime evidence for those F1/F2 transitions;
 the historical terminal screenshots and prior Pass results are retained but do
 not fill that gap.
 
+**2026-09-23 NextN/197 candidate `90dd2e81…fc1740b`: F1 FAIL / package OPEN.**
+One ordinary Non-H `663205` Detail page-0 entry completed its ReaderEntry
+and applied the preferred enhanced variant without an early cancellation log,
+but original video frames show a sharp image-darkening pulse immediately after
+the bright cover appeared. The fixed image ROI fell from mean luma `165.7` to
+`37.1` and recovered over the following frames. A separate same-page enhanced
+OFF→ON capture kept visible content in all 73 encoded frames (ROI
+`165.8–167.1`), which is bounded F2 evidence for that toggle only. The device
+was restored to the ordinary Detail with a `120000ms` screen timeout and its
+lease released. The durable frame counterexample and evidence hashes are in
+`docs/qa/nextn-active-acceptance.md`. **Next:** diagnose and repair the F1
+darkening pulse, then run one new ordinary-entry continuous frame gate on the
+new signed candidate. The current package remains OPEN.
+
+**2026-09-23 NextN/197 frozen candidate `406fe9f5…51bb7a`: F1 bounded reverse PASS; asset handoff OPEN.**
+An independent checked 197 run used the exact signed main HAP SHA-256
+`406fe9f5d4b810697058164a490fbdb0f4c7249056f4f22c5d43b71fd651bb7a`
+on ordinary Non-H `663205` Detail page 0. In the same-window log, entry
+`phase=moving` at `07:30:14.170` preceded Back at `14.389`, then
+`open_reverse_requested`/`cancelled_from=moving` at `14.392`; original MP4
+frames 72–108 (PTS `1.747722–2.348167s`) show one cover proxy expand and
+retrace to its left tile without a second full Reader body or blank frame.
+This closes only this genuine moving-phase Back sample. The MP4 SHA-256 is
+`c882cf5b2d078fea75458d5619b108c8d956680289b4b63453abd4175d48bfd7`.
+
+On the same frozen HAP, a one-shot page-0 original failure probe logged
+`native_original_decode_failure source=0` and `cancelled_from=layout
+reason=target-failed`; original frames 98–100 show the short `图片不可用 / 重试`
+dialog over Detail and return to the same Detail. This is a bounded failure
+abort, not an in-Reader retry pass (MP4 SHA-256
+`0575fd15d57fdd5b368563232586db484d35d6364a3b6e86b8de1d575424c0c6`).
+Separate launches configured with `hold-once` original and `delay-once`
+preview probes each cancelled from `layout` with `reason=unattributed` before
+a valid waiting Back or delayed handoff could be observed. Those recordings
+are retained, but neither is
+accepted as slow-original cancellation or late-content delivery. Checked
+terminal protocol reopened ordinary Detail `663205`, read back
+`OverrideTimeout=120000ms`, and released lease `20260922-232400-b98e9a93`.
+Evidence, checked manifests, same-window logs and unmodified PTS frames are
+under `/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f1-406-independent-20260923/`.
+**Next:** diagnose the pre-Back `layout / unattributed` cancellation in the
+debug slow paths, then use a matching frozen-binary probe capable of releasing
+the held original to prove delayed content, waiting-state cancellation and
+late-result fencing. F1 and the package remain **OPEN**.
+
 The following are finite pending checks inside this one package, not new queues:
 
 #### 标准非H测试内容（2026-09-21 监督指令，后续所有设备链统一使用）

@@ -32,6 +32,53 @@
   ordinary Detail and `AWAKE / OverrideTimeout=120000ms`; the 197 lease was
   released.
 
+- Shared reader F1 visual counterexample / replacement OPEN (2026-09-23):
+  On device 197, the signed NextN candidate with SHA-256
+  `90dd2e81fd80d8f77f41d6a6ddfb76c0ca4590534f11bed3d9d6246ebfc1740b`
+  entered the Reader once from ordinary Non-H gallery `663205` Detail page 0.
+  The same-window log shows `ReaderEntry` finished before preferred
+  super-resolution was prepared/applied, with no early cancellation in this
+  entry. The original recording still shows a visible image-darkening pulse:
+  frames 42–50 at PTS `0.850–0.980s` go bright → sharply dark → recover.
+  A fixed image ROI (`x=500–760, y=900–1500` in the `890×1920` video) drops
+  from mean luma `165.7` to `37.1`, then returns to about `165.0`. Thus this
+  candidate **fails F1 visual continuity**; the log sequence does not close
+  the visual gate. The F1 MP4 SHA-256 is
+  `69c0b83dea273b4794ec62addde3c737d6a46939a36341eb6cf8653296c041d4`
+  under `.hvigor/outputs/device197__ALN-AL80/not-applicable/portrait-1260x2720/nextn-f1-90dd2e81-20260923/page0-entry-settled-recording/`.
+  A separate same-page enhanced OFF→ON recording has 73 encoded PTS frames,
+  both toggle-state toasts and an enhanced-variant application log; the same
+  ROI stays between `165.8` and `167.1` throughout captured frames. This is
+  bounded F2 evidence for one current-page toggle, with encoded-frame gaps,
+  and does not override F1 failure. Its MP4 SHA-256 is
+  `12e7f3bf9c23e02d523e7fda3a451b51b241223206732126a66f220e115a19b8`
+  under the sibling `page0-f2-off-on-recording/` directory. The final checked
+  protocol restored the same ordinary Detail, read back
+  `OverrideTimeout=120000ms`, and released the 197 lease. The next unverified
+  action is a product-side diagnosis of the F1 pulse followed by a new
+  single-entry frame gate on a repaired candidate.
+
+- Shared reader F1 slow-path counterexample / replacement OPEN (2026-09-23):
+  On the frozen signed `406fe9f5d4b810697058164a490fbdb0f4c7249056f4f22c5d43b71fd651bb7a`
+  candidate and real Non-H `663205` Detail page 0, a launch configured with
+  the `hold-once` original probe cancelled entry at `07:39:11.110` from `layout` with
+  `reason=unattributed`, before the checked Back command began at
+  `07:39:15.732`; this is **not** a valid waiting-state Back cancellation.
+  The separate launch configured with `delay-once` preview handoff also cancelled from
+  `layout` with `reason=unattributed` at `07:41:42.020`, without showing a
+  delayed Reader handoff. Original recordings, PTS frames and same-window logs
+  are under `/Users/honjow/.codex/worktrees/1327/NextN/.hvigor/outputs/f1-406-independent-20260923/`
+  (`09-held-cancel-recording-run/` and `11-delay-success-recording-run/`).
+  Their MP4 SHA-256 values are `d336036df90a74e280d11cd12b3b3b3b1887b2415561f0f73fd62121726cfdc8`
+  and `41df9bfcf24ced1d38332ac9449380f5791cae1b179d063ec2b74da4fa2fbe7f`.
+  The same frozen HAP did pass one true moving-phase Back reversal and a
+  one-shot failure abort; those bounded results are in the active work order.
+  The next unverified action is diagnosis of `layout / unattributed` on the
+  slow debug paths, followed by a releasable-original physical probe for
+  delayed delivery and late-result cancellation. F1 remains OPEN. The checked
+  terminal run restored ordinary Detail and `OverrideTimeout=120000ms`; the
+  197 lease was released.
+
 - Shared reader Package 2 host-state/action parity DONE / replacement OPEN
   (2026-09-14): Koma, NextN and NextE now have complete bounded legacy/shared
   capability maps with host-owned persistence, settings, cache and business
