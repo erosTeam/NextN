@@ -1,7 +1,7 @@
 # 当前运行验收
 
 更新时间：2026-10-14。此页记录实际证据，不能产生任务、授权或全产品通过结论。
-用户已要求记录 N/E 原渐变问题后返回 Koma；当前持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查 NextE/NextN 未提交修改；该检查不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
+用户已要求记录 N/E 原渐变问题后返回 Koma；当前持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
 
 ## 关于页 Telegram 群组入口（2026-10-14，具名路径通过）
@@ -14,7 +14,7 @@ NextN 1.0.7/code9 与 NextE 1.3.6/code41 均签名构建成功并保留数据覆
 
 完整构建身份和原始证据：`/Users/honjow/git/NextE/.hvigor/outputs/about-telegram-20261014/acceptance-summary.json`。下方其他专项记录保留各自范围和状态，不代表本次任务范围。
 
-## 当前优先：原渐变模糊滚动缺陷（OPEN）
+## 原渐变模糊滚动缺陷（OPEN，按用户要求暂停）
 
 用户要求保留原渐变效果，修复无状态栏反复滚动时背景消失/范围异常。本轮擅自换成非渐变模糊，已被用户拒绝；任何替换后的测试均不能接受原缺陷。
 
@@ -79,6 +79,8 @@ E完整两次来回录像共257帧，已按时间顺序审阅。录屏指示器�
 
 用户明确要求先记录本问题前因后果，再返回 Koma。完整[事件记录](nextn-original-gradient-incident-20261013.md)已保存，包含原始反馈、未经授权的样式替换与撤回、实际HDS根因、证据边界和未完成项。原渐变缺陷仍OPEN，本项暂停；不由旧自动唤醒自行恢复。
 
-## 2026-10-14 未提交修改检查
+## 2026-10-14 未提交修改处理
 
-NextN main 仅2份文档；NextE main 另有两份 Kit geometry WIP，与 b744 NextN 原字节相同（31增13删），主 NextN Kit干净。旧几何 WIP 没有全消费者当前路径验收，不混入文档/新功能提交。两仓规则/验收遗漏与全部25个现存工作树的具体库存、原diff及静态检查见[本次检查](../../.hvigor/outputs/uncommitted-review-20261014/review.md)。旧树仅库存，未称全审完，不提交/推送/批量清理；Koma原任务继续。
+用户检查后明确要求处理。主目录的规则/验收记录、两份原 geometry WIP 与 NextE 反向连线检查已作范围内本地提交；其他历史工作树分别保存为未重新验收的 WIP 检查点，原源码字节与原分支 HEAD 保持。25 个工作树及 Reader 子仓均读回无未提交改动。181 份旧本地输入/日志保持原路径和字节，仅精确本地 Git 排除，没有删除原材料或隐藏产品源码。
+
+完整提交表、原 diff、文件哈希、原分支与读回见[处理记录](../../.hvigor/outputs/uncommitted-review-20261014/review.md)。NextE 现有完整 preflight/V1 零文件扫描通过；未重做 N/E 设备验收、未推送。原 geometry 仍限既有具名证据，Koma App/Kit WIP 未改变。本项完成后接续 Koma 原目标。
