@@ -51,3 +51,14 @@
 
 - 本轮实际结果：MLR-AL00、竖屏 1600×2560，签名 release 1.0.7/code10；最终包 SHA256 `3b99d15c549005510947f952ed81ad382202ba7f1cfc8ec4e0c4be2e5bcfaada`。从首页普通封面进入未收藏详情，空心心形显示正常，源码绑定为 500；UiTest 不暴露 SymbolGlyph 字重，不将布局数据误称为字重读回。未触发收藏远端写入。
 - 证据边界：`underline-verified/`、`capsule-restored/`、`capsule-scrolled/` 验证胶囊修复；`final-500-home/`、`final-500-favorite/`、`final-restored/` 对应最终 500 包。目录均位于上面的场景产物根；返回首页并清理本轮设备临时文件，原胶囊偏好保留。动画帧率不在本次验证范围。
+
+
+## 双 App 转场一致性修正（2026-10-16，具名路径已验证）
+
+- 用户范围：两边列表到详情自定义主转场350ms、Reader缩略图主转场300ms；核查平板双栏回退和NextE缩略图重载。保留原曲线、样式、全局400ms及图像淡入时长。
+- NextN改动：Index使用局部350ms，ReaderThumbnailTransitionCoordinator使用局部300ms，相关比例交接同步。没有修改共享reader-kit或画廊数据逻辑。
+- 原因区分：NextE点击时重复syncDetailFirstPage替换缩略图，造成整页loading和source_snapshot_failed；改用已有幂等seed后已在103验证。NextN无同样批量重载，实机原缩略图转场开关为关闭；临时开启后，修改前的包已经能完成双栏缩放往返，因此不把关闭时的系统动画认定为双栏故障。
+- NextN签名候选包已构建安装；103实时Connected、MLR-AL00、横屏2560×1600、系统1x。candidate-split同一gallery687770/page0完整101帧，源缩略图缩放进入和返回、邻图稳定；list350-roundtrip完整91帧，普通列表封面展开及返回，日志snapshots_ready且push/pop均isCustomAnimation:1。按时序审阅全部联系表并复核原帧；这是普通路径行为验证，不声称合成器精确耗时等于配置值。
+- 检查：签名构建、生产Reader准入测试、V1扫描和diff检查通过。既有test_gallery_reader_transition_contract.mjs仍有一条直接readerImageOpacity表达式的正则断言失败；当前源码使用openingContentOpacity，未修改HEAD运行同一测试也失败，本次没有改该行为或放宽断言。
+- 恢复：restore-preferences读回平板布局“仅横屏”、缩略图转场false（测试前原值）；final-restored回到浏览，保留原横屏和AWAKE/OverrideTimeout86400000ms，移除本轮设备临时JSON/PNG。录像已由runner接收并清理设备副本；租约已释放。未提交、推送、改版本或发布。
+- 原始证据：`.hvigor/outputs/split-transition-20261016/`，冻结包nextn-split-fix-signed.hap；阶段证据位于lab-tablet__MLR-AL00/not-applicable/landscape-2560x1600/default-entry。NextE对应证据为其自身`.hvigor/outputs/default-reader-entry-20261015/acceptance.md`。

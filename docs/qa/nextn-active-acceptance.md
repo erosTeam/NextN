@@ -1,8 +1,18 @@
 # 当前运行验收
 
-更新时间：2026-10-14。此页记录实际证据，不能产生任务、授权或全产品通过结论。
-用户已要求记录 N/E 原渐变问题后返回 Koma；当前持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
+更新时间：2026-10-16。此页记录实际证据，不能产生任务、授权或全产品通过结论。
+用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
+
+## 双 App 转场一致性修正（2026-10-16，具名路径已验证）
+
+- 用户范围：两边列表到详情自定义主转场350ms、Reader缩略图主转场300ms；核查平板双栏回退和NextE缩略图重载。保留原曲线、样式、全局400ms及图像淡入时长。
+- NextN改动：Index使用局部350ms，ReaderThumbnailTransitionCoordinator使用局部300ms，相关比例交接同步。没有修改共享reader-kit或画廊数据逻辑。
+- 原因区分：NextE点击时重复syncDetailFirstPage替换缩略图，造成整页loading和source_snapshot_failed；改用已有幂等seed后已在103验证。NextN无同样批量重载，实机原缩略图转场开关为关闭；临时开启后，修改前的包已经能完成双栏缩放往返，因此不把关闭时的系统动画认定为双栏故障。
+- NextN签名候选包已构建安装；103实时Connected、MLR-AL00、横屏2560×1600、系统1x。candidate-split同一gallery687770/page0完整101帧，源缩略图缩放进入和返回、邻图稳定；list350-roundtrip完整91帧，普通列表封面展开及返回，日志snapshots_ready且push/pop均isCustomAnimation:1。按时序审阅全部联系表并复核原帧；这是普通路径行为验证，不声称合成器精确耗时等于配置值。
+- 检查：签名构建、生产Reader准入测试、V1扫描和diff检查通过。既有test_gallery_reader_transition_contract.mjs仍有一条直接readerImageOpacity表达式的正则断言失败；当前源码使用openingContentOpacity，未修改HEAD运行同一测试也失败，本次没有改该行为或放宽断言。
+- 恢复：restore-preferences读回平板布局“仅横屏”、缩略图转场false（测试前原值）；final-restored回到浏览，保留原横屏和AWAKE/OverrideTimeout86400000ms，移除本轮设备临时JSON/PNG。录像已由runner接收并清理设备副本；租约已释放。未提交、推送、改版本或发布。
+- 原始证据：`.hvigor/outputs/split-transition-20261016/`，冻结包nextn-split-fix-signed.hap；阶段证据位于lab-tablet__MLR-AL00/not-applicable/landscape-2560x1600/default-entry。NextE对应证据为其自身`.hvigor/outputs/default-reader-entry-20261015/acceptance.md`。
 
 ## 关于页 Telegram 群组入口（2026-10-14，具名路径通过）
 

@@ -218,6 +218,7 @@ const STATUS_BAR_LIGHT_CONTENT: string = '#FFFFFFFF'
 const STATUS_BAR_DARK_CONTENT: string = '#FF000000'
 const READER_ENTRY_STATUS_BAR_HIDE_DELAY_MS: number = 500
 
+const GALLERY_DETAIL_TRANSITION_DURATION_MS: number = 350
 const GALLERY_DETAIL_OPEN_CURVE: curves.ICurve = curves.cubicBezierCurve(0.2, 0, 0, 1)
 const GALLERY_DETAIL_CLOSE_CURVE: curves.ICurve = curves.cubicBezierCurve(0.3, 0, 0.2, 1)
 // These thresholds are measured against visible geometry progress, not elapsed time. Changing a
@@ -4343,7 +4344,7 @@ struct Index {
     this.galleryDetailTransitionSerial += 1
     const transitionSerial: number = this.galleryDetailTransitionSerial
     return {
-      timeout: ThemeTokens.ANIM_DURATION * 12,
+      timeout: GALLERY_DETAIL_TRANSITION_DURATION_MS * 12,
       transition: (proxy: NavigationTransitionProxy): void => {
         if (isPush) {
           if (this.galleryDetailTransition.isCoverExpand() && !this.syncGalleryDetailCoverTarget()) {
@@ -4356,7 +4357,7 @@ struct Index {
           }
           const coverExpand: boolean = this.galleryDetailTransition.isCoverExpand()
           this.getUIContext().animateTo({
-            duration: ThemeTokens.ANIM_DURATION,
+            duration: GALLERY_DETAIL_TRANSITION_DURATION_MS,
             curve: GALLERY_DETAIL_OPEN_CURVE,
             onFinish: (): void => {
               if (transitionSerial === this.galleryDetailTransitionSerial) {
@@ -4368,8 +4369,8 @@ struct Index {
           })
           if (!coverExpand) {
             this.getUIContext().animateTo({
-              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_OPEN_CARD_EXIT_START_TIME,
-              duration: ThemeTokens.ANIM_DURATION * (
+              delay: GALLERY_DETAIL_TRANSITION_DURATION_MS * GALLERY_DETAIL_OPEN_CARD_EXIT_START_TIME,
+              duration: GALLERY_DETAIL_TRANSITION_DURATION_MS * (
                 GALLERY_DETAIL_OPEN_CARD_EXIT_END_TIME - GALLERY_DETAIL_OPEN_CARD_EXIT_START_TIME
               ),
               curve: Curve.Linear,
@@ -4378,8 +4379,8 @@ struct Index {
             })
           } else {
             this.getUIContext().animateTo({
-              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_TIME,
-              duration: ThemeTokens.ANIM_DURATION * (
+              delay: GALLERY_DETAIL_TRANSITION_DURATION_MS * GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_TIME,
+              duration: GALLERY_DETAIL_TRANSITION_DURATION_MS * (
                 GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_END_TIME - GALLERY_DETAIL_COVER_OPEN_CARD_EXIT_START_TIME
               ),
               curve: Curve.Linear,
@@ -4403,7 +4404,7 @@ struct Index {
           }
           const coverExpand: boolean = this.galleryDetailTransition.isCoverExpand()
           this.getUIContext().animateTo({
-            duration: ThemeTokens.ANIM_DURATION,
+            duration: GALLERY_DETAIL_TRANSITION_DURATION_MS,
             curve: GALLERY_DETAIL_CLOSE_CURVE,
             onFinish: (): void => {
               if (transitionSerial === this.galleryDetailTransitionSerial) {
@@ -4415,8 +4416,8 @@ struct Index {
           })
           if (!coverExpand) {
             this.getUIContext().animateTo({
-              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME,
-              duration: ThemeTokens.ANIM_DURATION * (
+              delay: GALLERY_DETAIL_TRANSITION_DURATION_MS * GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME,
+              duration: GALLERY_DETAIL_TRANSITION_DURATION_MS * (
                 GALLERY_DETAIL_CLOSE_CARD_ENTRY_END_TIME - GALLERY_DETAIL_CLOSE_CARD_ENTRY_START_TIME
               ),
               curve: Curve.Linear,
@@ -4425,8 +4426,8 @@ struct Index {
             })
           } else {
             this.getUIContext().animateTo({
-              delay: ThemeTokens.ANIM_DURATION * GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME,
-              duration: ThemeTokens.ANIM_DURATION * (
+              delay: GALLERY_DETAIL_TRANSITION_DURATION_MS * GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME,
+              duration: GALLERY_DETAIL_TRANSITION_DURATION_MS * (
                 GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_END_TIME -
                   GALLERY_DETAIL_COVER_CLOSE_CARD_ENTRY_START_TIME
               ),
