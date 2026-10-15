@@ -82,7 +82,7 @@ export struct SubTabBar {
 
   private inactiveMaterial(): uiMaterial.Material | undefined {
     return ImmersiveMaterialSettings.systemMaterial(
-      this.immersiveMaterial.level, uiMaterial.ImmersiveStyle.ULTRA_THIN, false,
+      this.immersiveMaterial.level, uiMaterial.ImmersiveStyle.ULTRA_THIN, false, false,
     )
   }
 
@@ -253,6 +253,16 @@ export struct SubTabBar {
   @Monitor('selectedIndex')
   onSelectedIndexChange(): void {
     this.centerSelectedTab(true, false)
+  }
+
+  @Monitor('tabStyle.style')
+  onTabStyleChange(): void {
+    // Match NextE: a style switch invalidates the previous measured tab geometry.
+    this.tabWidths = []
+    this.tabLefts = []
+    this.centeredTarget = -1
+    this.pendingCenterIndex = this.centerIndex()
+    this.pendingCenterSmooth = false
   }
 
   private centerIndex(): number {

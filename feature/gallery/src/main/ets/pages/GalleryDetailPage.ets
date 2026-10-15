@@ -3497,7 +3497,7 @@ export struct GalleryDetailPage {
         SymbolGlyph(this.favoriteStatusKnown && this.isFavorited
           ? $r('sys.symbol.heart_fill') : $r('sys.symbol.heart'))
           .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
-          .fontWeight(this.favoriteStatusKnown && this.isFavorited ? 400 : 600)
+          .fontWeight(this.favoriteStatusKnown && this.isFavorited ? 400 : 500)
           .fontColor([ThemeTokens.BRAND])
       }
     }

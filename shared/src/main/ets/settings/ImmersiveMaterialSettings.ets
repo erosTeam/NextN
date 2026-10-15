@@ -148,6 +148,7 @@ export class ImmersiveMaterialSettings {
     level: string,
     adaptiveStyle: uiMaterial.ImmersiveStyle,
     interactive: boolean,
+    applyShadow: boolean = true,
   ): uiMaterial.Material | undefined {
     if (!deviceInfo.apiAvailable('26.0.0')) {
       return undefined
@@ -155,7 +156,7 @@ export class ImmersiveMaterialSettings {
     return new uiMaterial.ImmersiveMaterial({
       style: ImmersiveMaterialSettings.systemMaterialStyle(level, adaptiveStyle),
       colorInvert: true,
-      applyShadow: true,
+      applyShadow: applyShadow,
       interactive: interactive,
     })
   }
