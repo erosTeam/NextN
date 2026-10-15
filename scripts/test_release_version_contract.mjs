@@ -25,11 +25,11 @@ function readJson5(p) {
 const errors = []
 const appJson = readJson5(join(ROOT, 'AppScope', 'app.json5'))
 const appVersion = appJson.app?.versionName
-if (typeof appVersion !== 'string' || appVersion.length === 0) {
-  errors.push('AppScope/app.json5 has no app.versionName')
+if (typeof appVersion !== 'string' || !/^\d+\.\d+\.\d+$/.test(appVersion)) {
+  errors.push('AppScope/app.json5 app.versionName must be X.Y.Z')
 } else {
   const featureDirs = existsSync(join(ROOT, 'feature')) ? readdirSync(join(ROOT, 'feature')) : []
-  const targets = ['oh-package.json5', 'entry/oh-package.json5', 'shared/oh-package.json5',
+  const targets = ['oh-package.json5', 'package.json', 'entry/oh-package.json5', 'shared/oh-package.json5',
     ...featureDirs.map((d) => `feature/${d}/oh-package.json5`)]
   for (const rel of targets) {
     const p = join(ROOT, rel)
@@ -41,6 +41,20 @@ if (typeof appVersion !== 'string' || appVersion.length === 0) {
     if (pkg.version !== appVersion) {
       errors.push(`${rel} version ${pkg.version} != app.json5 versionName ${appVersion}`)
     }
+  }
+}
+
+if (!Number.isSafeInteger(appJson.app?.versionCode) || appJson.app.versionCode <= 0) {
+  errors.push('AppScope/app.json5 app.versionCode must be a positive integer')
+}
+if (typeof appVersion === 'string') {
+  const notes = join(ROOT, `changelog/v${appVersion}.md`)
+  if (!existsSync(notes) || readFileSync(notes, 'utf8').trim().length === 0) {
+    errors.push(`changelog/v${appVersion}.md must exist and be non-empty`)
+  }
+  const releaseRef = process.env.GITHUB_REF ?? ''
+  if (releaseRef.startsWith('refs/tags/') && releaseRef !== `refs/tags/v${appVersion}`) {
+    errors.push(`release tag ${releaseRef} does not match v${appVersion}`)
   }
 }
 

@@ -16,6 +16,7 @@
 | HarmonyOS 源码、构建 | `harmony-mandatory-preflight` 和 `harmony-next` 技能 |
 | 设备、截图、日志、UI 操作 | 另读 `harmony-run-device-diagnostics` 和 [设备协议](docs/device-lease.md) |
 | 共享 Reader | [共同职责](third_party/reader-kit/README.md#consumer-contract)、[唯一工作单](docs/plans/active/shared-reader-replacement-work-order.md) |
+| 版本步进、发版 | [版本发布](docs/developer-guide.md#6-版本步进与发版) |
 | 当前运行证据 | [验收状态](docs/qa/nextn-active-acceptance.md) |
 | 可见界面修改 | [界面记录](docs/qa/nextn-ui-change-ledger.md)，以及当前参考页的完整父树 |
 | 登录、凭据 | [S0–S6 协议](docs/device-protocols/nextn-account-login-acceptance.md)、[当前验收](docs/qa/nextn-active-acceptance.md)、[尝试记录](docs/qa/nextn-login-attempt-ledger.md) |
