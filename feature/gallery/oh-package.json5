@@ -1,6 +1,6 @@
 {
   "name": "gallery",
-  "version": "1.0.0",
+  "version": "1.0.8",
   "description": "NextN gallery detail feature",
   "main": "src/main/ets/Index.ets",
   "dependencies": {

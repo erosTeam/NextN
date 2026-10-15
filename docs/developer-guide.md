@@ -216,3 +216,32 @@ NhApiClient.parseGalleryPage
   本文档或 QA 台账，防止下次重新扫描。
 - 本文档与 `docs/architecture.md` 共同构成架构参考；冲突时以
   `docs/controls/nextn-execution-integrity.md` 的行为约束为准。
+
+## 6. 版本步进与发版
+
+`AppScope/app.json5` 的 `app.versionName` 是唯一的发布版本事实源；`versionCode` 每次发布 +1。
+CI 的 release 产物命名与 release 正文都从该文件读取。`oh-package.json5` 的 version 不参与发布
+决策，但必须与 versionName 一致，由契约脚本强制。
+
+发版步进在一次提交内全部完成，缺一即视为未完成：
+
+1. `AppScope/app.json5`：versionCode +1，versionName 步进。
+2. 根 `oh-package.json5`：version 等于新 versionName。
+3. `entry/`、`feature/*`、`shared` 每个模块的 `oh-package.json5`：version 等于新 versionName。
+4. 新增 `changelog/vX.Y.Z.md`。
+
+`third_party/*`（reader-kit、reader-enhancement）是跨项目共享库，保持独立版本，不随宿主发版。
+
+推送前必须运行版本契约并要求通过：
+
+```bash
+node scripts/test_release_version_contract.mjs
+```
+
+该契约存在的直接原因：2026-10-15 发版只改了 app.json5，release 产物名和正文全部退回旧版本；
+且此前从未在发版时步进模块 oh-package 版本。禁止从错误历史归纳发版清单。
+
+发布由 tag 触发：main 推送只构建验证；`git tag vX.Y.Z && git push origin vX.Y.Z` 触发签名构建
+与 release。tag 必须指向包含完整版本步进的提交。release 生成后核对产物名
+`NextN_X.Y.Z_ohos-release-unsigned.hap` 与正文版本；不一致立即停止并修正版本文件，禁止再打
+一个新 tag 掩盖，禁止通过删 tag 重发布修复。
