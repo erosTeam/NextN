@@ -1,3 +1,7 @@
+import { BingTranslationService } from './BingTranslationService'
+import { connectCommentTranslationSettings } from '../state/CommentTranslationSettingsState'
+import { LLM_CONSUMER_COMMENT_TRANSLATION } from '../model/LlmSourceProfile'
+import { LlmSourceProfileRepository } from '../storage/LlmSourceProfileRepository'
 import {
   TEXT_TRANSLATION_CONTENT_COMMENT,
   TextTranslationPromptProfile,
@@ -458,11 +462,19 @@ export class CommentTranslationService {
     if (source.length > MAX_SOURCE_CHARS) {
       throw new Error('Comment text is too large to translate')
     }
-    const runtime: LlmSourceRuntimeConfig = await LlmSourceRuntimeResolver.resolveComment(context)
-    const promptProfile: TextTranslationPromptProfile =
+    // Snapshot the route before joining the cache/queue. Configured LLM resolution
+    // errors remain errors; an absent binding uses the built-in public translator.
+    const freeOnly: boolean = connectCommentTranslationSettings().freeOnly
+    const useBing: boolean = freeOnly ||
+      !LlmSourceProfileRepository.currentBinding(LLM_CONSUMER_COMMENT_TRANSLATION).configured()
+    const runtime: LlmSourceRuntimeConfig | null = useBing ? null :
+      await LlmSourceRuntimeResolver.resolveComment(context)
+    const promptProfile: TextTranslationPromptProfile | null = useBing ? null :
       TextTranslationPromptProfileRepository.currentSelection()
     const targetLanguage: string = CommentTranslationService.targetLanguage()
-    const scope: string = `${targetLanguage}|${contentKind}|${runtime.requestIdentity()}|${promptProfile.promptProfileId}|pr${promptProfile.promptRevision}`
+    const scope: string = runtime !== null && promptProfile !== null
+      ? `${targetLanguage}|${contentKind}|${runtime.requestIdentity()}|${promptProfile.promptProfileId}|pr${promptProfile.promptRevision}`
+      : `${targetLanguage}|${contentKind}|${freeOnly ? 'bing-only-v1' : 'bing-unbound-v1'}`
     const key: string = CommentTranslationService.cacheKey(scope, source)
     const cached: string = await CommentTranslationService.cached(context, key)
     if (cached.length > 0) {
@@ -551,26 +563,40 @@ export class CommentTranslationService {
     targetLanguage: string,
     scope: string,
     key: string,
-    runtime: LlmSourceRuntimeConfig,
-    promptProfile: TextTranslationPromptProfile,
+    runtime: LlmSourceRuntimeConfig | null,
+    promptProfile: TextTranslationPromptProfile | null,
     contentKind: string,
   ): Promise<string> {
     try {
-      const config: OpenAiChatCompletionsConfig = new OpenAiChatCompletionsConfig()
-      config.baseUrl = runtime.baseUrl
-      config.modelId = runtime.modelId
-      config.reasoningEffort = runtime.reasoningEffort
-      config.apiKey = runtime.apiKey
-      const instructions: string = TextTranslationPromptComposer.composeInstructions(
-        targetLanguage,
-        contentKind,
-        promptProfile.styleInstructions,
-      )
-      const rawTranslated: string = await OpenAiChatCompletionsClient.requestText(
-        instructions,
-        source,
-        config,
-      )
+      let rawTranslated: string = ''
+      if (runtime === null || promptProfile === null) {
+        rawTranslated = await BingTranslationService.translate(source, targetLanguage)
+      } else {
+        try {
+          const config: OpenAiChatCompletionsConfig = new OpenAiChatCompletionsConfig()
+          config.baseUrl = runtime.baseUrl
+          config.modelId = runtime.modelId
+          config.reasoningEffort = runtime.reasoningEffort
+          config.apiKey = runtime.apiKey
+          const instructions: string = TextTranslationPromptComposer.composeInstructions(
+            targetLanguage,
+            contentKind,
+            promptProfile.styleInstructions,
+          )
+          rawTranslated = await OpenAiChatCompletionsClient.requestText(
+            instructions,
+            source,
+            config,
+          )
+        } catch (error) {
+          // Model-default requests may fall back; explicit reasoning overrides
+          // preserve their provider error rather than silently changing routes.
+          if (runtime.reasoningEffort.length > 0) {
+            throw error as Error
+          }
+          rawTranslated = await BingTranslationService.translate(source, targetLanguage)
+        }
+      }
       const translated: string = CommentTranslationService.restoreMentionTokens(rawTranslated)
       if (translated.length === 0 || translated.length > MAX_TRANSLATED_CHARS) {
         throw new Error('Comment translation output is invalid')

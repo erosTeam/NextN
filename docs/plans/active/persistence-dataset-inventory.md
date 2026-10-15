@@ -70,6 +70,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/ComicVisualProviderSettings.ets#LEGACY_BYOK_SOURCE_PROFILE_KEY` | retired-tombstone | excluded | excluded | Deleted on load |
 | `shared/src/main/ets/settings/ComicVisualProviderSettings.ets#LEGACY_BYOK_MODEL_KEY` | retired-tombstone | excluded | excluded | Deleted on load |
 | `shared/src/main/ets/settings/CommentTranslationSettings.ets#KEY_ENABLED` | setting | plaintext | excluded | Comment translation switch |
+| `shared/src/main/ets/settings/CommentTranslationSettings.ets#KEY_FREE_ONLY` | setting | plaintext | excluded | Built-in Bing route preference |
 | `shared/src/main/ets/settings/CommentTranslationSettings.ets#KEY_AUTO` | setting | plaintext | excluded | Auto translation |
 | `shared/src/main/ets/settings/CommentTranslationSettings.ets#KEY_DISPLAY_MODE` | setting | plaintext | excluded | Translation display mode |
 | `shared/src/main/ets/settings/CoverBackgroundSettings.ets#COVER_BACKGROUND_BLUR_KEY` | setting | plaintext | excluded | Cover blur |
@@ -81,6 +82,8 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/GalleryTitleSettings.ets#GALLERY_TITLE_JAPANESE_PRIMARY_KEY` | setting | plaintext | excluded | Title preference |
 | `shared/src/main/ets/settings/HomeTabSettings.ets#HOME_TAB_AUTO_HIDE_KEY` | setting | plaintext | excluded | Tab behavior |
 | `shared/src/main/ets/settings/ImmersiveMaterialSettings.ets#IMMERSIVE_MATERIAL_LEVEL_KEY` | setting | plaintext | excluded | Material preference |
+| `shared/src/main/ets/settings/SubTabStyleSettings.ets#APPEARANCE_STORE` | store | excluded | excluded | Store name only |
+| `shared/src/main/ets/settings/SubTabStyleSettings.ets#SUBTAB_STYLE_KEY` | setting | plaintext | excluded | Capsule default; preserve explicit underline |
 | `shared/src/main/ets/settings/LanguageSettings.ets#LANGUAGE_KEY` | setting | plaintext | excluded | App language |
 | `shared/src/main/ets/settings/MangaRenderingServiceSettings.ets#BASE_URL_KEY` | setting | plaintext | excluded | Rendering endpoint |
 | `shared/src/main/ets/settings/MangaRenderingServiceSettings.ets#DETECTION_PROFILE_KEY` | setting | plaintext | excluded | Detector profile |

@@ -2862,18 +2862,6 @@ struct Index {
       ? route.chrome.title
       : ''
     const title: Record<string, Object> = { 'mainTitle': revealedTitle }
-    const favoriteAction: Record<string, Object> = {
-      'label': route.chrome.isFavorited
-        ? AppStrings.get('action_remove_favorite')
-        : AppStrings.get('action_add_favorite'),
-      'icon': route.chrome.favoriteKnown && route.chrome.isFavorited
-        ? $r('sys.symbol.heart_fill')
-        : $r('sys.symbol.heart'),
-      'isEnabled': !route.chrome.favoriteBusy,
-      'action': (): void => {
-        route.chrome.favoriteRequestVersion += 1
-      },
-    }
     const externalOpenAction: Record<string, Object> = {
       'label': AppStrings.get('action_open_externally'),
       'icon': $r('sys.symbol.link'),
@@ -2900,7 +2888,7 @@ struct Index {
     }
     const commentsAction: Record<string, Object> = {
       'label': AppStrings.get('gallery_action_comments'),
-      'icon': $r('sys.symbol.doc_plaintext'),
+      'icon': $r('sys.symbol.topic_message'),
       'isEnabled': route.galleryId > 0,
       'action': (): void => {
         route.chrome.commentsRequestVersion += 1
@@ -2942,7 +2930,6 @@ struct Index {
         }
       },
     }
-    const favoriteMenuItem: Record<string, Object> = { 'content': favoriteAction }
     const externalOpenMenuItem: Record<string, Object> = { 'content': externalOpenAction }
     const internalWebMenuItem: Record<string, Object> = { 'content': internalWebAction }
     const shareMenuItem: Record<string, Object> = { 'content': shareAction }
@@ -2950,7 +2937,6 @@ struct Index {
     const reloadMenuItem: Record<string, Object> = { 'content': reloadAction }
     const copyLinkMenuItem: Record<string, Object> = { 'content': copyLinkAction }
     const menuItems: Record<string, Object>[] = [
-      favoriteMenuItem,
       shareMenuItem,
       commentsMenuItem,
       reloadMenuItem,
@@ -2959,21 +2945,14 @@ struct Index {
       internalWebMenuItem,
     ]
     if (route.chrome.wideThumbnailActionsAvailable) {
-      // Keep Favourite and Share as the two direct compact actions; wide
-      // thumbnail commands remain contextual overflow actions just as in
-      // NextE's split Detail title bar.
+      // Wide thumbnail commands remain contextual overflow actions.
       menuItems.push(
         { 'content': wideThumbnailFirstPageAction },
         { 'content': wideThumbnailJumpPageAction },
       )
     }
     const menu: Record<string, Object> = {
-      // Same NextE hierarchy: the title refresh is a secondary HDS command;
-      // the page-local Read capsule remains the primary detail action.
-      // Keep the compact Gallery chrome on the reference path: favorite and
-      // share are the two direct context actions. Download remains available
-      // in the overflow with its full lifecycle wording rather than claiming
-      // a scarce first-level circular slot.
+      // Favorite is adjacent to Read; Share and Comments remain title actions.
       'value': menuItems,
       'maxCount': 3,
     }

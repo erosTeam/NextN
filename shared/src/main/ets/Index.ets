@@ -873,3 +873,6 @@ export {
   connectTextTranslationPromptProfiles,
 } from './state/TextTranslationPromptProfilesState'
 export { TextTranslationPromptProfileRepository } from './settings/TextTranslationPromptProfileRepository'
+
+export { SubTabStyleState, connectSubTabStyle, SUBTAB_STYLE_UNDERLINE, SUBTAB_STYLE_CAPSULE, SUBTAB_STYLE_DEFAULT } from './state/SubTabStyleState'
+export { SubTabStyleSettings, SubTabStyleOption } from './settings/SubTabStyleSettings'

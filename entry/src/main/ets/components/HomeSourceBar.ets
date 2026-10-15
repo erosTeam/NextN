@@ -11,6 +11,9 @@ import {
   NhSearchOptions,
   SafeModeState,
   SubTabBar,
+  SubTabStyleSettings,
+  SubTabStyleState,
+  connectSubTabStyle,
   SubtabTransitionBridge,
   SUBTAB_TRANSITION_SCOPE_HOME,
   TabItem,
@@ -30,6 +33,7 @@ import {
  */
 @ComponentV2
 export struct HomeSourceBar {
+  @Local tabStyle: SubTabStyleState = connectSubTabStyle()
   @Local safeMode: SafeModeState = connectSafeMode()
   @Local homeSubtabs: HomeSubtabState = connectHomeSubtabs()
   @Local visual: HomeSourceVisualIndexState = connectHomeSourceVisualIndex()
@@ -99,8 +103,8 @@ export struct HomeSourceBar {
         .height(28)
         .margin({ left: ThemeTokens.SPACE_XS, right: ThemeTokens.SPACE_SM })
         .backgroundColor(Color.Transparent)
-        .alignSelf(ItemAlign.Start)
-        .offset({ y: -2 })
+        .alignSelf(SubTabStyleSettings.isCapsule(this.tabStyle.style) ? ItemAlign.Center : ItemAlign.Start)
+        .offset({ y: SubTabStyleSettings.isCapsule(this.tabStyle.style) ? 0 : -2 })
         .onClick((): void => {
           HomeSourceBridge.requestManageSubtabs()
         })

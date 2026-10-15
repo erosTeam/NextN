@@ -11,6 +11,7 @@ export const COMMENT_TRANSLATION_DISPLAY_BILINGUAL: string = 'bilingual'
 @ObservedV2
 export class CommentTranslationSettingsState {
   @Trace enabled: boolean = false
+  @Trace freeOnly: boolean = false
   @Trace autoTranslate: boolean = false
   @Trace displayMode: string = COMMENT_TRANSLATION_DISPLAY_REPLACE
 }

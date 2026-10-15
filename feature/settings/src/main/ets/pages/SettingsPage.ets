@@ -79,6 +79,10 @@ import {
   GalleryDetailTransitionSettings,
   GalleryDetailTransitionMode,
   GalleryDetailTransitionSettingsState,
+  SubTabStyleState,
+  SubTabStyleSettings,
+  SubTabStyleOption,
+  connectSubTabStyle,
   ReadButtonStyleSettings,
   ReadButtonStyleState,
   NhClipboardLinkSettings,
@@ -307,6 +311,7 @@ export struct SettingsPage {
   @Local galleryDetailTransition: GalleryDetailTransitionSettingsState =
     connectGalleryDetailTransitionSettings()
   @Local clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
+  @Local subTabStyle: SubTabStyleState = connectSubTabStyle()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
   @Local immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
   @Local themeColor: ThemeColorState = connectThemeColor()
@@ -437,6 +442,7 @@ export struct SettingsPage {
         CoverBackgroundSettings.restore(this.context()),
         GalleryTitleSettings.restore(this.context()),
         GalleryDetailTransitionSettings.restore(this.context()),
+        SubTabStyleSettings.restore(this.context()),
         ReadButtonStyleSettings.restore(this.context()),
         ActionAlignmentSettings.restore(this.context()),
         ScreenOrientationSettings.restore(this.context()),
@@ -1926,6 +1932,23 @@ export struct SettingsPage {
       this.ReaderCropStrengthMenuItem(continuous, ReaderPageCropStrength.CONSERVATIVE, select)
       this.ReaderCropStrengthMenuItem(continuous, ReaderPageCropStrength.STANDARD, select)
       this.ReaderCropStrengthMenuItem(continuous, ReaderPageCropStrength.STRONG, select)
+    }
+  }
+
+  @Builder
+  private SubTabStyleMenu(select: (action: () => void) => void) {
+    Menu() {
+      ForEach(SubTabStyleSettings.options(), (option: SubTabStyleOption): void => {
+        MenuItem({
+          content: option.label,
+          symbolEndIcon: this.subTabStyle.style === option.style
+            ? new SymbolGlyphModifier($r('sys.symbol.checkmark')) : undefined,
+        }).onClick((): void => {
+          select((): void => {
+            SubTabStyleSettings.setStyle(this.context(), option.style).catch((): void => {})
+          })
+        })
+      }, (option: SubTabStyleOption): string => option.style)
     }
   }
 
@@ -4348,6 +4371,17 @@ export struct SettingsPage {
           AppStrings.get('immersive_material'),
           this.immersiveMaterialLabel(),
         ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.rectangle_grid_1x2'),
+        title: AppStrings.get('settings_subtab_style'),
+        trailingText: SubTabStyleSettings.label(this.subTabStyle.style),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.SubTabStyleMenu(select)
+        },
       })
       this.RowDivider()
       NextNListRow({

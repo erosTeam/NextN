@@ -15,6 +15,7 @@ import { ImmersiveMaterialSettings } from '../settings/ImmersiveMaterialSettings
 import { LanguageSettings } from '../settings/LanguageSettings'
 import { MangaRenderingServiceSettings } from '../settings/MangaRenderingServiceSettings'
 import { NhClipboardLinkSettings } from '../settings/NhClipboardLinkSettings'
+import { SubTabStyleSettings } from '../settings/SubTabStyleSettings'
 import { ReadButtonStyleSettings } from '../settings/ReadButtonStyleSettings'
 import { ScreenOrientationSettings } from '../settings/ScreenOrientationSettings'
 import { SearchTranslationSettings } from '../settings/SearchTranslationSettings'
@@ -455,6 +456,7 @@ export class BackupPreferencesAdapter {
     await CoverBackgroundSettings.restore(context)
     await GalleryTitleSettings.restore(context)
     await GalleryDetailTransitionSettings.restore(context)
+    await SubTabStyleSettings.restore(context)
     await ReadButtonStyleSettings.restore(context)
     await ActionAlignmentSettings.restore(context)
     await NhClipboardLinkSettings.restore(context)

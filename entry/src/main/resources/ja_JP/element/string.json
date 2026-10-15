@@ -5087,6 +5087,42 @@
     {
       "name": "action_torrent",
       "value": "種"
+    },
+    {
+      "name": "settings_subtab_style",
+      "value": "サブタブのスタイル"
+    },
+    {
+      "name": "subtab_style_underline",
+      "value": "下線"
+    },
+    {
+      "name": "subtab_style_capsule",
+      "value": "カプセル"
+    },
+    {
+      "name": "settings_translation_local_model_download_failed_detail",
+      "value": "モデルのダウンロードに失敗しました：{0}"
+    },
+    {
+      "name": "gallery_tag_copy_action",
+      "value": "タグをコピー"
+    },
+    {
+      "name": "gallery_tag_copied",
+      "value": "タグをコピーしました"
+    },
+    {
+      "name": "gallery_tag_copy_failed",
+      "value": "タグをコピーできませんでした"
+    },
+    {
+      "name": "comment_translation_use_bing_only",
+      "value": "内蔵の無料翻訳のみを使用"
+    },
+    {
+      "name": "comment_translation_use_bing_only_hint",
+      "value": "Bing でコメントとタイトルを翻訳します。オフの場合は設定済みの LLM を優先し、未設定なら Bing を使用します。"
     }
   ]
 }

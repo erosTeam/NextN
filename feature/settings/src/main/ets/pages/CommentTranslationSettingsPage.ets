@@ -75,6 +75,10 @@ export struct CommentTranslationSettingsPage {
     CommentTranslationSettings.setAutoTranslate(this.context(), value).catch((): void => {})
   }
 
+  private setFreeOnly(value: boolean): void {
+    CommentTranslationSettings.setFreeOnly(this.context(), value).catch((): void => {})
+  }
+
   private setDisplayMode(value: string): void {
     CommentTranslationSettings.setDisplayMode(this.context(), value).catch((): void => {})
   }
@@ -448,6 +452,18 @@ export struct CommentTranslationSettingsPage {
         ListItem() {
           NextNGroupedListSection() {
             NextNListRow({
+              leadingIcon: $r('sys.symbol.translate'),
+              title: AppStrings.get('comment_translation_use_bing_only'),
+              subtitle: AppStrings.get('comment_translation_use_bing_only_hint'),
+              hasSwitch: true,
+              checked: this.settings.freeOnly,
+              showChevron: false,
+              isEnabled: this.settings.enabled,
+              onAction: (): void => { this.setFreeOnly(!this.settings.freeOnly) },
+              onSwitchChange: (value: boolean): void => { this.setFreeOnly(value) },
+            })
+            this.RowDivider()
+            NextNListRow({
               leadingIcon: $r('sys.symbol.externaldrive'),
               title: AppStrings.get('llm_binding_source'),
               subtitle: this.compatibleSources().length === 0
@@ -460,10 +476,10 @@ export struct CommentTranslationSettingsPage {
               dropdownMenuBuilder: (select: (action: () => void) => void): void => {
                 this.SourceMenu(select)
               },
-              isEnabled: this.settings.enabled,
+              isEnabled: this.settings.enabled && !this.settings.freeOnly,
               accessibilityLabel: AppStrings.get('comment_translation_source_a11y'),
               onAction: (): void => {
-                if (this.settings.enabled) {
+                if (this.settings.enabled && !this.settings.freeOnly) {
                   this.openSourceSelector()
                 }
               },
@@ -485,7 +501,7 @@ export struct CommentTranslationSettingsPage {
               dropdownMenuOpenAction: (openMenu: () => void): void => {
                 this.fetchModels(openMenu)
               },
-              isEnabled: this.settings.enabled &&
+              isEnabled: this.settings.enabled && !this.settings.freeOnly &&
                 this.selectedSourceId.length > 0 && !this.fetchingModels,
               accessibilityLabel: AppStrings.get('comment_translation_model_a11y'),
             })
@@ -500,7 +516,7 @@ export struct CommentTranslationSettingsPage {
               dropdownMenuBuilder: (select: (action: () => void) => void): void => {
                 this.ReasoningEffortMenu(select)
               },
-              isEnabled: this.settings.enabled && this.selectedSourceId.length > 0 &&
+              isEnabled: this.settings.enabled && !this.settings.freeOnly && this.selectedSourceId.length > 0 &&
                 this.selectedModelId.length > 0,
               accessibilityLabel: AppStrings.format('settings_row_a11y', [
                 AppStrings.get('llm_reasoning_effort'),
@@ -514,7 +530,7 @@ export struct CommentTranslationSettingsPage {
               subtitle: AppStrings.get('comment_translation_prompt_profile_hint'),
               trailingText: this.promptProfiles.selectedProfile().displayName,
               showChevron: true,
-              isEnabled: true,
+              isEnabled: this.settings.enabled && !this.settings.freeOnly,
               accessibilityLabel: AppStrings.get('comment_translation_prompt_profile'),
               onAction: (): void => {
                 if (this.onOpenPromptProfiles) {

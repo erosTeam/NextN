@@ -54,9 +54,9 @@ function harness() {
       now = end
       await flush()
     },
-    start(sink = () => true, keep = () => true, maxBytes = 64) {
+    start(sink = () => true, keep = () => true, maxBytes = 64, stallMs = 3000) {
       const observed = { state: 'pending' }
-      this.client.get('https://example.test/image', {}, 1000, 3000, maxBytes, sink, keep)
+      this.client.get('https://example.test/image', {}, 1000, 3000, maxBytes, sink, keep, stallMs)
         .then(value => Object.assign(observed, { state: 'resolved', value }),
           error => Object.assign(observed, { state: 'rejected', error }))
       return observed
@@ -156,5 +156,19 @@ test('native failure settles and does not leak native URL text to callers', asyn
   assert.equal(result.state, 'rejected')
   assert.match(result.error.message, /timed out/)
   assert.doesNotMatch(result.error.message, /https/)
+  assert.equal(h.request.destroys, 1)
+})
+
+
+test('model streams use their shorter silence bound without reducing native total timeout', async () => {
+  const h = harness()
+  const result = h.start(undefined, undefined, 64, 500)
+  await h.advance(1000)
+  assert.equal(result.state, 'pending')
+  h.emit('dataReceive', new ArrayBuffer(4))
+  await h.advance(250)
+  h.emit('dataReceiveProgress', { totalSize: 32, receiveSize: 4 })
+  await h.advance(250)
+  assert.equal(result.state, 'rejected')
   assert.equal(h.request.destroys, 1)
 })

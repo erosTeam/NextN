@@ -1,10 +1,23 @@
 import { common } from '@kit.AbilityKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { fileIo } from '@kit.CoreFileKit'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 import { StreamingHttpClient, StreamingHttpResponse } from '../network/StreamingHttpClient'
 
 const MODEL_DIRECTORY: string = 'comic-translation-models/ysgyolo-1.2-os1-ncnn-fp32-v1'
 const MODEL_RELEASE_TAG: string = 'model-pack-v1.1.6'
+const MODEL_ORIGIN_PREFIX: string =
+  `https://github.com/erosTeam/NextE-Models/releases/download/${MODEL_RELEASE_TAG}/`
+// Same-path mirrors: each prefix is prepended to the origin URL, so the bytes behind it are the same
+// artifact. They exist because the release assets are only served from GitHub, which is slow or
+// unreachable on many networks. Trust does not move to the mirror — every file is still pinned to the
+// SHA-256 below before it is renamed into place, so a mirror that truncates or rewrites a body is
+// rejected instead of installed.
+const MODEL_MIRROR_PREFIXES: string[] = [
+  'https://ghproxy.net/',
+  'https://gh-proxy.com/',
+  'https://ghfast.top/',
+]
 const PARAM_FILE_NAME: string = 'ysgyolo_1.2_OS1.0.ncnn.param'
 const MODEL_FILE_NAME: string = 'ysgyolo_1.2_OS1.0.ncnn.bin'
 const OCR_PARAM_FILE_NAME: string = 'ppocrv5_mobile_rec.ncnn.param'
@@ -43,7 +56,8 @@ const TEXT_MASK_MODEL_SHA256: string =
   'c0bdafdc17e194fa28496532abd860aeb1ee08f60f08b919215abd45191f4deb'
 const HASH_CHUNK_BYTES: number = 256 * 1024
 const DOWNLOAD_CONNECT_TIMEOUT_MS: number = 15000
-const DOWNLOAD_READ_TIMEOUT_MS: number = 10 * 60 * 1000
+const DOWNLOAD_READ_TIMEOUT_MS: number = 45 * 60 * 1000
+const DOWNLOAD_STALL_TIMEOUT_MS: number = 60 * 1000
 
 export class ComicTranslationModelPaths {
   paramPath: string = ''
@@ -68,6 +82,7 @@ export class ComicTextMaskModelPaths {
 
 /** Installs the optional, component-licensed manga model pack outside the HAP. */
 export class ComicTranslationModelService {
+  private static preferredSource: number = 0
   private static installTask: Promise<void> | null = null
   private static readiness: Map<string, ComicTranslationModelPaths | null> =
     new Map<string, ComicTranslationModelPaths | null>()
@@ -350,14 +365,7 @@ export class ComicTranslationModelService {
     const partial: string = `${destination}.part`
     ComicTranslationModelService.removeIfExists(partial)
     try {
-      await ComicTranslationModelService.download(fileName, partial, expectedBytes)
-      if (!ComicTranslationModelService.validateFile(
-        partial,
-        expectedBytes,
-        expectedSha256,
-      )) {
-        throw new Error(`${fileName} checksum mismatch`)
-      }
+      await ComicTranslationModelService.download(fileName, partial, expectedBytes, expectedSha256)
       ComicTranslationModelService.removeIfExists(destination)
       fileIo.renameSync(partial, destination)
     } catch (error) {
@@ -370,9 +378,49 @@ export class ComicTranslationModelService {
     fileName: string,
     path: string,
     expectedBytes: number,
+    expectedSha256: string,
   ): Promise<void> {
-    const url: string = `https://github.com/erosTeam/NextE-Models/releases/download/` +
-      `${MODEL_RELEASE_TAG}/${fileName}`
+    const sources: string[] = ComicTranslationModelService.modelSources(fileName)
+    const firstSource: number = ComicTranslationModelService.preferredSource
+    let lastError: string = ''
+    for (let step: number = 0; step < sources.length; step++) {
+      const index: number = (firstSource + step) % sources.length
+      try {
+        await ComicTranslationModelService.downloadFrom(sources[index], fileName, path, expectedBytes)
+        if (!ComicTranslationModelService.validateFile(path, expectedBytes, expectedSha256)) {
+          throw new Error(`${fileName} checksum mismatch`)
+        }
+        ComicTranslationModelService.preferredSource = index
+        return
+      } catch (error) {
+        lastError = (error as Error).message
+        // Each attempt truncates-then-writes, but a source that dies mid-body would still leave a
+        // short file behind; clear it so the next source starts from a clean path.
+        ComicTranslationModelService.removeIfExists(path)
+        DiagnosticLogger.warn(
+          'comic-translation-model',
+          'download_source_failed',
+          `source=${index} attempt=${step} file=${fileName} ${lastError}`,
+        )
+      }
+    }
+    throw new Error(`${fileName} unavailable on all ${sources.length} sources: ${lastError}`)
+  }
+
+  private static modelSources(fileName: string): string[] {
+    const urls: string[] = [`${MODEL_ORIGIN_PREFIX}${fileName}`]
+    for (let index: number = 0; index < MODEL_MIRROR_PREFIXES.length; index++) {
+      urls.push(`${MODEL_MIRROR_PREFIXES[index]}${MODEL_ORIGIN_PREFIX}${fileName}`)
+    }
+    return urls
+  }
+
+  private static async downloadFrom(
+    url: string,
+    fileName: string,
+    path: string,
+    expectedBytes: number,
+  ): Promise<void> {
     let file: fileIo.File | null = null
     let written: number = 0
     try {
@@ -404,11 +452,13 @@ export class ComicTranslationModelService {
             return false
           }
         },
+        (): boolean => true,
+        DOWNLOAD_STALL_TIMEOUT_MS,
       )
       if (response.limitExceeded || response.sinkRejected || response.statusCode < 200 ||
         response.statusCode >= 300 || written !== expectedBytes ||
         response.receivedBytes !== expectedBytes) {
-        throw new Error(`${fileName} download failed`)
+        throw new Error(`${fileName} download failed: HTTP ${response.statusCode}, bytes ${written}/${expectedBytes}`)
       }
     } finally {
       if (file !== null) {

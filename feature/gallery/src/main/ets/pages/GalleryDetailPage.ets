@@ -1,3 +1,4 @@
+import { GalleryActionFabRail } from '../components/GalleryActionRail'
 import { common, Want } from '@kit.AbilityKit'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
@@ -21,15 +22,15 @@ import {
   LocalUserTagEditorSheet,
   LayoutSafeAreaBridge,
   LayoutSafeAreaState,
+  CommentTranslationSettingsState,
+  connectCommentTranslationSettings,
   LlmSourceProfilesState,
   NhApiClient,
   NhTagCatalogService,
   AccountSessionState,
   ActionFollowTouchState,
   ActionFollowTouchTracker,
-  ActionHandEdgeState,
   MotionHandStateService,
-  connectActionHandEdge,
   connectBrowsePresentation,
   AppStrings,
   currentScrollOffsetY,
@@ -327,17 +328,11 @@ export struct GalleryDetailPage {
   )
   @Local galleryTitle: GalleryTitleState = connectGalleryTitle()
   @Local galleryDetailTransition: GalleryDetailTransitionState = connectGalleryDetailTransition()
+  @Local commentTranslationSettings: CommentTranslationSettingsState = connectCommentTranslationSettings()
   @Local llmSources: LlmSourceProfilesState = connectLlmSourceProfiles()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
-  @Local actionHandEdge: ActionHandEdgeState = connectActionHandEdge()
-  // The service resolves the persisted alignment before this page mounts. Keep
-  // a local target solely so the existing floating Read rail can animate.
-  @Local visualActionHandEdge: string = connectActionHandEdge().edge
   @Local detailWorkspaceWidth: number = 0
   @Local detailWorkspaceGlobalX: number = 0
-  @Local readFabWidth: number = 0
-  @Local readFabLayoutReady: boolean = false
-  @Local readFabShouldAnimate: boolean = false
   @Local downloadQueue: DownloadQueueState = connectDownloadQueue()
   @Local titleTranslations: GalleryTitleTranslationState[] = []
   /**
@@ -381,6 +376,7 @@ export struct GalleryDetailPage {
   private tagTranslationEpoch: number = 0
   private readProgressRequestGeneration: number = 0
   private favoriteStatusGeneration: number = 0
+  private favoriteFabController: HdsTabsController = new HdsTabsController()
   private readFabController: HdsTabsController = new HdsTabsController()
   private followTouchState: ActionFollowTouchState = ActionFollowTouchTracker.initialState()
   /** Shared refresh host; it never represents this page's initial-load state. */
@@ -467,19 +463,6 @@ export struct GalleryDetailPage {
       this.layoutSafeArea.rootNavigationSplit,
     )
     this.publishWideThumbnailActionAvailability()
-  }
-
-  @Monitor('actionHandEdge.edge')
-  onActionHandEdgeChanged(): void {
-    this.readFabShouldAnimate = this.readFabLayoutReady
-    this.visualActionHandEdge = this.actionHandEdge.edge
-  }
-
-  @Monitor('readButtonStyle.style')
-  onReadButtonStyleChanged(): void {
-    this.readFabWidth = 0
-    this.readFabLayoutReady = false
-    this.readFabShouldAnimate = false
   }
 
   @Monitor('accountSession.revision')
@@ -1144,29 +1127,7 @@ export struct GalleryDetailPage {
       this.saveFavorite(true)
       return
     }
-    if (this.isFavorited) {
-      this.confirmRemoveFavorite()
-      return
-    }
-    this.saveFavorite(true)
-  }
-
-  private confirmRemoveFavorite(): void {
-    this.getUIContext().showAlertDialog({
-      title: AppStrings.get('gallery_dialog_remove_favourite_title'),
-      message: AppStrings.get('gallery_dialog_remove_favourite_message'),
-      primaryButton: {
-        value: AppStrings.get('gallery_action_cancel'),
-        action: (): void => {},
-      },
-      secondaryButton: {
-        value: AppStrings.get('gallery_action_remove'),
-        fontColor: Color.Red,
-        action: (): void => {
-          this.saveFavorite(false)
-        },
-      },
-    })
+    this.saveFavorite(!this.isFavorited)
   }
 
   private async saveFavorite(shouldFavorite: boolean): Promise<void> {
@@ -1573,24 +1534,6 @@ export struct GalleryDetailPage {
     return 0
   }
 
-  private readFabVisualX(): number {
-    if (this.visualActionHandEdge === 'left') {
-      return 0
-    }
-    const innerWidth: number = this.readFabAvailableWidth() - this.readFabRailSideInset() * 2
-    return Math.max(0, innerWidth - this.readFabWidth)
-  }
-
-  private readFabAnimationDuration(): number {
-    return this.readFabShouldAnimate ? ThemeTokens.REFRESH_ANIMATION_DURATION : 0
-  }
-
-  private updateReadFabLayoutReady(): void {
-    if (this.readFabAvailableWidth() > 0 && this.readFabWidth > 0) {
-      this.readFabLayoutReady = true
-    }
-  }
-
   private handleFollowTouch(event: TouchEvent): void {
     if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
       this.followTouchState = ActionFollowTouchTracker.initialState()
@@ -1616,11 +1559,6 @@ export struct GalleryDetailPage {
     if (update.shouldReport) {
       MotionHandStateService.reportFollowOperationX(update.reportX, this.readFabAvailableWidth())
     }
-  }
-
-  /** NextE rail geometry: HDS owns its activity padding; Filled owns its inset. */
-  private readFabRailSideInset(): number {
-    return this.readFabUsesHdsMaterial() ? 0 : ThemeTokens.SPACE_LG
   }
 
   private readFabRailBottomInset(): number {
@@ -2679,6 +2617,9 @@ export struct GalleryDetailPage {
   }
 
   private titleTranslationConfigured(): boolean {
+    if (this.commentTranslationSettings.freeOnly || !this.llmSources.commentBinding.configured()) {
+      return true
+    }
     const binding = this.llmSources.commentBinding
     if (!binding.configured()) {
       return false
@@ -3075,6 +3016,21 @@ export struct GalleryDetailPage {
     }
   }
 
+  private async copySelectedTag(): Promise<void> {
+    const identity: string = this.selectedTagIdentity()
+    if (identity.length === 0) {
+      return
+    }
+    try {
+      await pasteboard.getSystemPasteboard().setData(
+        pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, identity),
+      )
+      this.toast(AppStrings.get('gallery_tag_copied'))
+    } catch (_error) {
+      this.toast(AppStrings.get('gallery_tag_copy_failed'))
+    }
+  }
+
   @Builder
   private TagInfoHeader() {
     ListItem() {
@@ -3096,6 +3052,13 @@ export struct GalleryDetailPage {
         .alignItems(HorizontalAlign.Start)
 
         Row({ space: ThemeTokens.SPACE_XS }) {
+          this.TagInfoAction(
+            $r('sys.symbol.doc_text_on_doc_text'),
+            AppStrings.get('gallery_tag_copy_action'),
+            false,
+            this.selectedTagIdentity().length > 0,
+            (): void => { this.copySelectedTag() },
+          )
           this.TagInfoAction(
             $r('sys.symbol.eye_slash'),
             AppStrings.get(this.selectedTagIsHidden() ? 'gallery_tag_unhide_action' : 'gallery_tag_hide_action'),
@@ -3522,41 +3485,70 @@ export struct GalleryDetailPage {
     }
   }
 
-  /**
-   * HDS Tabs needs a measured, transparent rail above the detail Scroll.
-   * This preserves the capsule material's own touch target while preventing
-   * the full-page Scroll from winning an overlapping hit test.
-   */
+  @Builder
+  private FavoriteFabContent(hds: boolean) {
+    Row() {
+      if (this.isFavoriteMutationInFlight) {
+        LoadingProgress()
+          .width(ThemeTokens.SYMBOL_SIZE_ROW)
+          .height(ThemeTokens.SYMBOL_SIZE_ROW)
+          .color(ThemeTokens.BRAND)
+      } else {
+        SymbolGlyph(this.favoriteStatusKnown && this.isFavorited
+          ? $r('sys.symbol.heart_fill') : $r('sys.symbol.heart'))
+          .fontSize(ThemeTokens.SYMBOL_SIZE_ROW)
+          .fontWeight(this.favoriteStatusKnown && this.isFavorited ? 400 : 600)
+          .fontColor([ThemeTokens.BRAND])
+      }
+    }
+    .width(ThemeTokens.ACTION_HEIGHT)
+    .height(ThemeTokens.ACTION_HEIGHT)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(VerticalAlign.Center)
+    .translate({ y: hds ? -ThemeTokens.SPACE_XS : 0 })
+  }
+
+  @Builder
+  private FavoriteFab() {
+    if (this.readFabUsesHdsMaterial()) {
+      Row() {
+        NextNHdsCapsuleBarButton({
+          controller: this.favoriteFabController,
+          barWidth: ThemeTokens.ACTION_HEIGHT,
+          barHeight: ThemeTokens.ACTION_HEIGHT,
+          activityPadding: ThemeTokens.SPACE_LG,
+          barBottomMargin: ThemeTokens.SPACE_LG,
+          onButtonClick: (): void => { this.requestFavoriteToggle() },
+        }) {
+          this.FavoriteFabContent(true)
+        }
+      }
+      .enabled(!this.isFavoriteMutationInFlight)
+      .accessibilityText(AppStrings.get(this.isFavorited ? 'action_remove_favorite' : 'action_add_favorite'))
+    } else {
+      Button({ type: ButtonType.Circle }) {
+        this.FavoriteFabContent(false)
+      }
+      .width(ThemeTokens.ACTION_HEIGHT)
+      .height(ThemeTokens.ACTION_HEIGHT)
+      .backgroundColor(ThemeTokens.SURFACE_SUB)
+      .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+      .enabled(!this.isFavoriteMutationInFlight)
+      .accessibilityText(AppStrings.get(this.isFavorited ? 'action_remove_favorite' : 'action_add_favorite'))
+      .onClick((): void => { this.requestFavoriteToggle() })
+    }
+  }
+
   @Builder
   private ReadFabRail() {
-    if (this.canOpenReader()) {
-      Row() {
-        // The outer rail stays transparent so its unused horizontal space
-        // remains an overlay. This inner owner is deliberately default-hit:
-        // it prevents an overlapped Detail leaf from receiving a Read tap.
-        Row() {
-          this.ReadFab()
-        }
-        .id('gallery-detail-read-action')
-        .height(this.readFabOuterHeight())
-        .hitTestBehavior(HitTestMode.Default)
-        .translate({ x: this.readFabVisualX() })
-        .opacity(this.readFabLayoutReady ? 1 : 0)
-        .animation({ duration: this.readFabAnimationDuration(), curve: Curve.EaseOut })
-        .onAreaChange((_oldArea: Area, area: Area): void => {
-          this.readFabWidth = area.width as number
-          this.updateReadFabLayoutReady()
-        })
-      }
-      .width('100%')
-      .height(this.readFabOuterHeight())
-      .padding({
-        left: this.readFabRailSideInset(),
-        right: this.readFabRailSideInset(),
+    if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
+      GalleryActionFabRail({
+        availableWidth: this.readFabAvailableWidth(),
+        usesHdsMaterial: this.readFabUsesHdsMaterial(),
+        hasReadAction: this.canOpenReader(),
+        readButtonContent: (): void => { this.ReadFab() },
+        favoriteButtonContent: (): void => { this.FavoriteFab() },
       })
-      .justifyContent(FlexAlign.Start)
-      .hitTestBehavior(HitTestMode.Transparent)
-      .position({ left: 0, bottom: this.readFabRailBottomInset() })
     }
   }
 
@@ -3711,7 +3703,6 @@ export struct GalleryDetailPage {
     .onAreaChange((_oldArea: Area, area: Area): void => {
       this.detailWorkspaceWidth = area.width as number
       this.detailWorkspaceGlobalX = this.numberFromLength(area.globalPosition?.x)
-      this.updateReadFabLayoutReady()
     })
   }
 

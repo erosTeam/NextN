@@ -604,9 +604,9 @@ export struct ComicTranslationSettingsPage {
       this.getUIContext().getPromptAction().showToast({
         message: AppStrings.get('settings_translation_local_model_installed'),
       })
-    } catch (_error) {
+    } catch (error) {
       this.getUIContext().getPromptAction().showToast({
-        message: AppStrings.get('settings_translation_local_model_download_failed'),
+        message: AppStrings.format('settings_translation_local_model_download_failed_detail', [(error as Error).message]),
       })
     } finally {
       this.localModelChanging = false

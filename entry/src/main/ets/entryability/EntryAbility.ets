@@ -35,6 +35,7 @@ import {
   NhClipboardLinkSettings,
   ActionAlignmentSettings,
   MotionHandStateService,
+  SubTabStyleSettings,
   ReadButtonStyleSettings,
   requestGalleryDirectLaunch,
   requestLoginRecoveryLaunch,
@@ -211,6 +212,7 @@ export default class EntryAbility extends UIAbility {
       // render. It only reorders fields already included in the v2 response.
       GalleryTitleSettings.restore(this.context),
       GalleryDetailTransitionSettings.restore(this.context),
+      SubTabStyleSettings.restore(this.context),
       ReadButtonStyleSettings.restore(this.context),
       ActionAlignmentSettings.restore(this.context),
       NhClipboardLinkSettings.restore(this.context),

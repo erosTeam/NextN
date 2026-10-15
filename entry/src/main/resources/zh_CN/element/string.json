@@ -5087,6 +5087,42 @@
     {
       "name": "settings_reader_group_implementation",
       "value": "阅读器实现"
+    },
+    {
+      "name": "settings_subtab_style",
+      "value": "页签样式"
+    },
+    {
+      "name": "subtab_style_underline",
+      "value": "下划线"
+    },
+    {
+      "name": "subtab_style_capsule",
+      "value": "胶囊"
+    },
+    {
+      "name": "settings_translation_local_model_download_failed_detail",
+      "value": "模型下载失败：{0}"
+    },
+    {
+      "name": "gallery_tag_copy_action",
+      "value": "复制标签"
+    },
+    {
+      "name": "gallery_tag_copied",
+      "value": "标签已复制"
+    },
+    {
+      "name": "gallery_tag_copy_failed",
+      "value": "标签复制失败"
+    },
+    {
+      "name": "comment_translation_use_bing_only",
+      "value": "仅使用内置免费翻译"
+    },
+    {
+      "name": "comment_translation_use_bing_only_hint",
+      "value": "使用 Bing 翻译评论和标题；关闭后优先使用已配置的 LLM，未配置时使用 Bing"
     }
   ]
 }

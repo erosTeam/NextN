@@ -5087,6 +5087,42 @@
     {
       "name": "action_torrent",
       "value": "Seed"
+    },
+    {
+      "name": "settings_subtab_style",
+      "value": "Sub-tab style"
+    },
+    {
+      "name": "subtab_style_underline",
+      "value": "Underline"
+    },
+    {
+      "name": "subtab_style_capsule",
+      "value": "Capsule"
+    },
+    {
+      "name": "settings_translation_local_model_download_failed_detail",
+      "value": "Model download failed: {0}"
+    },
+    {
+      "name": "gallery_tag_copy_action",
+      "value": "Copy tag"
+    },
+    {
+      "name": "gallery_tag_copied",
+      "value": "Tag copied"
+    },
+    {
+      "name": "gallery_tag_copy_failed",
+      "value": "Unable to copy tag"
+    },
+    {
+      "name": "comment_translation_use_bing_only",
+      "value": "Use built-in free translation only"
+    },
+    {
+      "name": "comment_translation_use_bing_only_hint",
+      "value": "Translate comments and titles with Bing. When off, use the configured LLM, or Bing if none is configured."
     }
   ]
 }

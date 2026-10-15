@@ -9,6 +9,7 @@ import {
 
 const SETTINGS_STORE: string = 'nextn_settings'
 const KEY_ENABLED: string = 'comment_translation_enabled'
+const KEY_FREE_ONLY: string = 'comment_translation_free_only'
 const KEY_AUTO: string = 'comment_translation_auto'
 const KEY_DISPLAY_MODE: string = 'comment_translation_display_mode'
 
@@ -26,6 +27,7 @@ export class CommentTranslationSettings {
         await preferences.getPreferences(context, SETTINGS_STORE)
       connectCommentTranslationSettings().enabled =
         store.getSync(KEY_ENABLED, true) as boolean
+      connectCommentTranslationSettings().freeOnly = store.getSync(KEY_FREE_ONLY, false) as boolean
       connectCommentTranslationSettings().autoTranslate =
         store.getSync(KEY_AUTO, false) as boolean
       connectCommentTranslationSettings().displayMode = CommentTranslationSettings.normalizeDisplayMode(
@@ -43,6 +45,11 @@ export class CommentTranslationSettings {
   static async setEnabled(context: common.UIAbilityContext, enabled: boolean): Promise<void> {
     connectCommentTranslationSettings().enabled = enabled
     await CommentTranslationSettings.saveBoolean(context, KEY_ENABLED, enabled)
+  }
+
+  static async setFreeOnly(context: common.UIAbilityContext, freeOnly: boolean): Promise<void> {
+    connectCommentTranslationSettings().freeOnly = freeOnly
+    await CommentTranslationSettings.saveBoolean(context, KEY_FREE_ONLY, freeOnly)
   }
 
   static async setAutoTranslate(context: common.UIAbilityContext, auto: boolean): Promise<void> {

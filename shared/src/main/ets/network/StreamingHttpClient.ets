@@ -28,15 +28,16 @@ export class StreamingHttpClient {
     maxBytes: number,
     sink: (data: ArrayBuffer) => boolean,
     shouldContinue: () => boolean = (): boolean => true,
+    stallTimeoutMs: number = readTimeoutMs,
   ): Promise<StreamingHttpResponse> {
     if (!url.startsWith('https://') || connectTimeoutMs <= 0 || readTimeoutMs <= 0 ||
-      maxBytes <= 0 || maxBytes > MAX_STREAM_BYTES) {
+      maxBytes <= 0 || maxBytes > MAX_STREAM_BYTES || stallTimeoutMs <= 0) {
       throw new Error('Streaming HTTP request is invalid')
     }
     return new Promise<StreamingHttpResponse>((resolve, reject): void => {
       const result: StreamingHttpResponse = new StreamingHttpResponse()
       const request: http.HttpRequest = http.createHttp()
-      let deadline: number = Date.now() + connectTimeoutMs + readTimeoutMs
+      let deadline: number = Date.now() + connectTimeoutMs + stallTimeoutMs
       let settled: boolean = false
       let watchdog: number = -1
       // Native destruction is cleanup, not our completion signal. A silent
@@ -76,7 +77,7 @@ export class StreamingHttpClient {
       }
       watchdog = setInterval((): void => {
         if (canContinue() && Date.now() >= deadline) {
-          finish(new Error('Image request timed out'))
+          finish(new Error('Streaming request timed out'))
         }
       }, Math.min(250, connectTimeoutMs + readTimeoutMs))
       if (!canContinue()) {
@@ -108,7 +109,7 @@ export class StreamingHttpClient {
             if (data.byteLength > 0) {
               // Bound silence, not the total lifetime of a progressing large
               // image. Repeated progress metadata is not evidence of new bytes.
-              deadline = Date.now() + readTimeoutMs
+              deadline = Date.now() + stallTimeoutMs
             }
           } catch (_error) {
             result.sinkRejected = true
@@ -128,10 +129,10 @@ export class StreamingHttpClient {
           }
         }, (error: BusinessError): void => {
           finish(new Error(error.code === 2300028
-            ? 'Image request timed out' : 'Image network request failed'))
+            ? 'Streaming request timed out' : 'Streaming network request failed'))
         })
       } catch (_error) {
-        finish(new Error('Image network request failed'))
+        finish(new Error('Streaming network request failed'))
       }
     })
   }

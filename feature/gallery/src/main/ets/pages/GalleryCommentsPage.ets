@@ -186,6 +186,9 @@ export struct GalleryCommentsPage {
   }
 
   private commentTranslationConfigured(): boolean {
+    if (this.commentTranslationSettings.freeOnly || !this.sources.commentBinding.configured()) {
+      return true
+    }
     const binding = this.sources.commentBinding
     if (!binding.configured()) {
       return false
