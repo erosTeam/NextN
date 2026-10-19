@@ -7,7 +7,7 @@ import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, R
   ReaderObservedPosition, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider, ReaderAsset, ReaderCancellation } from '@reader-kit/core'
 import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase,
   ReaderRootEntryHandoff, ReaderRootEntryHandoffHost } from '@reader-kit/ui'
-import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
+import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderSystemBarController, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
   ReaderHostStatus, ReaderObservationSink, ReaderPreferenceSink, ReaderActivitySink,
   ReaderHostSettings, ReaderExternalOpen, ReaderHostActions, ReaderVariantPolicy, ReaderCropPolicy,
@@ -102,12 +102,11 @@ export struct NextNReaderLabPage {
   @Param embedded: boolean = false
   @Param externalRouteActive: boolean = false
   @Param hostClosing: boolean = false
-  @Param prepareChrome: ((isCurrent: () => boolean) => Promise<boolean>) | null = null
+  @Param windowPresentation: ReaderSystemBarController | null = null
   @Param hostSettingsAvailable: boolean = false
   @BuilderParam settingsSheetContent: (dismiss: () => void) => void = this.EmptySettingsSheetContent
   @Event onClose: (context: ReaderCloseContext | null, image: NhGalleryPage | null) => void = () => {}
   @Event onShown: () => void = () => {}
-  @Event onStatusBarVisible: (visible: boolean) => void = () => {}
   @Event onReaderPresentationChanged: (chromeVisible: boolean, fullscreen: boolean, canvasDark: boolean) => void =
     () => {}
   @Event onRegisterBackRequest: (request: (() => boolean) | null) => void = () => {}
@@ -554,26 +553,9 @@ export struct NextNReaderLabPage {
   }
 
   private syncChromeVisible(visible: boolean): void {
-    if (this.embedded) {
-      this.onReaderPresentationChanged(visible, this.readerPresentation.fullscreen, this.readerCanvasDark())
-      return
-    }
-    if (visible) return // The before-show gate already applied host visibility.
-    const statusVisible = !connectReaderPresentation().fullscreen || visible
-    if (this.ownsTrialWindow()) this.trialWindow.setStatusBarVisible(statusVisible, (): boolean =>
-      !this.volumeDisposed && !this.closeRequested && !this.hostClosing)
-    else this.onStatusBarVisible(statusVisible)
+    if (this.embedded) this.onReaderPresentationChanged(visible, this.readerPresentation.fullscreen, this.readerCanvasDark())
   }
 
-  private async prepareChromeShow(isCurrent: () => boolean): Promise<boolean> {
-    const current = (): boolean => isCurrent() && !this.closeRequested && !this.hostClosing &&
-      this.hostRouteActive() && this.labVisibility.foreground
-    if (!current()) return false
-    if (!this.ownsTrialWindow()) return this.prepareChrome === null ? false : this.prepareChrome(current)
-    if (!await this.trialWindow.prepareStatusBarVisible(current) || !current()) return false
-    return ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
-      this.safeArea.topAvoidHeight > 0 ? `${this.safeArea.topAvoidHeight}:${this.safeArea.bottomAvoidHeight}` : '', current)
-  }
 
   private closeTrial(initializationFailed: boolean = false, suppliedContext: ReaderCloseContext | null = null): void {
     if (this.closeRequested) return
@@ -1191,7 +1173,8 @@ export struct NextNReaderLabPage {
               temporaryVariantActive: this.hostRouteActive() && this.labVisibility.foreground &&
                 !this.closeRequested && !this.hostClosing,
               closing: this.closeRequested || this.hostClosing,
-              beforeShowChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareChromeShow(isCurrent),
+              windowPresentation: this.ownsTrialWindow() ? this.trialWindow.presentation : this.windowPresentation,
+              windowFullscreen: this.readerPresentation.fullscreen, windowCanvasDark: this.readerCanvasDark(),
               topInset: this.safeArea.topAvoidHeight, bottomInset: this.safeArea.bottomAvoidHeight,
               accent: ThemeTokens.BRAND,
               onClose: (context: ReaderCloseContext | null): void => this.closeTrial(false, context),

@@ -1,8 +1,8 @@
 import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
-import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow,
-  readerEntryWindowReady, readerEntryStatusBarStyle, applyReaderStatusBar, readerSourceStatusBarVisible } from '@reader-kit/ui'
+import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow, ReaderSystemBarController,
+  readerEntryWindowReady, readerEntryStatusBarStyle, writeReaderSystemBarVisibility, readerSourceStatusBarVisible } from '@reader-kit/ui'
 import { ReaderEntryTransition, ReaderEntryPhase, ReaderEntryRect,
   ReaderLabVisibilityState, connectReaderLabVisibility, ReaderCloseContext } from '@reader-kit/ui'
 import { ReaderDisplayPart, ReaderUnitKey } from '@reader-kit/core'
@@ -874,19 +874,6 @@ struct Index {
     return closing
   }
 
-  private async prepareReaderTrialChrome(isCurrent: () => boolean): Promise<boolean> {
-    const lease = this.readerTrialWindow
-    const request = this.readerTrialRequest
-    const epoch = this.readerTrialEpoch
-    const current = (): boolean => isCurrent() && !this.readerTrialCloseRequested &&
-      this.readerTrialHostAlive && this.readerTrialWindow === lease && this.readerTrialRequest === request &&
-      this.readerTrialEpoch === epoch && this.readerEntryVisibility.foreground
-    if (lease === null || request === null || !current()) return false
-    if (!await lease.prepareStatusBarVisible(current) || !current()) return false
-    return ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string =>
-      this.layoutSafeArea.topAvoidHeight > 0 ?
-        `${this.layoutSafeArea.topAvoidHeight}:${this.layoutSafeArea.bottomAvoidHeight}` : '', current)
-  }
 
   private clearReaderTrial(): void {
     this.readerTrialRequest = null
@@ -947,10 +934,7 @@ struct Index {
           this.syncReaderTrialWindow()
         },
         hostClosing: this.readerTrialCloseRequested,
-        prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareReaderTrialChrome(isCurrent),
-        onStatusBarVisible: (visible: boolean): void => { this.readerTrialWindow?.setStatusBarVisible(visible, (): boolean =>
-          this.readerTrialRequest === _param && this.readerTrialHostAlive &&
-          !this.readerTrialCloseRequested) },
+        windowPresentation: this.readerTrialWindow?.presentation ?? null,
         entryTransition: this.readerEntryTransition,
         rootOwnedEntryTarget: this.readerEntryTransition !== null,
         entryDepartureGuard: (entryId: number): boolean => this.readerEntryClaim !== null &&
@@ -1097,8 +1081,11 @@ struct Index {
   private readerPresentationCanvasDark: boolean = true
   private readerDestinationShownAtMs: number = 0
   private readerStatusBarHideTimerId: number = -1
-  private readerSystemBarGeneration: number = 0
-  private readerSystemBarWork: Promise<void> = Promise.resolve()
+  private readerSystemBars: ReaderSystemBarController = new ReaderSystemBarController(
+    (): Promise<window.Window> => window.getLastWindow(this.context()),
+    (visible: boolean, restoring: boolean): boolean => this.readerWindowWriteAllowed(restoring || visible),
+    (win: window.Window, visible: boolean, restoring: boolean, current: () => boolean): Promise<void> =>
+      writeReaderSystemBarVisibility(win, visible, !restoring, current))
   private lastHandledClipboardCandidateRevision: number = 0
   private clipboardSnackBar: HdsSnackBar = new HdsSnackBar(this.getUIContext())
   private lastHandledAccountVerificationRevision: number = -1
@@ -2119,29 +2106,7 @@ struct Index {
    * child Reader cannot own because Index owns its private overlay stack.
    */
   private requestReaderStatusBar(visible: boolean, lightIcons: boolean, restoringSource: boolean = false): Promise<void> {
-    const generation: number = this.readerSystemBarGeneration + 1
-    this.readerSystemBarGeneration = generation
-    const contentColor: string = lightIcons ? STATUS_BAR_LIGHT_CONTENT : STATUS_BAR_DARK_CONTENT
-    const work: Promise<void> = this.readerSystemBarWork
-      .catch((): void => {})
-      .then(async (): Promise<void> => {
-        if (generation !== this.readerSystemBarGeneration || !this.readerWindowWriteAllowed(restoringSource || visible)) {
-          return
-        }
-        await applyReaderStatusBar(this.context(), visible, {
-            statusBarContentColor: contentColor,
-            isStatusBarLightIcon: lightIcons,
-          }, (): ReaderEntryTransition | null => this.currentWindowEntry(),
-          (): boolean => this.readerWindowRootSettled(restoringSource || visible),
-          (): boolean => generation === this.readerSystemBarGeneration, restoringSource)
-      })
-      .catch((error: Error): void => {
-        if (generation === this.readerSystemBarGeneration) {
-          console.warn(`Unable to update Reader status bar: ${error.message}`)
-        }
-      })
-    this.readerSystemBarWork = work
-    return work
+    return this.readerSystemBars.requestVisible(visible, lightIcons, (): boolean => true, restoringSource)
   }
 
   private restoreAppStatusBar(): Promise<void> {
@@ -2183,6 +2148,10 @@ struct Index {
       return
     }
     this.clearPendingReaderStatusBarHide()
+    if (this.readerOverlay.activeReader?.backend === NextNReaderBackend.SHARED) {
+      void this.readerSystemBars.replay()
+      return
+    }
     const visible: boolean = !this.readerPresentationFullscreen || this.readerPresentationChromeVisible
     if (!this.readerWindowWriteAllowed(visible)) return
     const lightIcons: boolean = this.readerPresentationChromeVisible || this.readerPresentationCanvasDark
@@ -2292,24 +2261,6 @@ struct Index {
     })
   }
 
-  private async prepareSharedReaderChrome(isCurrent: () => boolean): Promise<boolean> {
-    const current = (): boolean => isCurrent() && this.readerDestinationVisible && !this.readerDestinationClosing
-    if (!current()) return false
-    await this.requestReaderStatusBar(true, true)
-    if (!current()) return false
-    const win = await window.getLastWindow(this.context())
-    if (!current()) return false
-    // Setter completion is not status-area readiness; cutout insets can stay
-    // nonzero while the actual status bar is still hidden.
-    const ready = await ReaderTrialLayoutCommit.wait(this.getUIContext(), (): string => {
-      const systemTop = this.getUIContext().px2vp(win.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height)
-      if (systemTop <= 0 || this.layoutSafeArea.topAvoidHeight < systemTop) return ''
-      const rect = this.readerEntryRect('rkit-reading-surface')
-      return rect.valid() ? `${systemTop}:${this.layoutSafeArea.topAvoidHeight}:${rect.x},${rect.y},${rect.width},${rect.height}` : ''
-    }, current)
-    console.info(`[ReaderTrialHost] embedded_show_layout_ready=${ready}`)
-    return ready && current()
-  }
 
   /**
    * NextE keeps the root destinations few, stable, and visually legible.  NextN
@@ -3351,7 +3302,7 @@ struct Index {
         onEntrySettled: (): void => { this.finishProductionReaderEntry() },
         externalRouteActive: this.readerDestinationVisible,
         hostClosing: this.readerDestinationClosing,
-        prepareChrome: (isCurrent: () => boolean): Promise<boolean> => this.prepareSharedReaderChrome(isCurrent),
+        windowPresentation: this.readerSystemBars,
         hostSettingsAvailable: true,
         settingsSheetContent: (dismiss: () => void): void => {
           this.ReaderSettingsSheet(dismiss)
