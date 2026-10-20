@@ -5123,6 +5123,22 @@
     {
       "name": "comment_translation_use_bing_only_hint",
       "value": "Bing でコメントとタイトルを翻訳します。オフの場合は設定済みの LLM を優先し、未設定なら Bing を使用します。"
+    },
+    {
+      "name": "settings_fab_layout_style",
+      "value": "フローティングボタン配置"
+    },
+    {
+      "name": "settings_fab_layout_style_hint",
+      "value": "ギャラリー詳細ページのフローティングボタンの位置と形状を変更"
+    },
+    {
+      "name": "fab_layout_style_bottom",
+      "value": "下部レール"
+    },
+    {
+      "name": "fab_layout_style_centered",
+      "value": "中央縦列"
     }
   ]
 }

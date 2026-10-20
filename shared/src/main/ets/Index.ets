@@ -595,6 +595,8 @@ export { CoverBackgroundSettings } from './settings/CoverBackgroundSettings'
 export { GalleryTitleSettings } from './settings/GalleryTitleSettings'
 export { GalleryDetailTransitionSettings } from './settings/GalleryDetailTransitionSettings'
 export { ReadButtonStyleSettings } from './settings/ReadButtonStyleSettings'
+export { FabLayoutStyleSettings, FabLayoutStyleOption } from './settings/FabLayoutStyleSettings'
+export { FabLayoutStyleState, connectFabLayoutStyle, FAB_LAYOUT_BOTTOM, FAB_LAYOUT_CENTERED } from './state/FabLayoutStyleState'
 export {
   ActionAlignmentSettings,
   ActionAlignmentMode,

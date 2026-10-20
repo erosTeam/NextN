@@ -17,6 +17,7 @@ import { MangaRenderingServiceSettings } from '../settings/MangaRenderingService
 import { NhClipboardLinkSettings } from '../settings/NhClipboardLinkSettings'
 import { SubTabStyleSettings } from '../settings/SubTabStyleSettings'
 import { ReadButtonStyleSettings } from '../settings/ReadButtonStyleSettings'
+import { FabLayoutStyleSettings } from '../settings/FabLayoutStyleSettings'
 import { ScreenOrientationSettings } from '../settings/ScreenOrientationSettings'
 import { SearchTranslationSettings } from '../settings/SearchTranslationSettings'
 import { TabletLayoutSettings } from '../settings/TabletLayoutSettings'
@@ -458,6 +459,7 @@ export class BackupPreferencesAdapter {
     await GalleryDetailTransitionSettings.restore(context)
     await SubTabStyleSettings.restore(context)
     await ReadButtonStyleSettings.restore(context)
+    await FabLayoutStyleSettings.restore(context)
     await ActionAlignmentSettings.restore(context)
     await NhClipboardLinkSettings.restore(context)
     await ContentFilterService.restore(context)

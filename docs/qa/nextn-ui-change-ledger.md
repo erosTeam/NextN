@@ -62,3 +62,13 @@
 - 检查：签名构建、生产Reader准入测试、V1扫描和diff检查通过。既有test_gallery_reader_transition_contract.mjs仍有一条直接readerImageOpacity表达式的正则断言失败；当前源码使用openingContentOpacity，未修改HEAD运行同一测试也失败，本次没有改该行为或放宽断言。
 - 恢复：restore-preferences读回平板布局“仅横屏”、缩略图转场false（测试前原值）；final-restored回到浏览，保留原横屏和AWAKE/OverrideTimeout86400000ms，移除本轮设备临时JSON/PNG。录像已由runner接收并清理设备副本；租约已释放。未提交、推送、改版本或发布。
 - 原始证据：`.hvigor/outputs/split-transition-20261016/`，冻结包nextn-split-fix-signed.hap；阶段证据位于lab-tablet__MLR-AL00/not-applicable/landscape-2560x1600/default-entry。NextE对应证据为其自身`.hvigor/outputs/default-reader-entry-20261015/acceptance.md`。
+
+## 可选居中纵向悬浮按钮（2026-10-20）
+
+- 修改对象/授权：用户在 NextE 四位数页码验证并提交后，明确要求将同一方案应用到 NextN。默认底部布局保留；新增可选纵向阅读胶囊及独立收藏圆按钮，46vp同宽、14fp原字号、16vp可见边距、安全移动区域2/3定位和屏外切换。
+- 历史来源/原理由：`ec8b9765` 的 GalleryActionFabRail 隔离运动状态，`12ebc3fe` 的 Reader 续读所有权；不得恢复 REJ-READER-006 延迟页码显示。NextE 对应提交 `4015188c`，四位数实机发现 P9999 被拆为 P999/9，已修正为在 P 后换行。
+- 本次重开依据/允许差异：用户明确要求移植该可选布局；不改 NextN 真实续读、收藏动作、原底部布局及缺阅读入口时的收藏按钮行为。NextN 仅适配主题 token、字符串及现有持久化方式。
+- 验证路径：设置选择布局和材质 → 普通画廊详情 → 阅读/续读 → 返回；两种材质的比例、边距、左右完整切换。四位数使用临时显示样本，不写持久进度，结束后撤销样本并恢复正常包。
+- 当前状态：移植、签名构建及 237 当前展开竖屏路径验证完成，作范围内本地提交；不推送、不发版。光感/实心的 P9999 显示样本均完整显示四位数字，保持 46vp 同宽、原字号、独立收藏与 16vp 可见边距；连续录像记录左右屏外切换。阅读进入/返回及收藏操作已验证。
+- 源码/设备恢复：撤销显示样本，正常包 SHA-256 `448e6581670f084b7073b7b7b85029697048fb7d39f440a91155b2737b3c10ac` 已覆盖安装，普通入口冷启动；恢复底部导轨、光感材质、智感握姿及未收藏状态，`timeout -r` 读回系统 Timeout=120000ms、无 OverrideTimeout。未注入持久进度。
+- 证据边界：`.hvigor/outputs/gallery-centered-fab/` 的四位数原图、两种材质连续录像，以及 `validation/final-production-restored-001` 安装/恢复回执。设备 lab-foldable / VDE-AL00，展开竖屏 1320×2120；短高度回退为源码边界核对，未宣称短窗口实机验收。

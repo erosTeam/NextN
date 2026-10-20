@@ -1,4 +1,4 @@
-import { GalleryActionFabRail } from '../components/GalleryActionRail'
+import { GalleryDetailActionRail } from '../components/GalleryCenteredActionRail'
 import { common, Want } from '@kit.AbilityKit'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
@@ -1601,7 +1601,7 @@ export struct GalleryDetailPage {
     return Math.min(172, 104 + (pageIndex + 1).toString().length * 8)
   }
 
-  private readActionLabel(): string {
+  private readActionLabel(vertical: boolean = false): string {
     const pageCount: number = this.localResumePageCount()
     const pageIndex: number = this.liveResumePageIndex()
     // A saved marker at page zero means the reader was opened but never
@@ -1610,8 +1610,9 @@ export struct GalleryDetailPage {
     if (!this.liveHasReadProgress() || pageCount <= 0 || pageIndex <= 0) {
       return AppStrings.get('gallery_action_read')
     }
+    const page: string = (pageIndex + 1).toString()
     return AppStrings.format('gallery_action_continue_page', [
-      (pageIndex + 1).toString(),
+      vertical && page.length >= 4 ? '\n' + page : page,
     ])
   }
 
@@ -3542,12 +3543,13 @@ export struct GalleryDetailPage {
   @Builder
   private ReadFabRail() {
     if (this.isDetailReadyForCurrentGallery && this.detail.id === this.galleryId) {
-      GalleryActionFabRail({
-        availableWidth: this.readFabAvailableWidth(),
+      GalleryDetailActionRail({
         usesHdsMaterial: this.readFabUsesHdsMaterial(),
         hasReadAction: this.canOpenReader(),
         readButtonContent: (): void => { this.ReadFab() },
         favoriteButtonContent: (): void => { this.FavoriteFab() },
+        readLabel: this.readActionLabel(true),
+        onRead: (): void => { this.openReader(-1) },
       })
     }
   }

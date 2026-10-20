@@ -5123,6 +5123,22 @@
     {
       "name": "comment_translation_use_bing_only_hint",
       "value": "Translate comments and titles with Bing. When off, use the configured LLM, or Bing if none is configured."
+    },
+    {
+      "name": "settings_fab_layout_style",
+      "value": "Floating button layout"
+    },
+    {
+      "name": "settings_fab_layout_style_hint",
+      "value": "Change the position and shape of the floating buttons on gallery detail pages"
+    },
+    {
+      "name": "fab_layout_style_bottom",
+      "value": "Bottom rail"
+    },
+    {
+      "name": "fab_layout_style_centered",
+      "value": "Centered column"
     }
   ]
 }

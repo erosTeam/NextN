@@ -84,6 +84,10 @@ import {
   SubTabStyleOption,
   connectSubTabStyle,
   ReadButtonStyleSettings,
+  FabLayoutStyleSettings,
+  FabLayoutStyleState,
+  FabLayoutStyleOption,
+  connectFabLayoutStyle,
   ReadButtonStyleState,
   NhClipboardLinkSettings,
   NhClipboardLinkState,
@@ -313,6 +317,7 @@ export struct SettingsPage {
   @Local clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local subTabStyle: SubTabStyleState = connectSubTabStyle()
   @Local readButtonStyle: ReadButtonStyleState = connectReadButtonStyle()
+  @Local fabLayout: FabLayoutStyleState = connectFabLayoutStyle()
   @Local immersiveMaterial: ImmersiveMaterialSettingsState = connectImmersiveMaterialSettings()
   @Local themeColor: ThemeColorState = connectThemeColor()
   @Local themeDisplay: ThemeDisplayState = connectThemeDisplay()
@@ -444,6 +449,7 @@ export struct SettingsPage {
         GalleryDetailTransitionSettings.restore(this.context()),
         SubTabStyleSettings.restore(this.context()),
         ReadButtonStyleSettings.restore(this.context()),
+        FabLayoutStyleSettings.restore(this.context()),
         ActionAlignmentSettings.restore(this.context()),
         ScreenOrientationSettings.restore(this.context()),
         TabletLayoutSettings.restore(this.context()),
@@ -1949,6 +1955,23 @@ export struct SettingsPage {
           })
         })
       }, (option: SubTabStyleOption): string => option.style)
+    }
+  }
+
+  @Builder
+  private FabLayoutStyleMenu(select: (action: () => void) => void) {
+    Menu() {
+      ForEach(FabLayoutStyleSettings.options(), (option: FabLayoutStyleOption): void => {
+        MenuItem({
+          content: option.label,
+          symbolEndIcon: this.fabLayout.style === option.style
+            ? new SymbolGlyphModifier($r('sys.symbol.checkmark')) : undefined,
+        }).onClick((): void => {
+          select((): void => {
+            FabLayoutStyleSettings.setStyle(this.context(), option.style).catch((): void => {})
+          })
+        })
+      }, (option: FabLayoutStyleOption): string => option.style)
     }
   }
 
@@ -4695,6 +4718,22 @@ export struct SettingsPage {
         accessibilityLabel: AppStrings.format('settings_row_a11y', [
           AppStrings.get('settings_read_button_style'),
           this.readButtonStyleLabel(),
+        ]),
+      })
+      this.RowDivider()
+      NextNListRow({
+        leadingIcon: $r('sys.symbol.arrow_up_circle'),
+        title: AppStrings.get('settings_fab_layout_style'),
+        subtitle: AppStrings.get('settings_fab_layout_style_hint'),
+        trailingText: FabLayoutStyleSettings.label(this.fabLayout.style),
+        trailingDropdown: true,
+        dropdownMenuEnabled: true,
+        dropdownMenuBuilder: (select: (action: () => void) => void): void => {
+          this.FabLayoutStyleMenu(select)
+        },
+        accessibilityLabel: AppStrings.format('settings_row_a11y', [
+          AppStrings.get('settings_fab_layout_style'),
+          FabLayoutStyleSettings.label(this.fabLayout.style),
         ]),
       })
     }
