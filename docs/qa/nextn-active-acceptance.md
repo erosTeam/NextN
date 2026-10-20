@@ -4,6 +4,12 @@
 用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
 
+## 共享图片与加载互斥（2026-10-20，普通具名路径）
+
+Kit `3a7b56d`，N `7e6ad50a`、E `cdc03d52`；197正常保留数据覆盖安装N1.0.7/code10、E1.3.6/code42。ALN-AL80竖屏1260×2720，从普通下载封面进入详情后点阅读，N686744实际2→1→2、E4212986实际13→14→13，均Back回原详情。N210帧和E695帧连续录像全区间顺序审阅，进入边界另看原帧；正文出现时中央图片准备层已退出，后续翻页和返回未见该层覆盖正文。仅接受本次具名路径，不接受所有布局/Legacy/异常重入或全软件。
+
+本次checked设备执行关闭哈希计算，回执 `artifactHashesEnabled:false`、摘要null；未清数据、缓存或改偏好。原片、PTS和全部解码帧位于 `.hvigor/outputs/reader-loading-background-20261011/device197__ALN-AL80/not-applicable/portrait-1260x2720/shared-mutual/`。最终返回原7项已完成的下载页；电源读回系统Timeout=120000ms、无OverrideTimeout，租约已释放。恢复与后续动作见[共同工作单](../plans/active/shared-reader-replacement-work-order.md)；局部结果不构成发版验收。
+
 ## 可选居中纵向悬浮按钮（2026-10-20，具名路径已验证）
 
 - 用户范围：移植 NextE 的同一可选布局，保留默认底部导轨；纵向阅读胶囊与下方独立收藏同为 46vp 宽，保留原字号、16vp 可见边距和左右屏外切换。
