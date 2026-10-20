@@ -5,7 +5,7 @@ import { window } from '@kit.ArkUI'
 import { HdsNavDestination } from '@kit.UIDesignKit'
 import { ReaderPagedSession, ReaderPagedFrame, ReaderUnitKey, ReaderInputPort, ReaderImageShareHost, ReaderLayout,
   ReaderObservedPosition, ReaderDisplayPolicy, ReaderPage, ReaderVariantPreference, ReaderAssetProvider, ReaderAsset, ReaderCancellation } from '@reader-kit/core'
-import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase,
+import { ReaderEntryTransition, ReaderEntryTarget, ReaderEntryPhase, ReaderEntryRect, ReaderOpeningPreview,
   ReaderRootEntryHandoff, ReaderRootEntryHandoffHost } from '@reader-kit/ui'
 import { ReaderLabSurface, ReaderSurface, ReaderTrialWindow, ReaderSystemBarController, readerEntryWindowReady, readerEntryStatusBarStyle, ReaderLabVisibilityState, connectReaderLabVisibility,
   ReaderLabAssetProbe, ReaderLabRequest, ReaderVolumeKeys, ReaderHostAction, ReaderMediaActions,
@@ -397,23 +397,16 @@ export struct NextNReaderLabPage {
     }
   }
 
-  @Builder
-  private ReaderOpeningPlaceholder() {
+  private openingPreview(): ReaderOpeningPreview | null {
+    const pixels = this.readerThumbnailTransition.sourceSnapshot
     if ((this.readerThumbnailTransition.readerOpeningProxyVisible() ||
-      (this.rootOwnedEntryTarget && this.readerThumbnailTransition.opening())) &&
-      this.readerThumbnailTransition.sourceSnapshot !== undefined) {
-      Image(this.readerThumbnailTransition.sourceSnapshot)
-        .width(this.readerThumbnailTransition.proxyWidth)
-        .height(this.readerThumbnailTransition.proxyHeight)
-        .objectFit(ImageFit.Fill)
-        .syncLoad(true)
-        .position({
-          x: this.readerThumbnailTransition.proxyX,
-          y: this.readerThumbnailTransition.proxyY,
-        })
-        .opacity(this.readerThumbnailTransition.openingProxyOpacity)
-        .hitTestBehavior(HitTestMode.None)
+      (this.rootOwnedEntryTarget && this.readerThumbnailTransition.opening())) && pixels !== undefined) {
+      return new ReaderOpeningPreview(pixels,
+        new ReaderEntryRect(this.readerThumbnailTransition.proxyX, this.readerThumbnailTransition.proxyY,
+          this.readerThumbnailTransition.proxyWidth, this.readerThumbnailTransition.proxyHeight),
+        this.readerThumbnailTransition.openingProxyOpacity)
     }
+    return null
   }
 
   private openingContentOpacity(): number {
@@ -1168,7 +1161,7 @@ export struct NextNReaderLabPage {
               // visible until the state machine starts its image handoff.  Do not expose the
               // live pager (or its decode feedback) merely because the root route mounted.
               contentOpacity: this.openingContentOpacity(),
-              openingPlaceholder: (): void => { this.ReaderOpeningPlaceholder() },
+              openingPreview: this.openingPreview(),
               active: this.hostRouteActive() && this.labVisibility.foreground && !this.readerSettingsSheetShown,
               temporaryVariantActive: this.hostRouteActive() && this.labVisibility.foreground &&
                 !this.closeRequested && !this.hostClosing,
