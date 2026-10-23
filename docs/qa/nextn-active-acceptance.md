@@ -4,6 +4,14 @@
 用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
 
+## 连续末页在设置暂停后的目标保留（2026-10-23，具名路径）
+
+Kit `d8b568d` 保留宿主设置/后台暂停前的显式页目标，真实用户滚动、导航改变或销毁仍按原规则释放。NextN pin `25a085a2` 已推 main，精确 CI `39959270115` completed/success；Release 1.0.7/code10/default 产品 38201134B 于197的018明确覆盖成功。
+
+普通下载既有686744 Non-H：019原LTR2/2；020切连续并显式选择末页2、打开宿主设置；021不修改关闭仍2/2，整图已亲审；022 LTR→连续往返仍2/2；023恢复原LTR后普通返回重开仍2/2原图亲审；024回原7项完成下载。未改增强偏好、翻译、布局或动画。该两页只证明具名暂停/模式往返及返回保位，不能外推长列表性能、Legacy、所有设置或真实进程死亡。
+
+原件沿 `.hvigor/outputs/continuous-reader-performance/device197__ALN-AL80/not-applicable/portrait-1260x2720/sheet-target-*`，哈希关闭。同一197显示override和租约由Koma主执行者继续使用，完整未完成队列仍在 `/Users/honjow/git/Koma/docs/CURRENT_STATUS.md`，不由本次局部通过停止工作或复活原渐变任务。
+
 ## 连续图像面积回调去重（2026-10-23，有限受影响路径）
 
 共同 Kit `42e8713` 对纯位置变化且尺寸相同的 `onAreaChange` 不再重建图像变换；真尺寸变化保留原缩放 reflow。测试校正后继 `df052f4` 与其产品源码相同，全530项通过。NextN采用提交 `b27dcab5` 已推main，精确CI `39939956932` 成功；本轮未改变N的处理服务、手势、菜单或动画。
