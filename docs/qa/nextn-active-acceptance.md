@@ -1,8 +1,16 @@
 # 当前运行验收
 
-更新时间：2026-10-20。此页记录实际证据，不能产生任务、授权或全产品通过结论。
+更新时间：2026-10-23。此页记录实际证据，不能产生任务、授权或全产品通过结论。
 用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
+
+## 连续图像面积回调去重（2026-10-23，有限受影响路径）
+
+共同 Kit `42e8713` 对纯位置变化且尺寸相同的 `onAreaChange` 不再重建图像变换；真尺寸变化保留原缩放 reflow。测试校正后继 `df052f4` 与其产品源码相同，全530项通过。NextN采用提交 `b27dcab5` 已推main，精确CI `39939956932` 成功；本轮未改变N的处理服务、手势、菜单或动画。
+
+197（ALN-AL80，竖屏1260×2720）009实际覆盖38209064B/default产品Release1.0.7/code10。普通下载进入现成NonH686744，原LTR2/2；012切连续后013六对快速往返、双击放大及平移，231原始帧/7联系表和180/194/230原图已按序亲审，无图片空白或中央加载覆盖。014正常菜单重置缩放，015恢复LTR2/2，016普通返回重开仍2/2，017回原7项完成下载；未改增强偏好、未开启翻译或上传。现成两页只覆盖这些功能，不证明长列表快速性能或所有内容通过。
+
+原件：`.hvigor/outputs/continuous-reader-performance/device197__ALN-AL80/not-applicable/portrait-1260x2720/shared-area-*`。同一197跨宿主租约和86400000ms显示override仍由Koma主执行者继续持有，不能把017返回下载称整个设备场景结束。当前完整剩余队列仍在 `/Users/honjow/git/Koma/docs/CURRENT_STATUS.md`；旧渐变问题不复活。
 
 ## 共享图片与加载互斥（2026-10-20，普通具名路径）
 
