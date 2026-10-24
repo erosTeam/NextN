@@ -1,5 +1,13 @@
 # 当前界面记录
 
+## 普通入场共用完成事件候选（2026-10-24，未采用）
+
+- 授权：用户已允许为Koma普通入口与NextN默认入口制作一份共用可控转场候选，先看完整实机录屏后再决定采用。现有缩略图转场、Legacy、返回前恢复系统栏的规则保持。
+- 原结构：N的私有HdsNavigation覆盖保留的root详情，Reader目的页与root proxy分别负责内容与缩略图飞行；普通入口原先没有真实原生完成门。K生产KomaReaderLabPage直接是根Navigation目的页，TrialWindow只依赖routeActive。
+- 候选：仅两处普通PUSH使用共同300ms水平进入状态；animateTo.onFinish主动finishTransition，原生onTransitionEnd且真实动画回调已发生才放行现有Window控制器。取消/超时不视为成功。无新遮罩、固定延时或几何等待条件。
+- 实测：共享549项检查及N/K签名Release构建完成；N074普通下载阅读入口72帧、K237-073普通继续阅读108帧均全段按序亲审。K记录了armed→animation_started→animation_finished→native_finished，N该次缺同等事件日志，不扩大结论。两段录像已展示，用户尚未采用。
+- 恢复：两设备已装回稳定性能包；候选源码精确撤下，4份patch、HAP和candidate-state.json留在NextN `.hvigor/outputs/reader-route-candidate-20261025/`。采用后才恢复并接续取消/重入验证。N右侧黑区已核为源WebP固有135/1280px黑边；该视频未走缩略图缩放入口，缩放设置未改。完整队列继续Koma CURRENT_STATUS.md。
+
 ## 缩略图到原图交接（2026-10-24，4bf42eb具名验证）
 
 - **失败保留**：E022第120帧仍是放大低清图且进度已退；原4a4659d的交接接受结论撤回。它只修复请求等待期，解码回调时entry仍把原图opacity设为0。旧录屏与CI保留，不能抵消该反例。
@@ -96,3 +104,9 @@
 - 当前状态：移植、签名构建及 237 当前展开竖屏路径验证完成，作范围内本地提交；不推送、不发版。光感/实心的 P9999 显示样本均完整显示四位数字，保持 46vp 同宽、原字号、独立收藏与 16vp 可见边距；连续录像记录左右屏外切换。阅读进入/返回及收藏操作已验证。
 - 源码/设备恢复：撤销显示样本，正常包 SHA-256 `448e6581670f084b7073b7b7b85029697048fb7d39f440a91155b2737b3c10ac` 已覆盖安装，普通入口冷启动；恢复底部导轨、光感材质、智感握姿及未收藏状态，`timeout -r` 读回系统 Timeout=120000ms、无 OverrideTimeout。未注入持久进度。
 - 证据边界：`.hvigor/outputs/gallery-centered-fab/` 的四位数原图、两种材质连续录像，以及 `validation/final-production-restored-001` 安装/恢复回执。设备 lab-foldable / VDE-AL00，展开竖屏 1320×2120；短高度回退为源码边界核对，未宣称短窗口实机验收。
+
+## 2026-10-25 共享默认菜单材质补漏
+
+- **依据**：当前会话用户要求补齐菜单、半模态的新系统材质；唯一队列沿 Koma `APP_POPUP_SYSTEM_MATERIAL`。
+- **范围**：Kit `9b94e98` 的两个 RuntimeMenu 补上另外三个菜单已采用的 API26 THICK 材质，五处共用内部解析；低版本仍 undefined。保菜单项、动作、开关状态和窗口生命周期，不触及未采用的入场候选。
+- **验证边界**：NextN 签名 Release 构建成功；本轮未安装197、未重跑已冻结缩略图/入场路径，不称 NextN 新菜单实机验收。
