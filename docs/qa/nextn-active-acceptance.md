@@ -4,6 +4,11 @@
 用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
 
+## 普通阅读不排队空入场测量（2026-10-24）
+
+- bb2a80d仅在排队前提前已有无入场/已结束条件；538项检查和三宿主构建完成。197 N38201451B普通缩略图进入/原图/返回059全95帧已审，062原LTR1/34、063原7下载保持。
+- 同34页第12页六组反向061均值5.877ms、最大38.032ms、2帧>33.34ms，顺序暖缓存，不是FPS或性能全通过。E新105页原图交接、K默认签名恢复及数据保持结果见[共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
+
 ## 隐藏缩略条工作暂停（2026-10-24，c9494dd有限实测）
 
 - NextN签名Release38201434B/1.0.7code10已明确覆盖197。同Non-H686734/34页、第12页起、六组8000速度反向：042→050隐藏Rail/Tile更新93/304→0/0；宿主frame_slice均值9.492→6.115ms，最大51.843→48.364ms，>33.34ms18→5。顺序暖缓存样本，不是clean AB或显示FPS，性能仍OPEN。
