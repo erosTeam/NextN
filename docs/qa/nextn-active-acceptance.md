@@ -1,5 +1,12 @@
 # 当前运行验收
 
+## 连续跳页阶段诊断与恢复（2026-10-25）
+
+- N101普通历史686734/34页→连续滑块1→17→1，100帧/3联系表已顺序审阅。目标等待保留加载反馈；source16默认获取48ms、enhanced1ms，增强资源04:42:28.269→有效呈现回执.554；source17为.266→.504。只将等待定位到文件获取后，尚未区分全部解码、几何与呈现成本；N068相邻短缺页和性能总体仍OPEN。
+- 8行临时Core身份日志已从Root及N消费目录精确撤下，补丁保留在`.hvigor/outputs/reader-gap-phase-diagnostics/temporary-shared-core.patch`。103明确安装原稳定38205248B，105普通重开读回LTR和1/34，107原7项完成下载及既有2/2保持，108回原桌面。未改缓存、网络、质量或预载深度。
+- 原片、原始PTS、阶段日志及恢复回执保留在`reader-loading-background-20261011/.../shared-mutual/gap-phase-nextn-*`。唯一工作队列与时间线仍为Koma CURRENT_STATUS.md；本轮未新增共享产品代码，不扩大任何宿主性能验收。
+
+
 更新时间：2026-10-24。此页记录实际证据，不能产生任务、授权或全产品通过结论。
 用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
