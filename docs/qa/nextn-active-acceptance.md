@@ -4,13 +4,19 @@
 用户已要求记录 N/E 原渐变问题后返回 Koma；当时持续任务为 Koma 首版 App 与中文源，唯一队列为 `/Users/honjow/git/Koma-production-20261010/docs/CURRENT_STATUS.md`。N/E 原渐变缺陷仍 OPEN 并暂停，旧自动唤醒和历史“下一步”不能恢复它。2026-10-14 用户新增要求检查并处理 NextE/NextN 未提交修改，已完成本地提交及历史 WIP 保存；此事不恢复原渐变设备调查。Reader 历史队列见 [共同工作单](../plans/active/shared-reader-replacement-work-order.md)。
 用户禁止 DevEco IDE、工程信任/自动签名授权及独立诊断 App；已明确允许的现有 HDC 诊断和 Koma 现有命令行构建、签名、安装各限其原授权范围。原问题根因与未修复边界见下文及[事件记录](nextn-original-gradient-incident-20261013.md)。
 
+## 隐藏缩略条工作暂停（2026-10-24，c9494dd有限实测）
+
+- NextN签名Release38201434B/1.0.7code10已明确覆盖197。同Non-H686734/34页、第12页起、六组8000速度反向：042→050隐藏Rail/Tile更新93/304→0/0；宿主frame_slice均值9.492→6.115ms，最大51.843→48.364ms，>33.34ms18→5。顺序暖缓存样本，不是clean AB或显示FPS，性能仍OPEN。
+- 051全424帧/12联系表按序亲审；053–055实际选页、滑块与隐藏再开对齐成立。056原LTR勾选与1/34亲核，057回原7项完成下载、686744仍2/2。原图、命令与PTS沿本仓`reader-loading-background-20261011/.../shared-mutual/continuous-nextn-*`。
+- Kit537项检查及三宿主签名构建完成；可见样式、加载反馈、转场与Legacy保持。E/K独立结果见[共同工作单](../plans/active/shared-reader-replacement-work-order.md)，完整未完成队列仍为Koma CURRENT_STATUS.md。本次依赖采用及精确CI另记。
+
 ## 缩略图到原图交接（2026-10-24，4bf42eb具名验证）
 
 - **失败保留**：E022第120帧仍是放大低清图且进度已退；原4a4659d的交接接受结论撤回。它只修复请求等待期，解码回调时entry仍把原图opacity设为0。旧录屏与CI保留，不能抵消该反例。
 - **共同修复**：4bf42eb由现有entry的匹配页/slot/load和原图透明度决定隐藏期；解码后仍隐藏时保留加载反馈，原有reveal放行原图时一同退出。没有新宿主遮罩、延时或转场/样式/缓存改动；保留可读旧图及终止错误的既有分支。反例检查先失败，修改后相关43项及全536项通过。
 - **197普通入口**：N38202032B/1.0.7code10与E38178566B/1.3.6code42均明确安装。E027实际Non-H4277955全151帧/5联系表；N032实际Non-H686734全269帧/8联系表，均按顺序亲审并另看原91/92：91低清预览+原加载面板，92清晰原图且面板退出，正常返回同缩略图。E022误判不再沿用；只接受这两个具名入口。
 - **构建与边界**：N/E/K签名Release完成；K没有entry preview输入，仅构建不称K缩略图验收。E现有CI preflight通过。其他模式、Legacy和自然异常未由本轮接受。原件沿NextN `.hvigor/outputs/reader-loading-background-20261011/.../shared-mutual/thumbnail-reveal-*`，命令/原始PTS/全部解码帧保留，哈希关闭。
-- **状态**：共同Kit及N/E精确提交同步待收尾；唯一未完成队列仍是Koma CURRENT_STATUS.md。N033已普通返回原Downloads、原686744仍2/2；034已正常返回E画廊与Koma原书架，原4212986未操作。
+- **状态**：共同4bf及N/E已同步，N a0211fa7精确CI40092801190、E26a447c2精确CI40092801362均成功；唯一未完成队列仍是Koma CURRENT_STATUS.md。N033已普通返回原Downloads、原686744仍2/2；034已正常返回E画廊与Koma原书架，原4212986未操作。
 
 ## 缩略图等待原图的加载反馈（2026-10-24，旧4a记录，交接结论已撤回）
 
