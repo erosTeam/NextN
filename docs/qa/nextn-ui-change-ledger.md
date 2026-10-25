@@ -14,13 +14,16 @@
 - 实际：197安装38225452B Release1.0.7/code10；原686734的1/34，119全61编码帧及两组4/5/6、18/19/20原帧已亲审，两次先状态栏，上栏首帧即最终位置，无下移；正常返回同详情。120回原7项下载及桌面。只接受此路径；零区域实际窗口、快速取消和五入口入场总项未扩大。
 - 原件：本仓`.hvigor/outputs/reader-loading-background-20261011/.../shared-mutual/chrome-{frame,geometry,native}197-*`。完整剩余队列仍在Koma CURRENT_STATUS.md；E/K与CI分别记录。
 
-## 普通入场共用完成事件候选（2026-10-24，未采用）
+## 普通入场完成事件与连续缓存v3（2026-10-26，用户已采用）
 
-- 授权：用户已允许为Koma普通入口与NextN默认入口制作一份共用可控转场候选，先看完整实机录屏后再决定采用。现有缩略图转场、Legacy、返回前恢复系统栏的规则保持。
+- 授权：用户已允许为Koma普通入口与NextN默认入口制作一份共用可控转场候选，先看完整实机录屏后再决定采用。现有缩略图转场、Legacy、返回前恢复系统栏的规则保持。 本轮用户明确答复“采用该入场候选，完成正式合入与验证”及“采用 v3，完成正式合入与验证”；以下旧预览只是历史依据，当前采用共同a9d7c641，保e3f3cc1加载交接。
 - 原结构：N的私有HdsNavigation覆盖保留的root详情，Reader目的页与root proxy分别负责内容与缩略图飞行；普通入口原先没有真实原生完成门。K生产KomaReaderLabPage直接是根Navigation目的页，TrialWindow只依赖routeActive。
 - 候选：仅两处普通PUSH使用共同300ms水平进入状态；animateTo.onFinish主动finishTransition，原生onTransitionEnd且真实动画回调已发生才放行现有Window控制器。取消/超时不视为成功。无新遮罩、固定延时或几何等待条件。
-- 实测：共享549项检查及N/K签名Release构建完成；N074普通下载阅读入口72帧、K237-073普通继续阅读108帧均全段按序亲审。K记录了armed→animation_started→animation_finished→native_finished，N该次缺同等事件日志，不扩大结论。两段录像已展示，用户尚未采用。
-- 恢复：两设备已装回稳定性能包；候选源码精确撤下，4份patch、HAP和candidate-state.json留在NextN `.hvigor/outputs/reader-route-candidate-20261025/`。采用后才恢复并接续取消/重入验证。N右侧黑区已核为源WebP固有135/1280px黑边；该视频未走缩略图缩放入口，缩放设置未改。完整队列继续Koma CURRENT_STATUS.md。
+- 历史预览实测（当时未采用）：共享549项检查及N/K签名Release构建完成；N074普通下载阅读入口72帧、K237-073普通继续阅读108帧均全段按序亲审。K记录了armed→animation_started→animation_finished→native_finished，N该次缺同等事件日志，不扩大结论。两段录像已展示，用户尚未采用。
+- 历史预览恢复（现已由本轮采用取代）：两设备已装回稳定性能包；候选源码精确撤下，4份patch、HAP和candidate-state.json留在NextN `.hvigor/outputs/reader-route-candidate-20261025/`。采用后才恢复并接续取消/重入验证。N右侧黑区已核为源WebP固有135/1280px黑边；该视频未走缩略图缩放入口，缩放设置未改。完整队列继续Koma CURRENT_STATUS.md。
+- 当前合并实测：197签名Release38227006B/1.0.7code10。158普通历史686734原1/34的进入、返回、短返回意图和重入全244编码帧已顺审；159当前PID21614有两组真实animation_finished/native_finished，不补造首组日志；短返回实际晚于结束，不冒在途取消。Koma314另有真实途中cancelled及新epoch重入。
+- v3组合：161实际连续12/34，162普通往返与六组8000快速反向全595编码帧/17表按序亲审，正文连续，未见整页短空；不以录屏推FPS。163原LTR1/34及另一记录2/201、原2/2已读回；164原7项下载保持。原图质量、文件预载、现有缩略图路径及Legacy保持。原件沿本仓reader-loading-background-20261011/.../shared-mutual/adopted197-nextn-*，精确提交和CI以Koma唯一队列收尾。
+
 
 ## 缩略图到原图交接（2026-10-24，4bf42eb具名验证）
 

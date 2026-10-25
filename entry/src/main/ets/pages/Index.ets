@@ -1,4 +1,4 @@
-import { ReaderTrialLayoutCommit } from '@reader-kit/ui'
+import { ReaderTrialLayoutCommit, ReaderRouteTransition } from '@reader-kit/ui'
 import { HomePage, HomeSubtabManagerPage, PopularPage } from 'home'
 import { NextNProductionReaderRequest, NextNReaderLabPage } from 'reader'
 import { ReaderLabLaunchState, ReaderLabRequest, connectReaderLabLaunch, ReaderTrialWindow, ReaderSystemBarController,
@@ -746,6 +746,11 @@ struct Index {
   }
 
   private openReaderOverlay(params: ReaderRouteParams, animated: boolean = true): void {
+    // Adopted ordinary entry: thumbnail flights retain their existing route owner.
+    if (params.backend === NextNReaderBackend.SHARED && animated &&
+      !this.productionReaderEntryMatches(params) && !this.readerThumbnailTransition.active()) {
+      this.readerRouteTransition.begin()
+    } else this.readerRouteTransition.skip()
     const mountEpoch: number = this.readerOverlay.open(params, animated)
     if (params.backend === NextNReaderBackend.SHARED) {
       // A direct child's aboutToAppear precedes its container's onAppear.
@@ -1054,6 +1059,7 @@ struct Index {
   @Local private readerThumbnailTransition: ReaderThumbnailTransitionState = connectReaderThumbnailTransition()
   @Local private readerOverlay: ReaderOverlayNavigationState = connectReaderOverlayNavigation()
   @Local private readerOverlayMountEpoch: number = 0
+  @Local private readerRouteTransition: ReaderRouteTransition = new ReaderRouteTransition()
   @Local private settingsNavigation: SettingsNavigationState = connectSettingsNavigation()
   @Local private clipboardLink: NhClipboardLinkState = connectNhClipboardLink()
   @Local private galleryDirectLaunch: GalleryDirectLaunchState = connectGalleryDirectLaunch()
@@ -2065,6 +2071,7 @@ struct Index {
     if (!this.readerDestinationVisible || this.readerDestinationClosing) return visible
     const params = this.readerOverlay.activeReader
     if (params === null || params.backend !== NextNReaderBackend.SHARED) return true
+    if (!this.readerRouteTransition.ready()) return false
     const galleryId = params.galleryId.toString()
     // The source owns system chrome until the root proxy has handed off.
     // Reader cancellation alone can still start a fallback root flight.
@@ -3348,6 +3355,7 @@ struct Index {
   }
 
   private readerRouteWillHide(): void {
+    this.readerRouteTransition.cancel()
     this.readerBackRequest = null
     this.readerDestinationVisible = false
     this.readerDestinationClosing = true
@@ -3366,6 +3374,15 @@ struct Index {
       this.retireProductionReaderEntry()
     }
     this.readerOverlay.finishClose()
+  }
+
+  private readerOrdinaryNavTransition(from: NavContentInfo, to: NavContentInfo,
+    operation: NavigationOperation): NavigationAnimatedTransition | undefined {
+    if (operation !== NavigationOperation.PUSH || from.name !== ROUTE_READER_OVERLAY_BACKDROP ||
+      !to.name?.startsWith('Reader:') || !this.readerRouteTransition.pending()) return undefined
+    return this.readerRouteTransition.transition(this.getUIContext(), (_success: boolean): void => {
+      this.applyRecordedReaderPresentation()
+    })
   }
 
   @Builder
@@ -3402,6 +3419,7 @@ struct Index {
       }
     }
     .hideTitleBar(true)
+    .translate({ x: this.readerRouteTransition.offset() })
     .systemBarStyle(this.readerParams(param).backend === NextNReaderBackend.SHARED
       ? this.readerNavigationSystemBarStyle() : undefined,
       this.readerParams(param).backend === NextNReaderBackend.SHARED
@@ -4897,6 +4915,9 @@ struct Index {
           Column() {}
         }
         .navDestination(this.readerOverlayRouterMap)
+        .customNavContentTransition((from: NavContentInfo, to: NavContentInfo,
+          operation: NavigationOperation): NavigationAnimatedTransition | undefined =>
+          this.readerOrdinaryNavTransition(from, to, operation))
         .systemBarStyle(this.readerNavigationSystemBarStyle(), this.readerNavigationSystemBarStyle())
         .hideNavBar(true)
         .width('100%')
