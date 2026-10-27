@@ -312,31 +312,59 @@ export struct SubTabBar {
       List({ space: this.tabGap(), scroller: this.scroller }) {
         ForEach(this.tabs, (tab: TabItem, index: number): void => {
           ListItem() {
-            Row({ space: 3 }) {
-              Text(tab.label)
-                .fontSize(ThemeTokens.FONT_SIZE_BODY)
-                .fontColor(this.visualSelectedIndex() === index ? this.selectedTextColor(index) : this.themeTracked(ThemeTokens.TEXT_SECONDARY))
-                .fontWeight(this.visualSelectedIndex() === index ? FontWeight.Bold : FontWeight.Regular)
-                .maxLines(1)
-              if (tab.count >= 0) {
-                Text(`${tab.count}`)
-                  .fontSize(ThemeTokens.FONT_SIZE_TINY)
-                  .fontColor(this.visualSelectedIndex() === index ? this.selectedTextColor(index) : this.themeTracked(ThemeTokens.TEXT_TERTIARY))
+            // systemMaterial requires API 26; preserve the existing pill on older systems.
+            if (deviceInfo.apiAvailable('26.0.0')) {
+              Row({ space: 3 }) {
+                Text(tab.label)
+                  .fontSize(ThemeTokens.FONT_SIZE_BODY)
+                  .fontColor(this.visualSelectedIndex() === index ? this.selectedTextColor(index) : this.themeTracked(ThemeTokens.TEXT_SECONDARY))
+                  .fontWeight(this.visualSelectedIndex() === index ? FontWeight.Bold : FontWeight.Regular)
+                  .maxLines(1)
+                if (tab.count >= 0) {
+                  Text(`${tab.count}`)
+                    .fontSize(ThemeTokens.FONT_SIZE_TINY)
+                    .fontColor(this.visualSelectedIndex() === index ? this.selectedTextColor(index) : this.themeTracked(ThemeTokens.TEXT_TERTIARY))
+                }
               }
+              .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD,
+                top: this.isCapsule() ? 0 : ThemeTokens.SPACE_XS })
+              .height(this.isCapsule() ? PILL_HEIGHT : undefined)
+              .borderRadius(this.isCapsule() ? ThemeTokens.RADIUS_ROUND : 0)
+              .clip(this.isCapsule())
+              .systemMaterial(this.isCapsule() && this.visualSelectedIndex() !== index ? this.inactiveMaterial() : undefined)
+              .backgroundColor(this.tabFill(index))
+              .onClick((): void => {
+                this.onSelect(index)
+              })
+              .onAreaChange((_oldValue: Area, newValue: Area): void => {
+                this.updateTabLayout(index, newValue)
+              })
+            } else {
+              Row({ space: 3 }) {
+                Text(tab.label)
+                  .fontSize(ThemeTokens.FONT_SIZE_BODY)
+                  .fontColor(this.visualSelectedIndex() === index ? this.selectedTextColor(index) : this.themeTracked(ThemeTokens.TEXT_SECONDARY))
+                  .fontWeight(this.visualSelectedIndex() === index ? FontWeight.Bold : FontWeight.Regular)
+                  .maxLines(1)
+                if (tab.count >= 0) {
+                  Text(`${tab.count}`)
+                    .fontSize(ThemeTokens.FONT_SIZE_TINY)
+                    .fontColor(this.visualSelectedIndex() === index ? this.selectedTextColor(index) : this.themeTracked(ThemeTokens.TEXT_TERTIARY))
+                }
+              }
+              .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD,
+                top: this.isCapsule() ? 0 : ThemeTokens.SPACE_XS })
+              .height(this.isCapsule() ? PILL_HEIGHT : undefined)
+              .borderRadius(this.isCapsule() ? ThemeTokens.RADIUS_ROUND : 0)
+              .clip(this.isCapsule())
+              .backgroundColor(this.tabFill(index))
+              .onClick((): void => {
+                this.onSelect(index)
+              })
+              .onAreaChange((_oldValue: Area, newValue: Area): void => {
+                this.updateTabLayout(index, newValue)
+              })
             }
-            .padding({ left: ThemeTokens.SPACE_MD, right: ThemeTokens.SPACE_MD,
-              top: this.isCapsule() ? 0 : ThemeTokens.SPACE_XS })
-            .height(this.isCapsule() ? PILL_HEIGHT : undefined)
-            .borderRadius(this.isCapsule() ? ThemeTokens.RADIUS_ROUND : 0)
-            .clip(this.isCapsule())
-            .systemMaterial(this.isCapsule() && this.visualSelectedIndex() !== index ? this.inactiveMaterial() : undefined)
-            .backgroundColor(this.tabFill(index))
-            .onClick((): void => {
-              this.onSelect(index)
-            })
-            .onAreaChange((_oldValue: Area, newValue: Area): void => {
-              this.updateTabLayout(index, newValue)
-            })
           }
         }, (tab: TabItem, index: number): string => this.tabRenderKey(tab, index))
       }
