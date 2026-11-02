@@ -1,4 +1,5 @@
-import { HdsNavigation, HdsNavigationTitleMode, IconStyleMode } from '@kit.UIDesignKit'
+import { deviceInfo } from '@kit.BasicServicesKit'
+import { HdsNavigation, HdsNavigationTitleMode, IconStyleMode, ScrollEffectType, BlurStrategy, hdsMaterial } from '@kit.UIDesignKit'
 import { AppPrompt } from '../utils/AppPrompt'
 import { ThemeTokens } from '../theme/ThemeTokens'
 import { connectLayoutSafeArea, LayoutSafeAreaState } from '../state/LayoutSafeAreaState'
@@ -66,13 +67,18 @@ export struct NextNModalScaffold {
       }
       .titleBar({
         enableComponentSafeArea: this.enableComponentSafeArea,
-        // bindSheet owns the API 26 material for the complete modal surface. HDS's default
-        // scroll blur extends below this title bar and, in POPUP mode, samples outside the
-        // popup (notably the dark Reader backdrop). Keep the modal title on the sheet material
-        // instead of layering a second dynamic blur over it.
+        // Keep HDS's spatial gradient active even at zero scroll. Offset-based
+        // fade-in stays disabled so dark titles do not start almost transparent.
+        // The sheet continues owning its native material and existing geometry.
         style: {
+          systemMaterialEffect: deviceInfo.apiAvailable('6.1.0') ? {
+            materialType: hdsMaterial.MaterialType.ADAPTIVE,
+            materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE,
+          } : undefined,
+          blurStrategy: BlurStrategy.ENABLE,
           scrollEffectOpts: {
             enableScrollEffect: false,
+            scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
           },
         },
         content: {
