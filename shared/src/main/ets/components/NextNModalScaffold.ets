@@ -67,9 +67,8 @@ export struct NextNModalScaffold {
       }
       .titleBar({
         enableComponentSafeArea: this.enableComponentSafeArea,
-        // Keep HDS's spatial gradient active even at zero scroll. Offset-based
-        // fade-in stays disabled so dark titles do not start almost transparent.
-        // The sheet continues owning its native material and existing geometry.
+        // Keep the first row sharp at rest. HDS fades in the gradient
+        // as content scrolls under the title.
         style: {
           systemMaterialEffect: deviceInfo.apiAvailable('6.1.0') ? {
             materialType: hdsMaterial.MaterialType.ADAPTIVE,
@@ -77,7 +76,7 @@ export struct NextNModalScaffold {
           } : undefined,
           blurStrategy: BlurStrategy.ENABLE,
           scrollEffectOpts: {
-            enableScrollEffect: false,
+            enableScrollEffect: true,
             scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
           },
         },
