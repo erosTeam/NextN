@@ -1,3 +1,4 @@
+import { ReaderSettingsTabs, ReaderDisplaySettingsContent } from 'shared'
 import { common, bundleManager } from '@kit.AbilityKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { CustomContentDialog, SymbolGlyphModifier } from '@kit.ArkUI'
@@ -338,7 +339,6 @@ export struct SettingsPage {
   @Param surface: SettingsSurface = SettingsSurface.ROOT
   /** Reader mounts this same semantic surface inside its private sheet. */
   @Param sheetPresentation: boolean = false
-  @Event onClose?: () => void
   @Event onOpenBrowserSession?: () => void
   @Event onOpenAccount?: () => void
   @Event onOpenLayoutSettings?: () => void
@@ -3995,7 +3995,7 @@ export struct SettingsPage {
 
   /** Shared content for the routed Settings surface and the Reader-owned sheet. */
   @Builder
-  private ReaderPresentationListItems() {
+  private ModeSettingsListItems() {
     ListItem() {
       this.ReaderLayoutGroup()
     }
@@ -4009,6 +4009,10 @@ export struct SettingsPage {
         this.ReaderContinuousModeGroup()
       }
     }
+  }
+
+  @Builder
+  private GeneralSettingsListItems() {
     ListItem() {
       this.ReaderDisplayGroup()
     }
@@ -4031,23 +4035,24 @@ export struct SettingsPage {
     }
   }
 
-  /**
-   * Match NextE's Reader sheet grammar: a modal HDS title owns close while
-   * the familiar Reader settings rows remain the single semantic surface.
-   */
+  @Builder
+  private ReaderPresentationListItems() {
+    this.ModeSettingsListItems()
+    this.GeneralSettingsListItems()
+  }
+
   @Builder
   private ReaderPresentationSheet() {
-    NextNModalScaffold({
-      title: AppStrings.get('settings_reader'),
-      scroller: this.scroller,
-      onClose: (): void => {
-        if (this.onClose) {
-          this.onClose()
-        }
-      },
-    }) {
-      this.ReaderPresentationListItems()
-    }
+    ReaderSettingsTabs({
+      modeItems: (): void => { this.ModeSettingsListItems() },
+      generalItems: (): void => { this.GeneralSettingsListItems() },
+      filterContent: (): void => { this.ReaderFilterControls() },
+    })
+  }
+
+  @Builder
+  private ReaderFilterControls() {
+    ReaderDisplaySettingsContent()
   }
 
   @Builder

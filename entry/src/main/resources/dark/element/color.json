@@ -16,6 +16,7 @@
     { "name": "tagns_parody", "value": "#487068" },
     { "name": "tagns_character", "value": "#49677F" },
     { "name": "tagns_group", "value": "#615284" },
-    { "name": "tagns_language", "value": "#7F4A6B" }
+    { "name": "tagns_language", "value": "#7F4A6B" },
+    { "name": "reader_filter_slider_track", "value": "#454545" }
   ]
 }

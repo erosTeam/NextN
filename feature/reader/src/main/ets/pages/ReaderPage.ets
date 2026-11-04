@@ -1,3 +1,5 @@
+import { connectReaderDisplay, ReaderDisplayState, readerImageEffects, ReaderBrightnessController } from 'shared'
+import { ReaderImageEffectsLayer, ReaderLabVisibilityState, connectReaderLabVisibility } from '@reader-kit/ui'
 import { common } from '@kit.AbilityKit'
 import { LengthMetrics, SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { fileUri } from '@kit.CoreFileKit'
@@ -373,6 +375,7 @@ function readerCropDisplayHeight(height: number, bounds: ReaderPageCropBounds): 
 
 @ComponentV2
 struct ReaderCroppedImage {
+  @Local private readerDisplay: ReaderDisplayState = connectReaderDisplay()
   @Param src: string = ''
   @Param widthValue: Length = '100%'
   @Param heightValue: Length = '100%'
@@ -426,49 +429,53 @@ struct ReaderCroppedImage {
   }
 
   build() {
-    if (this.cropBounds.applied()) {
-      Stack({ alignContent: Alignment.Center }) {
-        if (this.cropReady()) {
+    Stack() {
+      ReaderImageEffectsLayer({ effects: readerImageEffects(this.readerDisplay.effective()) }) {
+        if (this.cropBounds.applied()) {
           Stack({ alignContent: Alignment.Center }) {
-            Image(this.src)
-              .objectFit(ImageFit.Fill)
-              .interpolation(this.interpolation)
-              .width(this.sourceRenderWidth())
-              .height(this.sourceRenderHeight())
-              .translate({ x: this.sourceOffsetX(), y: this.sourceOffsetY() })
-              .draggable(false)
-              .onComplete((event?: ReaderImageLoadEvent): void => {
-                this.onComplete(this.src, event)
-              })
-              .onError((): void => {
-                this.onError()
-              })
+            if (this.cropReady()) {
+              Stack({ alignContent: Alignment.Center }) {
+                Image(this.src)
+                  .objectFit(ImageFit.Fill)
+                  .interpolation(this.interpolation)
+                  .width(this.sourceRenderWidth())
+                  .height(this.sourceRenderHeight())
+                  .translate({ x: this.sourceOffsetX(), y: this.sourceOffsetY() })
+                  .draggable(false)
+                  .onComplete((event?: ReaderImageLoadEvent): void => {
+                    this.onComplete(this.src, event)
+                  })
+                  .onError((): void => {
+                    this.onError()
+                  })
+              }
+              .width(this.cropFrameWidth())
+              .height(this.cropFrameHeight())
+              .clip(true)
+            }
           }
-          .width(this.cropFrameWidth())
-          .height(this.cropFrameHeight())
-          .clip(true)
+          .width(this.widthValue)
+          .height(this.heightValue)
+          .onAreaChange((_previous: Area, current: Area): void => {
+            this.componentWidth = current.width as number
+            this.componentHeight = current.height as number
+          })
+        } else {
+          Image(this.src)
+            .objectFit(ImageFit.Contain)
+            .interpolation(this.interpolation)
+            .width(this.widthValue)
+            .height(this.heightValue)
+            .draggable(false)
+            .onComplete((event?: ReaderImageLoadEvent): void => {
+              this.onComplete(this.src, event)
+            })
+            .onError((): void => {
+              this.onError()
+            })
         }
       }
-      .width(this.widthValue)
-      .height(this.heightValue)
-      .onAreaChange((_previous: Area, current: Area): void => {
-        this.componentWidth = current.width as number
-        this.componentHeight = current.height as number
-      })
-    } else {
-      Image(this.src)
-        .objectFit(ImageFit.Contain)
-        .interpolation(this.interpolation)
-        .width(this.widthValue)
-        .height(this.heightValue)
-        .draggable(false)
-        .onComplete((event?: ReaderImageLoadEvent): void => {
-          this.onComplete(this.src, event)
-        })
-        .onError((): void => {
-          this.onError()
-        })
-    }
+    }.width(this.widthValue).height(this.heightValue)
   }
 }
 
@@ -2877,9 +2884,13 @@ struct ReaderPageNumberStatus {
 /** Native Reader with ErosN-derived vertical and page-at-a-time modes. */
 @ComponentV2
 export struct ReaderPage {
+  @Local private readerDisplay: ReaderDisplayState = connectReaderDisplay()
+  private readerBrightness: ReaderBrightnessController = new ReaderBrightnessController()
+  @Local private displayVisibility: ReaderLabVisibilityState = connectReaderLabVisibility()
+  @Local private displayRouteActive: boolean = false
   @Require @Param galleryId: number
   /** Entry injects the shared Reader settings surface without crossing feature HAR boundaries. */
-  @BuilderParam settingsSheetContent: (dismiss: () => void) => void
+  @BuilderParam settingsSheetContent: () => void
   /** A non-negative route index is an explicit user page choice and wins over local resume. */
   @Param initialPageIndex: number = -1
   /** Assigned by the overlay route; direct/offline Reader intents keep zero. */
@@ -2984,6 +2995,8 @@ export struct ReaderPage {
   private readerEnhancementInteractionActive: boolean = false
 
   aboutToAppear(): void {
+    this.displayRouteActive = true
+    void this.readerDisplay.load(this.context())
     this.readerClosing = false
     const generation: number = this.readerLifecycleGeneration + 1
     this.readerLifecycleGeneration = generation
@@ -2994,7 +3007,30 @@ export struct ReaderPage {
     }
   }
 
+
+  private filterPreviewActive(): boolean {
+    return this.readerSettingsSheetShown && this.readerDisplay.filterTabActive
+  }
+
+  private filterSheetDetent(): number | SheetSize {
+    return this.filterPreviewActive() && this.readerDisplay.filterSheetHeight > 0
+      ? this.readerDisplay.filterSheetHeight : SheetSize.MEDIUM
+  }
+
+  @Monitor('readerDisplay.settings', 'readerDisplay.preview', 'displayRouteActive', 'displayVisibility.foreground')
+  private syncReaderBrightness(): void {
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+    this.readerBrightness.update(context, this.displayRouteActive && this.displayVisibility.foreground, this.readerDisplay.effective())
+  }
+
+  private restoreReaderBrightness(): void {
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext
+    this.readerBrightness.update(context, false, this.readerDisplay.settings)
+  }
   aboutToDisappear(): void {
+    this.displayRouteActive = false
+    if (this.readerSettingsSheetShown) this.readerDisplay.closePreview()
+    this.restoreReaderBrightness()
     this.readerClosing = true
     this.clearReaderTemporaryEnhancementOverride()
     this.readerLifecycleGeneration += 1
@@ -3174,6 +3210,7 @@ export struct ReaderPage {
     if (this.readerClosing) {
       return true
     }
+    this.displayRouteActive = false
     this.readerClosing = true
     const preparation: Promise<boolean> = this.onPrepareClose
       ? this.onPrepareClose()
@@ -4175,12 +4212,14 @@ export struct ReaderPage {
 
   private openReaderSettings(): void {
     this.readerOverflowMenuShown = false
+    this.readerDisplay.closePreview()
     this.readerSettingsSheetShown = true
     this.pauseReaderEnhancementForForegroundInteraction()
   }
 
   private closeReaderSettings(): void {
     this.readerSettingsSheetShown = false
+    this.readerDisplay.closePreview()
     this.pauseReaderEnhancementForForegroundInteraction()
     this.scheduleReaderEnhancementInteractionResume(READER_ENHANCEMENT_INTERACTION_SETTLE_MS)
   }
@@ -5486,11 +5525,11 @@ export struct ReaderPage {
         })
         .bindSheet(
           $$this.readerSettingsSheetShown,
-          this.settingsSheetContent((): void => {
-            this.closeReaderSettings()
-          }),
+          this.settingsSheetContent(),
           appSheetOptions({
-            detents: [SheetSize.MEDIUM, SheetSize.LARGE],
+            detents: [this.filterSheetDetent(), SheetSize.LARGE],
+            detentSelection: this.filterSheetDetent(),
+            maskColor: this.filterPreviewActive() ? Color.Transparent : $r('sys.color.ohos_id_color_mask_thin'),
             showClose: false,
             onDisappear: (): void => {
               this.closeReaderSettings()
@@ -5539,6 +5578,8 @@ export struct ReaderPage {
     // Use the same explicit viewport origin as NextE. `align` on a Builder
     // root does not reliably override this parent Stack's center alignment.
     .position({ x: 0, y: 0 })
+    .opacity(this.filterPreviewActive() ? 0 : 1)
+    .hitTestBehavior(this.filterPreviewActive() ? HitTestMode.None : HitTestMode.Default)
   }
 
   @Builder
@@ -6089,6 +6130,8 @@ export struct ReaderPage {
     .height(this.readerBottomBarHeight())
     .layoutGravity(LocalizedAlignment.BOTTOM)
     .hitTestBehavior(HitTestMode.Default)
+    .opacity(this.filterPreviewActive() ? 0 : 1)
+    .hitTestBehavior(this.filterPreviewActive() ? HitTestMode.None : HitTestMode.Default)
   }
 
   @Builder
@@ -6406,7 +6449,7 @@ export struct ReaderPage {
           this.ReaderInlineError()
           this.ReaderTranslationStatusOverlay()
         }
-        if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery) {
+        if (!this.readerChromeVisible && this.isReaderReadyForCurrentGallery && !this.filterPreviewActive()) {
           this.ReaderPersistentPageStatus()
         }
         // The top bar overlays the canvas. It must not permanently subtract from

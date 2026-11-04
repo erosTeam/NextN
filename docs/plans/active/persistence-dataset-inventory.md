@@ -32,6 +32,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/MangaRenderingServiceSettings.ets#RENDERING_SERVICE_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/NhClipboardLinkSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ReadButtonStyleSettings.ets#LAYOUT_STORE` | store | excluded | excluded | Store name only |
+| `shared/src/main/ets/state/ReaderDisplayState.ets#STORE_NAME` | store | excluded | excluded | Existing nextn_settings store |
 | `shared/src/main/ets/settings/ReaderImageCacheSettings.ets#STORE_NAME` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/SafeModeSettings.ets#SAFE_MODE_STORE` | store | excluded | excluded | Store name only |
 | `shared/src/main/ets/settings/ScreenOrientationSettings.ets#SCREEN_ORIENTATION_STORE` | store | excluded | excluded | Store name only |
@@ -92,6 +93,7 @@ backup. Cache/output exclusions are intentional, not omissions.
 | `shared/src/main/ets/settings/NhClipboardLinkSettings.ets#ENABLED_KEY` | device-consent | excluded | excluded | Device-local consent |
 | `shared/src/main/ets/settings/NhClipboardLinkSettings.ets#CHANGE_COUNT_KEY` | runtime | excluded | excluded | Device clipboard cursor |
 | `shared/src/main/ets/settings/ReadButtonStyleSettings.ets#READ_BUTTON_STYLE_KEY` | setting | plaintext | excluded | Reader action style |
+| `shared/src/main/ets/state/ReaderDisplayState.ets#KEY_DISPLAY_SETTINGS` | setting | plaintext | excluded | Reader display filters and brightness; transient previews are not stored |
 | `shared/src/main/ets/settings/ReaderImageCacheSettings.ets#KEY_LIMIT_MB` | setting | plaintext | excluded | Cache size preference, not cache content |
 | `shared/src/main/ets/settings/SafeModeSettings.ets#SAFE_MODE_UNLOCKED_KEY` | runtime | excluded | excluded | Device-local restricted-build escape marker |
 | `shared/src/main/ets/settings/ScreenOrientationSettings.ets#SCREEN_ORIENTATION_KEY` | setting | plaintext | excluded | Orientation policy |

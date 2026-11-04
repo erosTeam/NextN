@@ -878,3 +878,8 @@ export { TextTranslationPromptProfileRepository } from './settings/TextTranslati
 
 export { SubTabStyleState, connectSubTabStyle, SUBTAB_STYLE_UNDERLINE, SUBTAB_STYLE_CAPSULE, SUBTAB_STYLE_DEFAULT } from './state/SubTabStyleState'
 export { SubTabStyleSettings, SubTabStyleOption } from './settings/SubTabStyleSettings'
+
+export { ReaderSettingsTabs } from './components/ReaderSettingsTabs'
+export { ReaderDisplaySettingsContent } from './components/ReaderDisplaySettingsContent'
+export { ReaderDisplayState, connectReaderDisplay, readerImageEffects } from './state/ReaderDisplayState'
+export { ReaderBrightnessController } from './model/ReaderBrightnessController'

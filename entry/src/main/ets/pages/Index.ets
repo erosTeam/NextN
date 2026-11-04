@@ -3311,8 +3311,8 @@ struct Index {
         hostClosing: this.readerDestinationClosing,
         windowPresentation: this.readerSystemBars,
         hostSettingsAvailable: true,
-        settingsSheetContent: (dismiss: () => void): void => {
-          this.ReaderSettingsSheet(dismiss)
+        settingsSheetContent: (): void => {
+          this.ReaderSettingsSheet()
         },
         onReaderPresentationChanged: (
           chromeVisible: boolean,
@@ -3395,8 +3395,8 @@ struct Index {
         galleryId: this.readerParams(param).galleryId,
         initialPageIndex: this.readerParams(param).initialPageIndex,
         readerRouteEpoch: this.readerParams(param).routeEpoch,
-        settingsSheetContent: (dismiss: () => void): void => {
-          this.ReaderSettingsSheet(dismiss)
+        settingsSheetContent: (): void => {
+          this.ReaderSettingsSheet()
         },
         onBack: (animated: boolean): void => {
           this.finishReaderDestinationClose(animated)
@@ -3444,13 +3444,10 @@ struct Index {
 
   /** The private Reader overlay injects the shared Settings semantic surface as a modal sheet. */
   @Builder
-  private ReaderSettingsSheet(dismiss: () => void) {
+  private ReaderSettingsSheet() {
     SettingsPage({
       surface: SettingsSurface.READER,
       sheetPresentation: true,
-      onClose: (): void => {
-        dismiss()
-      },
     })
   }
 
