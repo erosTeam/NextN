@@ -124,18 +124,12 @@ export class TagTranslationRepository {
   static async status(context: common.UIAbilityContext): Promise<NhTagTranslationStatus> {
     const status: NhTagTranslationStatus = new NhTagTranslationStatus()
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    let rows: relationalStore.ResultSet | null = null
-    try {
-      rows = await store.querySql(SQL_COUNT)
+    await LocalDataStore.readQuery<void>(store, SQL_COUNT, [], (rows: relationalStore.ResultSet): void => {
       if (rows.goToFirstRow()) {
         status.rowCount = TagTranslationRepository.numberColumn(rows, 'count')
         status.infoRowCount = TagTranslationRepository.numberColumn(rows, 'info_count')
       }
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     status.version = await TagTranslationRepository.metaValue(store, META_VERSION)
     status.source = await TagTranslationRepository.metaValue(store, META_SOURCE)
     status.updatedAt = TagTranslationRepository.parseTimestamp(
@@ -184,15 +178,12 @@ export class TagTranslationRepository {
   static async stat(context: common.UIAbilityContext): Promise<CacheStat> {
     const result: CacheStat = new CacheStat()
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    const rows: relationalStore.ResultSet = await store.querySql(SQL_STAT)
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_STAT, [], (rows: relationalStore.ResultSet): void => {
       if (rows.goToFirstRow()) {
         result.count = TagTranslationRepository.numberColumn(rows, 'count')
         result.bytes = TagTranslationRepository.numberColumn(rows, 'bytes')
       }
-    } finally {
-      rows.close()
-    }
+    })
     return result
   }
 
@@ -302,9 +293,7 @@ export class TagTranslationRepository {
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
     const suggestions: NhTagSuggestion[] = []
     const seen: Set<string> = new Set<string>()
-    let rows: relationalStore.ResultSet | null = null
-    try {
-      rows = await store.querySql(SQL_SUGGEST_UNSCOPED, [pattern, pattern, boundedLimit])
+    await LocalDataStore.readQuery<void>(store, SQL_SUGGEST_UNSCOPED, [pattern, pattern, boundedLimit], (rows: relationalStore.ResultSet): void => {
       while (rows.goToNextRow()) {
         const suggestion: NhTagSuggestion = new NhTagSuggestion()
         // Match ErosN: EhTagTranslation's finer source namespace remains a
@@ -322,11 +311,7 @@ export class TagTranslationRepository {
           suggestions.push(suggestion)
         }
       }
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     return suggestions
   }
 
@@ -410,9 +395,7 @@ export class TagTranslationRepository {
       placeholders.push('?')
       args.push(rawNames[index])
     }
-    let rows: relationalStore.ResultSet | null = null
-    try {
-      rows = await store.querySql(`${SQL_LOOKUP_PREFIX}${placeholders.join(',')})`, args)
+    await LocalDataStore.readQuery<void>(store, `${SQL_LOOKUP_PREFIX}${placeholders.join(',')})`, args, (rows: relationalStore.ResultSet): void => {
       while (rows.goToNextRow()) {
         const rawName: string = TagTranslationRepository.stringColumn(rows, 'raw_name')
         const displayName: string = TagTranslationRepository.stringColumn(rows, 'display_name')
@@ -420,11 +403,7 @@ export class TagTranslationRepository {
           translations.set(TagTranslationRepository.makeKey(namespace, rawName), displayName)
         }
       }
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
   }
 
   /**
@@ -498,15 +477,9 @@ export class TagTranslationRepository {
   }
 
   private static async metaValue(store: relationalStore.RdbStore, key: string): Promise<string> {
-    let rows: relationalStore.ResultSet | null = null
-    try {
-      rows = await store.querySql(SQL_SELECT_META, [key])
+    return LocalDataStore.readQuery<string>(store, SQL_SELECT_META, [key], (rows: relationalStore.ResultSet): string => {
       return rows.goToFirstRow() ? TagTranslationRepository.stringColumn(rows, 'value') : ''
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
   }
 
   private static toBucket(entry: NhTagTranslationEntry): relationalStore.ValuesBucket {
@@ -525,9 +498,7 @@ export class TagTranslationRepository {
     namespace: string,
     rawName: string,
   ): Promise<NhTagTranslationEntry | null> {
-    let rows: relationalStore.ResultSet | null = null
-    try {
-      rows = await store.querySql(SQL_LOOKUP_INFO, [namespace, rawName])
+    return LocalDataStore.readQuery<NhTagTranslationEntry | null>(store, SQL_LOOKUP_INFO, [namespace, rawName], (rows: relationalStore.ResultSet): NhTagTranslationEntry | null => {
       if (!rows.goToFirstRow()) {
         return null
       }
@@ -538,11 +509,7 @@ export class TagTranslationRepository {
       entry.intro = TagTranslationRepository.stringColumn(rows, 'intro')
       entry.links = TagTranslationRepository.stringColumn(rows, 'links')
       return entry
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
   }
 
   private static infoLookupNamespaces(rawNamespace: string): string[] {

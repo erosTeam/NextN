@@ -180,17 +180,11 @@ export class NhLocalUserTagRepository {
   ): Promise<NhLocalUserTagSnapshot> {
     const snapshot: NhLocalUserTagSnapshot = new NhLocalUserTagSnapshot()
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    const rows: relationalStore.ResultSet = await store.querySql(
-      includeDeleted ? SQL_SELECT_ALL_TAGS : SQL_SELECT_ACTIVE_TAGS,
-      [NH_LOCAL_USER_TAG_SCOPE_GLOBAL],
-    )
-    try {
+    await LocalDataStore.readQuery<void>(store, includeDeleted ? SQL_SELECT_ALL_TAGS : SQL_SELECT_ACTIVE_TAGS, [NH_LOCAL_USER_TAG_SCOPE_GLOBAL], (rows: relationalStore.ResultSet): void => {
       while (rows.goToNextRow()) {
         snapshot.tags.push(NhLocalUserTagRepository.readTag(rows))
       }
-    } finally {
-      rows.close()
-    }
+    })
     snapshot.settings = await NhLocalUserTagRepository.readSettings(store)
     if (!includeDeleted && snapshot.settings.deletedAt > 0) {
       snapshot.settings = new NhLocalUserTagSettings()
@@ -214,11 +208,7 @@ export class NhLocalUserTagRepository {
 
   private static async readSettings(store: relationalStore.RdbStore): Promise<NhLocalUserTagSettings> {
     const settings: NhLocalUserTagSettings = new NhLocalUserTagSettings()
-    const rows: relationalStore.ResultSet = await store.querySql(
-      SQL_SELECT_SETTINGS,
-      [NH_LOCAL_USER_TAG_SCOPE_GLOBAL],
-    )
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_SELECT_SETTINGS, [NH_LOCAL_USER_TAG_SCOPE_GLOBAL], (rows: relationalStore.ResultSet): void => {
       if (rows.goToNextRow()) {
         settings.scopeKey = NhLocalUserTagRepository.stringColumn(rows, 'scope_key')
         settings.filteringThreshold = Math.round(
@@ -227,9 +217,7 @@ export class NhLocalUserTagRepository {
         settings.updatedAt = Math.floor(NhLocalUserTagRepository.numberColumn(rows, 'updated_at'))
         settings.deletedAt = Math.floor(NhLocalUserTagRepository.numberColumn(rows, 'deleted_at'))
       }
-    } finally {
-      rows.close()
-    }
+    })
     return NhLocalUserTagContract.normalizeSettings(settings)
   }
 
@@ -238,18 +226,12 @@ export class NhLocalUserTagRepository {
     tagId: number,
   ): Promise<LocalUserTagClock> {
     const clock: LocalUserTagClock = new LocalUserTagClock()
-    const rows: relationalStore.ResultSet = await store.querySql(
-      SQL_SELECT_TAG_CLOCK,
-      [NH_LOCAL_USER_TAG_SCOPE_GLOBAL, tagId],
-    )
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_SELECT_TAG_CLOCK, [NH_LOCAL_USER_TAG_SCOPE_GLOBAL, tagId], (rows: relationalStore.ResultSet): void => {
       if (rows.goToNextRow()) {
         clock.updatedAt = Math.floor(NhLocalUserTagRepository.numberColumn(rows, 'updated_at'))
         clock.deletedAt = Math.floor(NhLocalUserTagRepository.numberColumn(rows, 'deleted_at'))
       }
-    } finally {
-      rows.close()
-    }
+    })
     return clock
   }
 

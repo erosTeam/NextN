@@ -111,16 +111,13 @@ export class HomeSubtabRepository {
   static async loadSelection(context: common.UIAbilityContext): Promise<HomeSubtabSelectionRecord> {
     const result: HomeSubtabSelectionRecord = new HomeSubtabSelectionRecord()
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    const rows: relationalStore.ResultSet = await store.querySql(SQL_SELECT_SELECTION, [SCOPE_GLOBAL])
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_SELECT_SELECTION, [SCOPE_GLOBAL], (rows: relationalStore.ResultSet): void => {
       if (rows.goToNextRow()) {
         result.selectedUuid = HomeSubtabRepository.stringColumn(rows, 'selected_uuid')
         result.updatedAt = Math.floor(HomeSubtabRepository.numberColumn(rows, 'updated_at'))
         result.deletedAt = Math.floor(HomeSubtabRepository.numberColumn(rows, 'deleted_at'))
       }
-    } finally {
-      rows.close()
-    }
+    })
     return result
   }
 
@@ -229,11 +226,7 @@ export class HomeSubtabRepository {
   ): Promise<HomeSubtabStorageRecord[]> {
     const records: HomeSubtabStorageRecord[] = []
     const store: relationalStore.RdbStore = await LocalDataStore.open(context)
-    const rows: relationalStore.ResultSet = await store.querySql(
-      includeDeleted ? SQL_SELECT_ALL : SQL_SELECT_ACTIVE,
-      [SCOPE_GLOBAL],
-    )
-    try {
+    await LocalDataStore.readQuery<void>(store, includeDeleted ? SQL_SELECT_ALL : SQL_SELECT_ACTIVE, [SCOPE_GLOBAL], (rows: relationalStore.ResultSet): void => {
       while (rows.goToNextRow()) {
         const record: HomeSubtabStorageRecord = new HomeSubtabStorageRecord()
         record.profile.uuid = HomeSubtabRepository.stringColumn(rows, 'profile_uuid')
@@ -259,9 +252,7 @@ export class HomeSubtabRepository {
           records.push(record)
         }
       }
-    } finally {
-      rows.close()
-    }
+    })
     if (includeDeleted) {
       return records
     }
@@ -400,15 +391,12 @@ export class HomeSubtabRepository {
     uuid: string,
   ): Promise<HomeSubtabClock> {
     const clock: HomeSubtabClock = new HomeSubtabClock()
-    const rows: relationalStore.ResultSet = await store.querySql(SQL_SELECT_ONE_CLOCK, [SCOPE_GLOBAL, uuid])
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_SELECT_ONE_CLOCK, [SCOPE_GLOBAL, uuid], (rows: relationalStore.ResultSet): void => {
       if (rows.goToNextRow()) {
         clock.lastEditTime = Math.floor(HomeSubtabRepository.numberColumn(rows, 'last_edit_time'))
         clock.deletedAt = Math.floor(HomeSubtabRepository.numberColumn(rows, 'deleted_at'))
       }
-    } finally {
-      rows.close()
-    }
+    })
     return clock
   }
 
@@ -417,15 +405,12 @@ export class HomeSubtabRepository {
     selectedUuid: string,
   ): Promise<void> {
     const current: HomeSubtabSelectionRecord = new HomeSubtabSelectionRecord()
-    const rows: relationalStore.ResultSet = await store.querySql(SQL_SELECT_SELECTION, [SCOPE_GLOBAL])
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_SELECT_SELECTION, [SCOPE_GLOBAL], (rows: relationalStore.ResultSet): void => {
       if (rows.goToNextRow()) {
         current.updatedAt = Math.floor(HomeSubtabRepository.numberColumn(rows, 'updated_at'))
         current.deletedAt = Math.floor(HomeSubtabRepository.numberColumn(rows, 'deleted_at'))
       }
-    } finally {
-      rows.close()
-    }
+    })
     const updatedAt: number = Math.max(Date.now(), current.updatedAt + 1, current.deletedAt + 1)
     await store.executeSql(SQL_UPSERT_SELECTION, [SCOPE_GLOBAL, selectedUuid, updatedAt])
   }

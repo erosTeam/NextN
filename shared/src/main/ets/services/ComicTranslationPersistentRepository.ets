@@ -485,15 +485,12 @@ export class RdbComicTranslationRepository implements ComicTranslationRepository
   async stat(): Promise<CacheStat> {
     const result: CacheStat = new CacheStat()
     const store: relationalStore.RdbStore = await LocalDataStore.open(this.context)
-    const rows: relationalStore.ResultSet = await store.querySql(SQL_STAT, [])
-    try {
+    await LocalDataStore.readQuery<void>(store, SQL_STAT, [], (rows: relationalStore.ResultSet): void => {
       if (rows.goToFirstRow()) {
         result.count = rows.getDouble(rows.getColumnIndex('c'))
         result.bytes = rows.getDouble(rows.getColumnIndex('b'))
       }
-    } finally {
-      rows.close()
-    }
+    })
     return result
   }
 }

@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { relationalStore } from '@kit.ArkData'
+import { DiagnosticLogger } from '../diagnostics/DiagnosticLogger'
 
 const STORE_CONFIG: relationalStore.StoreConfig = {
   name: 'NextN.db',
@@ -264,6 +265,26 @@ export class LocalDataStore {
     }
   }
 
+  /** Keep the cursor inside the read and propagate failures to the caller's recovery path. */
+  static async readQuery<T>(
+    store: relationalStore.RdbStore,
+    sql: string,
+    args: relationalStore.ValueType[],
+    read: (result: relationalStore.ResultSet) => T,
+  ): Promise<T> {
+    try {
+      const result: relationalStore.ResultSet = await store.querySql(sql, args)
+      try {
+        return read(result)
+      } finally {
+        result.close()
+      }
+    } catch (error) {
+      DiagnosticLogger.warn('local_data', 'query_failed', (error as Error).message)
+      throw error as Error
+    }
+  }
+
   private static async ensureSchema(store: relationalStore.RdbStore): Promise<void> {
     if (LocalDataStore.schemaReady) {
       return
@@ -334,22 +355,18 @@ export class LocalDataStore {
         store.version = SCHEMA_VERSION
       }
     } catch (error) {
-      throw (error as Error)
+      DiagnosticLogger.error('local_data', 'schema_initialization_failed', (error as Error).message)
+      throw error as Error
     }
   }
 
   /** Adds the source dictionary's tag-detail payload without rewriting installed rows. */
+  /** @throws Migration failure is logged by createSchema and remains retryable. */
   private static async ensureTagTranslationInfoColumns(store: relationalStore.RdbStore): Promise<void> {
-    let rows: relationalStore.ResultSet | null = null
     let columns: string[] = []
-    try {
-      rows = await store.querySql(SQL_INSPECT_TAG_TRANSLATION_COLUMNS)
+    await LocalDataStore.readQuery<void>(store, SQL_INSPECT_TAG_TRANSLATION_COLUMNS, [], (rows: relationalStore.ResultSet): void => {
       columns = rows.getColumnNames()
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     if (columns.indexOf('intro') < 0) {
       await store.executeSql(SQL_ADD_TAG_TRANSLATION_INTRO)
     }
@@ -363,6 +380,7 @@ export class LocalDataStore {
    * platform. Inspect the just-opened table so both a fresh install and an
    * interrupted/legacy upgrade safely converge without a duplicate ALTER.
    */
+  /** @throws Migration failure is logged by createSchema and remains retryable. */
   private static async ensureReadingHistoryProgressColumn(store: relationalStore.RdbStore): Promise<void> {
     let rows: relationalStore.ResultSet | null = null
     let hasProgressColumn: boolean = false
@@ -383,72 +401,52 @@ export class LocalDataStore {
   }
 
   /** Adds one finite recovery-origin code without touching the sealed envelope. */
+  /** @throws Migration failure is logged by createSchema and remains retryable. */
   private static async ensureAccountVerificationReasonColumn(store: relationalStore.RdbStore): Promise<void> {
-    let rows: relationalStore.ResultSet | null = null
     let hasReasonCode: boolean = false
-    try {
-      rows = await store.querySql(SQL_INSPECT_ACCOUNT_SESSION_VERIFICATION_COLUMNS)
+    await LocalDataStore.readQuery<void>(store, SQL_INSPECT_ACCOUNT_SESSION_VERIFICATION_COLUMNS, [], (rows: relationalStore.ResultSet): void => {
       hasReasonCode = rows.getColumnNames().indexOf('reason_code') >= 0
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     if (!hasReasonCode) {
       await store.executeSql(SQL_ADD_ACCOUNT_SESSION_VERIFICATION_REASON_CODE)
     }
   }
 
   /** Adds the device-local public/legacy directory owner without rewriting existing queue rows. */
+  /** @throws Migration failure is logged by createSchema and remains retryable. */
   private static async ensureDownloadQueueStorageDirectoryColumn(store: relationalStore.RdbStore): Promise<void> {
-    let rows: relationalStore.ResultSet | null = null
     let hasStorageDirectory: boolean = false
-    try {
-      rows = await store.querySql(SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS)
+    await LocalDataStore.readQuery<void>(store, SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS, [], (rows: relationalStore.ResultSet): void => {
       hasStorageDirectory = rows.getColumnNames().indexOf('storage_directory') >= 0
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     if (!hasStorageDirectory) {
       await store.executeSql(SQL_ADD_DOWNLOAD_QUEUE_STORAGE_DIRECTORY)
     }
   }
 
   /** Null on old rows so the queue can distinguish a legacy scan from a real empty journal. */
+  /** @throws Migration failure is logged by createSchema and remains retryable. */
   private static async ensureDownloadQueueCompletedPageIndexesColumn(
     store: relationalStore.RdbStore,
   ): Promise<void> {
-    let rows: relationalStore.ResultSet | null = null
     let hasCompletedPageIndexes: boolean = false
-    try {
-      rows = await store.querySql(SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS)
+    await LocalDataStore.readQuery<void>(store, SQL_INSPECT_DOWNLOAD_QUEUE_COLUMNS, [], (rows: relationalStore.ResultSet): void => {
       hasCompletedPageIndexes = rows.getColumnNames().indexOf('completed_page_indexes') >= 0
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     if (!hasCompletedPageIndexes) {
       await store.executeSql(SQL_ADD_DOWNLOAD_QUEUE_COMPLETED_PAGE_INDEXES)
     }
   }
 
   /** Adds the per-custom-Search bypass without changing any existing Subtab. */
+  /** @throws Migration failure is logged by createSchema and remains retryable. */
   private static async ensureHomeSubtabsIgnoreLocalUserTagFilteringColumn(
     store: relationalStore.RdbStore,
   ): Promise<void> {
-    let rows: relationalStore.ResultSet | null = null
     let hasColumn: boolean = false
-    try {
-      rows = await store.querySql(SQL_INSPECT_HOME_SUBTABS_COLUMNS)
+    await LocalDataStore.readQuery<void>(store, SQL_INSPECT_HOME_SUBTABS_COLUMNS, [], (rows: relationalStore.ResultSet): void => {
       hasColumn = rows.getColumnNames().indexOf('ignore_local_user_tag_filtering') >= 0
-    } finally {
-      if (rows !== null) {
-        rows.close()
-      }
-    }
+    })
     if (!hasColumn) {
       await store.executeSql(SQL_ADD_HOME_SUBTABS_IGNORE_LOCAL_USER_TAG_FILTERING)
     }
